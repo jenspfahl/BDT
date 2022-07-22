@@ -36,7 +36,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   static Future<void> handle() async {
     debugPrint("hit it once");
-    await SignalService.makeSignal(Duration(milliseconds: 500));
+    await SignalService.makeSignalPattern("");
   }
 
   @override
@@ -102,7 +102,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           CupertinoButton(
               child: Text("Start"),
               onPressed: () async {
-                SignalService.makeSignal(Duration(milliseconds: 1000));
+                SignalService.makeSignalPattern("");
 
                 AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true,
                      const Duration(seconds: 10), 12345, handle)
