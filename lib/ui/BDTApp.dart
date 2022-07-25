@@ -33,9 +33,11 @@ class BDTApp extends StatelessWidget {
             brightness: Brightness.dark,
             primaryColor: PRIMARY_COLOR,
             primarySwatch: BUTTON_COLOR,
+            backgroundColor: Colors.black,
+            scaffoldBackgroundColor: Colors.black,
 
             appBarTheme: AppBarTheme(
-                color: PRIMARY_COLOR,
+                color: Colors.black,
                 foregroundColor: FOREGROUND_COLOR
             )
           // accentColor: Colors.green,

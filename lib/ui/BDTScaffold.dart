@@ -11,9 +11,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
+import '../util/dates.dart';
 
 
 class BDTScaffold extends StatefulWidget {
@@ -162,7 +164,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   _startTimer() {
     _startedAt = DateTime.now();
-    _timer = Timer.periodic(kReleaseMode ? Duration(seconds: 10) : Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _updateRunning();
       debugPrint(".. timer refresh #${_timer?.tick} ..");
     });
@@ -173,12 +175,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (delta != null) {
       final passedIndex = kReleaseMode ? delta.inMinutes : delta.inSeconds ~/ 10;
       debugPrint("delta=$delta, _passedIndex = $passedIndex");
-      if (_passedIndex != passedIndex) {
-        setState(() {
-          _passedIndex = passedIndex;
-          // update all
-        });
-      }
+      setState(() {
+        _passedIndex = passedIndex + 1;
+        // update all
+      });
     }
   }
 
@@ -203,7 +203,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
         title: Text("BDT"),
         actions: [
           IconButton(
-              onPressed: () => setState(() => _selected.clear()),
+              onPressed: () {
+                if (_isRunning()) {
+                  toastInfo(context, "Stop running first");
+                }
+                setState(() => _selected.clear());
+              },
               icon: Icon(Icons.undo)),
           IconButton(
               onPressed: () {},
@@ -219,7 +224,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 Visibility(
                   visible: true,
                   child: Center(
-                    child: Text(_getDelta()?.inSeconds?.toString() ?? "-/-"),
+                    child: Text(_isRunning() ? formatDuration(_getDelta()!) : "-/-"),
                   ),
                 ),
                 PieChart(
@@ -262,7 +267,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       sectionsSpace: 1,
                       centerSpaceRadius: CENTER_RADIUS,
                       sections: _createSections(),
-                      startDegreeOffset: 270
+                      startDegreeOffset: 270 + 2.5
                   ),
                   swapAnimationDuration: Duration(milliseconds: 75),
                 ),
@@ -273,7 +278,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               child: Text("Start"),
               onPressed: () async {
                 if (_isRunning()) {
-                  toastInfo(context, "Stop it first");
+                  toastInfo(context, "Stop running first");
                   return;
                 }
                 if (_selected.isEmpty) {
@@ -285,7 +290,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 SignalService.makeSignalPattern(START);
                 notify(0, "START", true, preferenceService: _preferenceService, notificationService: _notificationService);
 
-                final list = _selected.toList()..sort();
+                final list = _selectedList();
                 debugPrint("$list");
                 for (int i=0; i < list.length; i++) {
                   final signal = i + 1;
@@ -320,6 +325,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  List<int> _selectedList() {
+    final list = _selected.toList()..sort();
+    return list;
+  }
+
   Duration _getDelay(int slice) => kReleaseMode ? Duration(minutes: 1 * slice) : Duration(seconds: 10 * slice);
 
   List<PieChartSectionData> _createSections() {
@@ -328,9 +338,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     return slices.map((i) {
       final isTouched = i == _touchedIndex;
-      final isPassed = i <= _passedIndex;
-      var radius = isTouched ? r * 1.5 : r;
-      if (isPassed) {
+      final isPassed = i < _passedIndex;
+      final isInTransition = i == _passedIndex;
+      final isSelected = _selected.contains(i);
+      final list = _selectedList();
+      final indexOfSelected = list.indexOf(i) + 1;
+      var radius = isTouched ? r * 1.3 : r;
+      if (isInTransition) {
+        radius = radius * 1.05;
+      }
+      else if (isPassed) {
         radius = radius * 1.1;
       }
 
@@ -339,18 +356,36 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return PieChartSectionData(
         color: i == MAX_SLICE
             ? ACCENT_COLOR
-            : BUTTON_COLOR.withOpacity(
-            _selected.contains(i)
+            : (isPassed || isInTransition ? FOREGROUND_COLOR : BUTTON_COLOR).withOpacity(
+            isSelected
               ? (isPassed ? 1 : 0.9)
               : (isPassed ? 0.7 : 0.4)
         ),
         value: value,
-        showTitle: i % 2 == 0,
         radius: radius,
-        title: i.toString(),
-        //    borderSide: BorderSide(color: Colors.amber)
+        showTitle: isTouched,
+        title: "$i min",
+        titlePositionPercentageOffset: 0.9,
+        badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
     }).toList();
+  }
+
+  Widget? _getIconForNumber(int number) {
+    switch (number) {
+      case 0: return Icon(MdiIcons.numeric0BoxOutline);
+      case 1: return Icon(MdiIcons.numeric1BoxOutline);
+      case 2: return Icon(MdiIcons.numeric2BoxOutline);
+      case 3: return Icon(MdiIcons.numeric3BoxOutline);
+      case 4: return Icon(MdiIcons.numeric4BoxOutline);
+      case 5: return Icon(MdiIcons.numeric5BoxOutline);
+      case 6: return Icon(MdiIcons.numeric6BoxOutline);
+      case 7: return Icon(MdiIcons.numeric7BoxOutline);
+      case 8: return Icon(MdiIcons.numeric8BoxOutline);
+      case 9: return Icon(MdiIcons.numeric9BoxOutline);
+      case 10: return Icon(MdiIcons.numeric10BoxOutline);
+    }
+    return null;
   }
 
   bool _isRunning() => _startedAt != null;

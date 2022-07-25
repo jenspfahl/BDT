@@ -47,9 +47,9 @@ dependencies:
   file_picker: ^4.5.1
   flutter_translate: ^4.0.2
   android_alarm_manager_plus: ^2.0.6
-  sound_generator: ^0.0.9
   vibration: ^1.7.4-nullsafety.0
   flutter_beep: ^1.0.0
+  material_design_icons_flutter: ^5.0.6595
 
 
   # The following adds the Cupertino Icons font to your application.

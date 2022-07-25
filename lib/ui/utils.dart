@@ -29,7 +29,7 @@ toastInfo(BuildContext context, String message, {bool? forceShow}) {
         if (show != false || forceShow == true) {
           _calcMessageDuration(message, false).then((duration) {
             var messenger = ScaffoldMessenger.of(context);
-            messenger.hideCurrentSnackBar();
+            messenger.clearSnackBars();
             messenger.showSnackBar(
                 SnackBar(
                     duration: duration,
@@ -43,7 +43,6 @@ toastInfo(BuildContext context, String message, {bool? forceShow}) {
 toastError(BuildContext context, String message) {
   _calcMessageDuration(message, true).then((duration) {
     var messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
     messenger.clearSnackBars();
     messenger.showSnackBar(
         SnackBar(
