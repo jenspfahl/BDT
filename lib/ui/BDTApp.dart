@@ -5,6 +5,11 @@ import 'package:bdt/ui/BDTScaffold.dart';
 
 import '../main.dart';
 
+final PRIMARY_COLOR = Colors.blue[900]!;
+final BUTTON_COLOR = Colors.blue;
+final ACCENT_COLOR = Colors.blue[50];
+final FOREGROUND_COLOR = Colors.lightBlue;
+
 class BDTApp extends StatelessWidget {
 
   @override
@@ -23,6 +28,20 @@ class BDTApp extends StatelessWidget {
         ],
         supportedLocales: localizationDelegate.supportedLocales,
         locale: localizationDelegate.currentLocale,
+
+        theme: ThemeData(
+            brightness: Brightness.dark,
+            primaryColor: PRIMARY_COLOR,
+            primarySwatch: BUTTON_COLOR,
+
+            appBarTheme: AppBarTheme(
+                color: PRIMARY_COLOR,
+                foregroundColor: FOREGROUND_COLOR
+            )
+          // accentColor: Colors.green,
+
+        ),
+        themeMode: ThemeMode.dark,
 
         home: BDTScaffold(),
       ),
