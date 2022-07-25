@@ -1,21 +1,17 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:ffi';
 
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:bdt/service/LocalNotificationService.dart';
+import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:bdt/service/LocalNotificationService.dart';
-import 'package:bdt/service/PreferenceService.dart';
 
-
-import '../main.dart';
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import 'package:vibration/vibration.dart';
-import 'package:sound_generator/sound_generator.dart';
-import 'package:sound_generator/waveTypes.dart';
 
 
 class BDTScaffold extends StatefulWidget {
@@ -28,32 +24,51 @@ class BDTScaffold extends StatefulWidget {
 
 class BDTScaffoldState extends State<BDTScaffold> {
 
+
+  int _touchedIndex = -1;
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
 
-  int _touchedIndex = -1;
 
+  static Future<void> signal7() async {
+    debugPrint("sig 7");
 
-  static Future<void> handle() async {
-    debugPrint("hit it once");
-    await SignalService.makeSignalPattern("");
+    await notifySignal(7);
+    await SignalService.makeSignalPattern(SIG_7);
+  }
+
+  static Future<void> signalEnd() async {
+    debugPrint("sig end");
+    await notify(100, "END", false);
+    await SignalService.makeSignalPattern(END);
+  }
+
+  static Future<void> notifySignal(int signal) async {
+    await notify(signal, "Signal $signal", true);
+  }
+
+  static Future<void> notify(int id, String msg, bool keepAsProgress,
+      {PreferenceService? preferenceService, LocalNotificationService? notificationService}) async {
+    if (await canNotify(preferenceService ?? PreferenceService()) != true) {
+      debugPrint("notification disabled");
+   //   return;
+    }
+    final _notificationService = notificationService ?? LocalNotificationService();
+    if (notificationService != null) {
+      await _notificationService.init();
+    }
+    _notificationService.cancelAllNotifications();
+    _notificationService.showNotification("", id, "BDT", msg, "bdt_signals", keepAsProgress, "");
+  }
+
+  static Future<bool> canNotify(PreferenceService preferenceService) async {
+    return await preferenceService.getBool("CAN_NOTIFY") == true;
   }
 
   @override
   void initState() {
     super.initState();
-
-   // SoundGenerator.init(9600);
-
- //   SoundGenerator.setAutoUpdateOneCycleSample(true);
-    //Force update for one time
-  //  SoundGenerator.refreshOneCycleData();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  //  SoundGenerator.release();
+    _notificationService.init();
   }
 
   @override
@@ -102,19 +117,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
           CupertinoButton(
               child: Text("Start"),
               onPressed: () async {
-                SignalService.makeSignalPattern("");
+                SignalService.makeSignalPattern(START);
+                notify(0, "START", true, preferenceService: _preferenceService, notificationService: _notificationService);
 
-                AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true,
-                     const Duration(seconds: 10), 12345, handle)
-                    .then((value) => debugPrint("value=$value"));
+                AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+                     kReleaseMode ? Duration(minutes: 1) : Duration(seconds: 10), 1, signal7)
+                    .then((value) => debugPrint("shot 7: $value"));
+
+                AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+                    kReleaseMode ? Duration(minutes: 2) : Duration(seconds: 20), 100, signalEnd)
+                    .then((value) => debugPrint("shot end: $value"));
 
           }),
           CupertinoButton(
               child: Text("Stop"),
               onPressed: () {
                 debugPrint("stopped");
-
-                AndroidAlarmManager.cancel(12345);
+                _notificationService.cancelAllNotifications();
+                SignalService.makeSignalPattern(CANCEL);
+                AndroidAlarmManager.cancel(1);
+                AndroidAlarmManager.cancel(100);
           })
         ],
       ),
