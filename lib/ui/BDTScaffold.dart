@@ -11,6 +11,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../service/LocalNotificationService.dart';
@@ -26,6 +27,8 @@ class BDTScaffold extends StatefulWidget {
   }
 }
 
+enum TimeFrame {RELATIVE, ABSOLUTE}
+
 class BDTScaffoldState extends State<BDTScaffold> {
 
   final MAX_SLICE = 60;
@@ -34,6 +37,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _touchedIndex = -1;
   int _passedIndex = -1;
   final _selected = HashSet<int>();
+
+  late List<bool> _timeFrameSelection;
+  TimeFrame _timeFrame = TimeFrame.RELATIVE;
+
 
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
@@ -126,7 +133,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 4: return signal4;
       case 5: return signal5;
       case 6: return signal6;
-      case 7: return signal8;
+      case 7: return signal7;
       case 8: return signal8;
       case 9: return signal9;
       case 10: return signal10;
@@ -160,6 +167,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void initState() {
     super.initState();
     _notificationService.init();
+    _timeFrameSelection = List.generate(TimeFrame.values.length, (index) => index == _timeFrame.index);
+
   }
 
   _startTimer() {
@@ -203,13 +212,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
         title: Text("BDT"),
         actions: [
           IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.volume_up_rounded)),
+          IconButton(
               onPressed: () {
                 if (_isRunning()) {
                   toastInfo(context, "Stop running first");
+                  return;
                 }
                 setState(() => _selected.clear());
               },
-              icon: Icon(Icons.undo)),
+              icon: Icon(MdiIcons.restart)),
           IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
@@ -217,6 +230,28 @@ class BDTScaffoldState extends State<BDTScaffold> {
       ),
       body: Column(
         children: [
+          ToggleButtons(
+            children: [
+              Icon(Icons.timer, color: _timeFrame == TimeFrame.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
+              Icon(Icons.watch, color: _timeFrame == TimeFrame.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
+            ],
+            isSelected: _timeFrameSelection,
+            onPressed: (int index) {
+              setState(() {
+                _timeFrameSelection[_timeFrame.index] = false;
+                _timeFrameSelection[index] = true;
+                _timeFrame = TimeFrame.values.elementAt(index);
+              });
+            },
+            renderBorder: true,
+            borderWidth: 1.5,
+            borderRadius: BorderRadius.all(Radius.circular(29)),
+            borderColor: BUTTON_COLOR,
+            color: BUTTON_COLOR,
+            selectedBorderColor: ACCENT_COLOR,
+            highlightColor: FOREGROUND_COLOR,
+            selectedColor: ACCENT_COLOR,
+          ),
           AspectRatio(
             aspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 1.2 : 2.7,
             child: Stack(
@@ -363,9 +398,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ),
         value: value,
         radius: radius,
-        showTitle: isTouched,
+        showTitle: isTouched || isSelected,
         title: "$i min",
-        titlePositionPercentageOffset: 0.9,
+        titlePositionPercentageOffset: 1.25,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
     }).toList();

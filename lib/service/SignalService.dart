@@ -12,11 +12,11 @@ final SIG_1 = "|| -";
 final SIG_2 = "|| --";
 final SIG_3 = "|| ---";
 final SIG_4 = "|| ----";
-final SIG_5 = "|| -----";
+final SIG_5 = "|| _";
 final SIG_6 = "|| _-";
 final SIG_7 = "|| _--";
 final SIG_8 = "|| _---";
-final SIG_9 = "|| _---";
+final SIG_9 = "|| _----";
 final SIG_10 = "|| __";
 final END = "|| ___";
 
