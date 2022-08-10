@@ -36,7 +36,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
-  Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 180);
+  Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60);
   final _selected = HashSet<int>();
 
   late List<bool> _timeFrameSelection;
@@ -225,9 +225,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               },
               icon: Icon(MdiIcons.restart)),
           IconButton(
-              onPressed: () {
-                _changeDuration(context);
-              },
+              onPressed: () {},
               icon: Icon(Icons.settings)),
         ],
       ),
@@ -259,18 +257,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
             aspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 1.2 : 2.7,
             child: Stack(
               children: [
-                Visibility(
-                  visible: true,
-                  child: Center(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      child: Text(_isRunning() ? formatDuration(_getDelta()!) : formatDuration(_duration)),
-                      onTap: () {
-                        _changeDuration(context);
-                      },
-                    ),
-                  ),
-                ),
                 PieChart(
                   PieChartData(
                       pieTouchData: PieTouchData(
@@ -314,6 +300,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       startDegreeOffset: 270 + 2.5
                   ),
                   swapAnimationDuration: Duration(milliseconds: 75),
+                ),
+                Visibility(
+                  visible: true,
+                  child: Center(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: Text(_isRunning() ? formatDuration(_getDelta()!) : formatDuration(_duration)),
+                      onTap: () {
+                        if (!_isRunning()) {
+                          _changeDuration(context);
+                        }
+                      },
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -428,9 +428,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         value: value,
         radius: radius,
         showTitle: isTouched || isSelected,
-        title: sliceDuration.inMinutes < 1
-            ? "${sliceDuration.inSeconds} sec"
-            : "${sliceDuration.inMinutes} min\n${sliceDuration.inSeconds - (sliceDuration.inMinutes * 60)} sec",
+        title: formatDuration(sliceDuration),
         titlePositionPercentageOffset: 1.25,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );

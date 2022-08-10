@@ -25,11 +25,14 @@ String formatToTime(DateTime dateTime) {
 
 
 String formatDuration(Duration duration) {
-
+  if (duration.inMinutes >= 60) {
+    var remainingMinutes = duration.inMinutes % 60;
+    return "${duration.inHours} hrs\n$remainingMinutes min";
+  }
   if (duration.inSeconds >= 60) {
     var remainingSeconds = duration.inSeconds % 60;
-    return "${duration.inMinutes}:$remainingSeconds"; //TODO formt to 0:00
+    return "${duration.inMinutes} min\n$remainingSeconds sec";
   }
-  return "0:${duration.inSeconds}";
+  return "${duration.inSeconds} sec";
 }
 
