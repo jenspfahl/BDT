@@ -11,12 +11,12 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
+import 'dialogs.dart';
 
 
 class BDTScaffold extends StatefulWidget {
@@ -36,6 +36,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
+  Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 180);
   final _selected = HashSet<int>();
 
   late List<bool> _timeFrameSelection;
@@ -182,10 +183,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _updateRunning() {
     final delta = _getDelta();
     if (delta != null) {
-      final passedIndex = kReleaseMode ? delta.inMinutes : delta.inSeconds ~/ 10;
-      debugPrint("delta=$delta, _passedIndex = $passedIndex");
+      final ratio = delta.inSeconds / _duration.inSeconds;
+      debugPrint("delta=$delta, ratio = $ratio");
       setState(() {
-        _passedIndex = passedIndex + 1;
+        _passedIndex = (MAX_SLICE * ratio).round();
         // update all
       });
     }
@@ -224,7 +225,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
               },
               icon: Icon(MdiIcons.restart)),
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                _changeDuration(context);
+              },
               icon: Icon(Icons.settings)),
         ],
       ),
@@ -259,7 +262,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 Visibility(
                   visible: true,
                   child: Center(
-                    child: Text(_isRunning() ? formatDuration(_getDelta()!) : "-/-"),
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      child: Text(_isRunning() ? formatDuration(_getDelta()!) : formatDuration(_duration)),
+                      onTap: () {
+                        _changeDuration(context);
+                      },
+                    ),
                   ),
                 ),
                 PieChart(
@@ -360,27 +369,45 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  void _changeDuration(BuildContext context) {
+    final initialDuration = _duration;
+    Duration? _tempSelectedDuration;
+    showDurationPickerDialog(
+      context: context,
+      initialDuration: initialDuration,
+      onChanged: (duration) => _tempSelectedDuration = duration,
+    ).then((okPressed) {
+      if (okPressed ?? false) {
+        setState(() => _duration = _tempSelectedDuration ?? initialDuration);
+      }
+    });
+  }
+
   List<int> _selectedList() {
     final list = _selected.toList()..sort();
     return list;
   }
 
-  Duration _getDelay(int slice) => kReleaseMode ? Duration(minutes: 1 * slice) : Duration(seconds: 10 * slice);
+  Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / 60).round());
 
   List<PieChartSectionData> _createSections() {
     var slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
     double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (20 * 2);
+    final sliceSeconds = _duration.inSeconds / MAX_SLICE;
 
-    return slices.map((i) {
-      final isTouched = i == _touchedIndex;
-      final isPassed = i < _passedIndex;
-      final isInTransition = i == _passedIndex;
-      final isSelected = _selected.contains(i);
+    return slices.map((slice) {
+      final isTouched = slice == _touchedIndex;
+      final isPassed = slice < _passedIndex;
+      final isInTransition = slice == _passedIndex;
+      final isSelected = _selected.contains(slice);
       final list = _selectedList();
-      final indexOfSelected = list.indexOf(i) + 1;
+      final indexOfSelected = list.indexOf(slice) + 1;
       var radius = isTouched ? r * 1.3 : r;
       if (isInTransition) {
-        radius = radius * 1.05;
+        final deltaSeconds = _getDelta()?.inSeconds ?? 0;
+        final transitionSeconds = deltaSeconds % sliceSeconds;
+        debugPrint("tranSec=$transitionSeconds / sliceSec=$sliceSeconds");
+        radius = radius + (radius * (transitionSeconds / sliceSeconds * 0.1));
       }
       else if (isPassed) {
         radius = radius * 1.1;
@@ -388,8 +415,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
       final value = 1.0;
 
+      final sliceDuration = _getDelay(slice);
+
       return PieChartSectionData(
-        color: i == MAX_SLICE
+        color: slice == MAX_SLICE
             ? ACCENT_COLOR
             : (isPassed || isInTransition ? FOREGROUND_COLOR : BUTTON_COLOR).withOpacity(
             isSelected
@@ -399,7 +428,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
         value: value,
         radius: radius,
         showTitle: isTouched || isSelected,
-        title: "$i min",
+        title: sliceDuration.inMinutes < 1
+            ? "${sliceDuration.inSeconds} sec"
+            : "${sliceDuration.inMinutes} min\n${sliceDuration.inSeconds - (sliceDuration.inMinutes * 60)} sec",
         titlePositionPercentageOffset: 1.25,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
