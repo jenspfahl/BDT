@@ -12,10 +12,52 @@ DateTime truncToMinutes(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
 }
 
-String formatToDateTime(DateTime dateTime) {
-  final DateFormat dateFormatter = DateFormat.yMd();
-  final DateFormat timeFormatter = DateFormat.Hms();
-  return dateFormatter.format(dateTime) + " " + timeFormatter.format(dateTime);
+DateTime roundToHour(DateTime dateTime) {
+  if (dateTime.minute > 0) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour)
+        .add(Duration(hours: 1));
+  }
+  else {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour);
+  }
+}
+
+DateTime roundToMinute(DateTime dateTime) {
+  if (dateTime.second > 0) {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute)
+        .add(Duration(minutes: 1));
+  }
+  else {
+    return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
+  }
+}
+
+bool isTomorrow(DateTime? dateTime) {
+  if (dateTime == null) return false;
+  return truncToDate(dateTime) == truncToDate(DateTime.now().add(Duration(days: 1)));
+}
+
+bool isToday(DateTime? dateTime) {
+  if (dateTime == null) return false;
+  return truncToDate(dateTime) == truncToDate(DateTime.now());
+}
+
+bool isYesterday(DateTime? dateTime) {
+  if (dateTime == null) return false;
+  return truncToDate(dateTime) == truncToDate(DateTime.now().subtract(Duration(days: 1)));
+}
+
+String formatToDateTime(DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
+  final betweenChar = withLineBreak ? "\n" : " ";
+  final DateFormat dateFormatter = DateFormat.yM();
+  final DateFormat timeFormatter = withSeconds ? DateFormat.Hms() : DateFormat.Hm();
+  if (isToday(dateTime)) {
+    return timeFormatter.format(dateTime);
+  }
+  else {
+    return dateFormatter.format(dateTime) + betweenChar +
+        timeFormatter.format(dateTime);
+  }
 }
 
 String formatToTime(DateTime dateTime) {

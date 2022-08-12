@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -22,14 +24,17 @@ class DurationPicker extends StatefulWidget {
 }
 
 class _DurationPickerState extends State<DurationPicker> {
+  final MAX_HOURS = 12;
+  final MAX_MINUTES = 59;
+
   int _hours = 0;
   int _minutes = 0;
 
   @override
   void initState() {
     super.initState();
-    _hours = widget._initialHours;
-    _minutes = widget._initialMinutes;
+    _hours = min(widget._initialHours.abs(), MAX_HOURS);
+    _minutes = min(widget._initialMinutes.abs(), MAX_MINUTES);
   }
 
   @override
@@ -37,7 +42,7 @@ class _DurationPickerState extends State<DurationPicker> {
     final hoursPicker = NumberPicker(
       value: _hours,
       minValue: 0,
-      maxValue: 10, //TODO control this from outside
+      maxValue: MAX_HOURS,
       onChanged: (value) => setState(() { 
         _hours = value;
         widget.onChanged(_getSelectedDuration());
@@ -46,7 +51,7 @@ class _DurationPickerState extends State<DurationPicker> {
     final minutesPicker = NumberPicker(
       value: _minutes,
       minValue: 0,
-      maxValue: 59,
+      maxValue: MAX_MINUTES,
       onChanged: (value) => setState(() { 
         _minutes = value;
         widget.onChanged(_getSelectedDuration());

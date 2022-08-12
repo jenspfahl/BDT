@@ -12,6 +12,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
 import '../service/LocalNotificationService.dart';
@@ -28,7 +29,7 @@ class BDTScaffold extends StatefulWidget {
   }
 }
 
-enum TimeFrame {RELATIVE, ABSOLUTE}
+enum TimerMode {RELATIVE, ABSOLUTE}
 
 class BDTScaffoldState extends State<BDTScaffold> {
 
@@ -37,16 +38,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
+
   Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60);
+  late DateTime _time;
+
   final _selectedSlices = HashSet<int>();
 
-  late List<bool> _timeFrameSelection;
-  TimeFrame _timeFrame = TimeFrame.RELATIVE;
+  late List<bool> _timerModeSelection;
+  TimerMode _timerMode = TimerMode.RELATIVE;
 
 
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
-  Timer? _timer;
+  Timer? _runTimer;
+  Timer? _absoluteRefreshUiTimer;
   DateTime? _startedAt;
 
 
@@ -168,16 +173,22 @@ class BDTScaffoldState extends State<BDTScaffold> {
   @override
   void initState() {
     super.initState();
+    _time = _deriveTime();
     _notificationService.init();
-    _timeFrameSelection = List.generate(TimeFrame.values.length, (index) => index == _timeFrame.index);
+    _timerModeSelection = List.generate(TimerMode.values.length, (index) => index == _timerMode.index);
 
+    _absoluteRefreshUiTimer = Timer.periodic(Duration(minutes: 1), (_) {
+      setState((){
+        debugPrint("refresh ui values");
+      });
+    });
   }
 
   _startTimer() {
     _startedAt = DateTime.now();
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _runTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       _updateRunning();
-      debugPrint(".. timer refresh #${_timer?.tick} ..");
+      debugPrint(".. timer refresh #${_runTimer?.tick} ..");
       if (_isOver()) {
         timer.cancel();
       }
@@ -218,7 +229,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   _stopTimer() {
-    _timer?.cancel();
+    _runTimer?.cancel();
     setState(() {
       _startedAt = null;
       _passedIndex = -1;
@@ -237,7 +248,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           IconButton(
               onPressed: () {
                 if (_isRunning()) {
-                  toastInfo(context, "Stop running first");
+                  toastError(context, "Stop running first");
                   return;
                 }
                 setState(() => _selectedSlices.clear());
@@ -252,15 +263,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
         children: [
           ToggleButtons(
             children: [
-              Icon(Icons.timer_outlined, color: _timeFrame == TimeFrame.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
-              Icon(MdiIcons.alarm, color: _timeFrame == TimeFrame.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
+              Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
+              Icon(MdiIcons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
             ],
-            isSelected: _timeFrameSelection,
+            isSelected: _timerModeSelection,
             onPressed: (int index) {
               setState(() {
-                _timeFrameSelection[_timeFrame.index] = false;
-                _timeFrameSelection[index] = true;
-                _timeFrame = TimeFrame.values.elementAt(index);
+                _timerModeSelection[_timerMode.index] = false;
+                _timerModeSelection[index] = true;
+                _timerMode = TimerMode.values.elementAt(index);
               });
             },
             renderBorder: true,
@@ -302,7 +313,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                     _selectedSlices.add(_touchedIndex);
                                   }
                                   else {
-                                    toastInfo(context, "max 10 sctions allowed");
+                                    toastError(context, "max 10 breaks allowed");
                                   }
                                 }
                               }
@@ -328,7 +339,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       child: _createCycleWidget(),
                       onTap: () {
                         if (!_isRunning()) {
-                          _changeDuration(context);
+                          if (_timerMode == TimerMode.RELATIVE) {
+                            _changeDuration(context);
+                          }
+                          else if (_timerMode == TimerMode.ABSOLUTE) {
+                            _changeTime(context);
+                          }
                         }
                       },
                     ),
@@ -339,17 +355,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           Center(
             child: _createStatsLine()),
-     /*     CupertinoButton(
-              child: Text("Start"),
-              onPressed: () async {
-                _startRun(context);
-              }),
-          CupertinoButton(
-              child: Text("Stop"),
-              onPressed: () {
-                _stopRun(context);
-              }),*/
-       //   HoldOnButton(Icon(Icons.not_started_outlined, size: 64,))
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -363,7 +368,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
             _stopRun(context);
           }
           else {
-            _startRun(context);
+            if (_isOver()) {
+              toastError(context, "Timer time still reached, set it new");
+            }
+            else {
+              _startRun(context);
+            }
           }
         },
       ),
@@ -387,6 +397,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createCycleWidget() {
+    if (_timerMode == TimerMode.RELATIVE) {
+      return _createCycleWidgetForRelativeMode();
+    }
+    else if (_timerMode == TimerMode.ABSOLUTE) {
+      return _createCycleWidgetForAbsoluteMode();
+    }
+    else {
+      throw Exception("unknown timerMode " + _timerMode.toString());
+    }
+  }
+
+  Widget _createCycleWidgetForRelativeMode() {
     if (_isOver()) {
       return Column(
         children: [
@@ -418,6 +440,39 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
+
+  Widget _createCycleWidgetForAbsoluteMode() {
+    if (_isOver()) {
+      return Column(
+        children: [
+          Text(formatToDateTime(_time, withSeconds: true)),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text(formatToDateTime(_startedAt!, withSeconds: true)),
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+      );
+    }
+    else if (_isRunning()) {
+      return Column(
+        children: [
+          Text(formatToDateTime(DateTime.now(), withSeconds: true)),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text(formatToDateTime(_startedAt!, withSeconds: true)),
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+      );
+    }
+    else {
+      return Text(formatToDateTime(_time));
+    }
+  }
+
   void _changeDuration(BuildContext context) {
     final initialDuration = _duration;
     Duration? _tempSelectedDuration;
@@ -432,12 +487,40 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
   }
 
+  void _changeTime(BuildContext context) {
+    final initialTime = TimeOfDay.fromDateTime(_deriveTime());
+    showTimePicker(
+      initialTime: initialTime,
+      context: context,
+    ).then((selectedTime) {
+      if (selectedTime != null) {
+        setState(() {
+          final now = DateTime.now();
+          final nowTime = TimeOfDay.now();
+          final nowMinutes = nowTime.hour * 60 + nowTime.minute;
+          final selectedMinutes = selectedTime.hour * 60 + selectedTime.minute;
+          if (selectedMinutes < nowMinutes) {
+            // next day
+            _time = truncToDate(now).add(Duration(days: 1)).add(Duration(minutes: selectedMinutes));
+          }
+          else {
+            _time = truncToDate(now).add(Duration(minutes: selectedMinutes));
+          }
+          _duration = now.difference(_time).abs();
+          if (_duration.inMinutes < 1) {
+            toastInfo(context, "Clock value should be more in the future");
+          }
+        });
+      }
+    });
+  }
+
   List<int> _selectedList() {
     final list = _selectedSlices.toList()..sort();
     return list;
   }
 
-  Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / 60).round());
+  Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / MAX_SLICE).round());
 
   List<PieChartSectionData> _createSections() {
     var slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
@@ -465,8 +548,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
       final value = 1.0;
 
-      final sliceDuration = _getDelay(slice);
-
       return PieChartSectionData(
         color: isFinalSlice
             ? ACCENT_COLOR
@@ -478,12 +559,30 @@ class BDTScaffoldState extends State<BDTScaffold> {
         value: value,
         radius: radius,
         showTitle: isTouched || isSelected || isFinalSlice,
-        title: formatDuration(sliceDuration, withLineBreak: true),
-        titleStyle: TextStyle(fontSize: 10),
+        title: _showSliceTitle(slice),
+        titleStyle: isFinalSlice ? TextStyle(fontSize: 14) : TextStyle(fontSize: 10),
         titlePositionPercentageOffset: isTouched ? 0.9 : 1.2,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
     }).toList();
+  }
+
+  String _showSliceTitle(int slice) {
+    if (_timerMode == TimerMode.RELATIVE) {
+      final sliceDuration = _getDelay(slice);
+      return formatDuration(sliceDuration, withLineBreak: true);
+    }
+    else if (_timerMode == TimerMode.ABSOLUTE) {
+      final nowOrStartedAt = _startedAt ?? DateTime.now();
+      final delta = nowOrStartedAt.difference(_time).abs();
+      final sliceDuration = Duration(seconds: (delta.inSeconds * slice / MAX_SLICE).round());
+      debugPrint("nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration");
+      final sliceTime = roundToMinute(nowOrStartedAt.add(sliceDuration));
+      return formatToDateTime(sliceTime, withLineBreak: true);
+    }
+    else {
+      throw Exception("unknown timerMode " + _timerMode.toString());
+    }
   }
 
   Widget? _getIconForNumber(int number) {
@@ -507,19 +606,31 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   void _startRun(BuildContext context) {
     if (_duration.inSeconds == 0) {
-      toastInfo(context, "Duration might not be zero");
+      toastError(context, "Duration might not be zero");
       return;
     }
     if (_isRunning()) {
-      toastInfo(context, "Stop running first");
+      toastError(context, "Stop running first");
       return;
     }
     if (_selectedSlices.isEmpty) {
-      toastInfo(context, "No breaks selected");
+      toastError(context, "No breaks selected");
       return;
     }
 
     _startTimer();
+
+    final startedAt = _startedAt;
+    if (startedAt == null) {
+      return;
+    }
+    if (_timerMode == TimerMode.RELATIVE) {
+      setState(() => _time = startedAt.add(_duration));
+    }
+    else if (_timerMode == TimerMode.ABSOLUTE) {
+      setState(() => _duration = startedAt.difference(_time).abs());
+    }
+
     SignalService.makeSignalPattern(START);
     notify(0, "Timer started", true, preferenceService: _preferenceService, notificationService: _notificationService);
 
@@ -552,6 +663,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     AndroidAlarmManager.cancel(1000);
   }
+
+  DateTime _deriveTime() => roundToHour(DateTime.now().add(_duration));
 
 }
 
