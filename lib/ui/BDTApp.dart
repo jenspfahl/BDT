@@ -7,7 +7,7 @@ import '../main.dart';
 
 final PRIMARY_COLOR = Colors.blue[900]!;
 final BUTTON_COLOR = Colors.blue;
-final ACCENT_COLOR = Colors.blue[50];
+final ACCENT_COLOR = Colors.blue[50]!;
 final FOREGROUND_COLOR = Colors.lightBlue;
 
 class BDTApp extends StatelessWidget {

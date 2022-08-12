@@ -6,6 +6,7 @@ import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/BDTApp.dart';
+import 'package:bdt/ui/HoldOnButton.dart';
 import 'package:bdt/ui/utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
@@ -37,7 +38,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _touchedIndex = -1;
   int _passedIndex = -1;
   Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60);
-  final _selected = HashSet<int>();
+  final _selectedSlices = HashSet<int>();
 
   late List<bool> _timeFrameSelection;
   TimeFrame _timeFrame = TimeFrame.RELATIVE;
@@ -122,7 +123,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   static Future<void> signalEnd() async {
     debugPrint("sig end");
-    await notify(100, "END", false);
+    await notify(100, "Timer finished", false);
     await SignalService.makeSignalPattern(END);
   }
 
@@ -143,14 +144,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   static Future<void> notifySignal(int signal) async {
-    await notify(signal, "Signal $signal", true);
+    await notify(signal, "Break $signal reached", true);
   }
 
   static Future<void> notify(int id, String msg, bool keepAsProgress,
       {PreferenceService? preferenceService, LocalNotificationService? notificationService}) async {
     if (await canNotify(preferenceService ?? PreferenceService()) != true) {
       debugPrint("notification disabled");
-   //   return;
+   //   return; //TODO impl it
     }
     final _notificationService = notificationService ?? LocalNotificationService();
     if (notificationService != null) {
@@ -177,6 +178,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _updateRunning();
       debugPrint(".. timer refresh #${_timer?.tick} ..");
+      if (_isOver()) {
+        timer.cancel();
+      }
     });
   }
 
@@ -186,24 +190,31 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final ratio = delta.inSeconds / _duration.inSeconds;
       debugPrint("delta=$delta, ratio = $ratio");
       setState(() {
-        _passedIndex = (MAX_SLICE * ratio).round();
+        _passedIndex = (MAX_SLICE * ratio).floor() + 1;
         // update all
       });
     }
+  }
+
+  bool _isOver() {
+    final now = DateTime.now();
+    return _startedAt?.add(_duration).isBefore(now) ?? false;
   }
 
   DateTime? _getFinalTime() => _startedAt?.add(_duration);
 
   Duration? _getDelta() {
     final now = DateTime.now();
-    final delta = _startedAt?.difference(now).abs();
-    return delta;
+    return _startedAt?.difference(now).abs();
   }
 
   Duration? _getRemaining() {
     final finalTime = _getFinalTime();
     final now = DateTime.now();
-    return finalTime?.difference(now).abs();
+    if (finalTime == null) {
+      return null;
+    }
+    return Duration(seconds: finalTime.difference(now).abs().inSeconds + 1);
   }
 
   _stopTimer() {
@@ -229,7 +240,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   toastInfo(context, "Stop running first");
                   return;
                 }
-                setState(() => _selected.clear());
+                setState(() => _selectedSlices.clear());
               },
               icon: Icon(MdiIcons.restart)),
           IconButton(
@@ -241,8 +252,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
         children: [
           ToggleButtons(
             children: [
-              Icon(Icons.timer, color: _timeFrame == TimeFrame.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
-              Icon(Icons.watch, color: _timeFrame == TimeFrame.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
+              Icon(Icons.timer_outlined, color: _timeFrame == TimeFrame.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
+              Icon(MdiIcons.alarm, color: _timeFrame == TimeFrame.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
             ],
             isSelected: _timeFrameSelection,
             onPressed: (int index) {
@@ -283,19 +294,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                   (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
                               debugPrint("_touchedIndex=$_touchedIndex");
                               if (_touchedIndex != 0) {
-                                if (_selected.contains(_touchedIndex)) {
-                                  _selected.remove(_touchedIndex);
+                                if (_selectedSlices.contains(_touchedIndex)) {
+                                  _selectedSlices.remove(_touchedIndex);
                                 }
                                 else {
-                                  if (_selected.length < 10) {
-                                    _selected.add(_touchedIndex);
+                                  if (_selectedSlices.length < 10) {
+                                    _selectedSlices.add(_touchedIndex);
                                   }
                                   else {
                                     toastInfo(context, "max 10 sctions allowed");
                                   }
                                 }
                               }
-                              debugPrint("_selected=$_selected");
+                              debugPrint("_selected=$_selectedSlices");
 
                             });
                           }),
@@ -326,68 +337,85 @@ class BDTScaffoldState extends State<BDTScaffold> {
               ],
             ),
           ),
-          CupertinoButton(
+          Center(
+            child: _createStatsLine()),
+     /*     CupertinoButton(
               child: Text("Start"),
               onPressed: () async {
-                if (_isRunning()) {
-                  toastInfo(context, "Stop running first");
-                  return;
-                }
-                if (_selected.isEmpty) {
-                  toastInfo(context, "nothing selected");
-                  return;
-                }
-
-                _startTimer();
-                SignalService.makeSignalPattern(START);
-                notify(0, "START", true, preferenceService: _preferenceService, notificationService: _notificationService);
-
-                final list = _selectedList();
-                debugPrint("$list");
-                for (int i=0; i < list.length; i++) {
-                  final signal = i + 1;
-                  final slice = list[i];
-                  Function f = signalFunction(signal);
-                  AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-                      _getDelay(slice), signal, f)
-                      .then((value) => debugPrint("shot $signal on $slice: $value"));
-                }
-
-                AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-                    _getDelay(MAX_SLICE), 1000, signalEnd)
-                    .then((value) => debugPrint("shot end: $value"));
-
-                _updateRunning();
-
+                _startRun(context);
               }),
           CupertinoButton(
               child: Text("Stop"),
               onPressed: () {
-                debugPrint("stopped");
-                _stopTimer();
-                _notificationService.cancelAllNotifications();
-                SignalService.makeSignalPattern(CANCEL);
-                for (int slice = 1; slice <= MAX_SLICE; slice++) {
-                  AndroidAlarmManager.cancel(slice);
-                }
-                AndroidAlarmManager.cancel(1000);
-                })
+                _stopRun(context);
+              }),*/
+       //   HoldOnButton(Icon(Icons.not_started_outlined, size: 64,))
         ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: BUTTON_COLOR,
+        splashColor: FOREGROUND_COLOR,
+        foregroundColor: ACCENT_COLOR,
+        child: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
+        onPressed: () {
+          if (_isRunning()) {
+            _stopRun(context);
+          }
+          else {
+            _startRun(context);
+          }
+        },
       ),
     );
   }
 
+  Text _createStatsLine() {
+    if (_isOver()) {
+      return Text("Timer finished");
+    }
+    else if (_isRunning()) {
+      final remainingBreaks = _selectedSlices
+          .where((index) => index >= _passedIndex)
+          .toList()
+          .length;
+      return Text("$remainingBreaks breaks left");
+    }
+    else {
+      return Text("${_selectedSlices.length} breaks selected");
+    }
+  }
+
   Widget _createCycleWidget() {
-    return _isRunning()
-        ? Column(children: [
-            Text("${formatDuration(_getDelta()!)}"),
-            SizedBox(
+    if (_isOver()) {
+      return Column(
+        children: [
+          Text("${formatDuration(_duration)}"),
+          SizedBox(
               width: 80,
-                child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
-            ),
-            Text("${formatDuration(_getRemaining()!)}"),
-          ], mainAxisAlignment: MainAxisAlignment.center,)
-        : Text(formatDuration(_duration));
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text("${formatDuration(Duration.zero)}"),
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+      );
+    }
+    else if (_isRunning()) {
+      return Column(
+        children: [
+          Text("${formatDuration(_getDelta()!)}"),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text("${formatDuration(_getRemaining()!)}"),
+        ],
+        mainAxisAlignment: MainAxisAlignment.center,
+      );
+    }
+    else {
+      return Text(formatDuration(_duration));
+    }
   }
 
   void _changeDuration(BuildContext context) {
@@ -405,7 +433,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   List<int> _selectedList() {
-    final list = _selected.toList()..sort();
+    final list = _selectedSlices.toList()..sort();
     return list;
   }
 
@@ -420,7 +448,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final isTouched = slice == _touchedIndex;
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
-      final isSelected = _selected.contains(slice);
+      final isSelected = _selectedSlices.contains(slice);
       final isFinalSlice = slice == MAX_SLICE;
       final list = _selectedList();
       final indexOfSelected = list.indexOf(slice) + 1;
@@ -444,14 +472,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
             ? ACCENT_COLOR
             : (isPassed || isInTransition ? FOREGROUND_COLOR : BUTTON_COLOR).withOpacity(
             isSelected
-              ? (isPassed ? 1 : 0.9)
-              : (isPassed ? 0.7 : 0.4)
+                ? (isPassed ? 1 : 0.9)
+                : (isPassed ? 0.7 : (isInTransition ? 0.5 : 0.4))
         ),
         value: value,
         radius: radius,
         showTitle: isTouched || isSelected || isFinalSlice,
         title: formatDuration(sliceDuration, withLineBreak: true),
-        titlePositionPercentageOffset: 1.25,
+        titleStyle: TextStyle(fontSize: 10),
+        titlePositionPercentageOffset: isTouched ? 0.9 : 1.2,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
     }).toList();
@@ -475,5 +504,54 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   bool _isRunning() => _startedAt != null;
+
+  void _startRun(BuildContext context) {
+    if (_duration.inSeconds == 0) {
+      toastInfo(context, "Duration might not be zero");
+      return;
+    }
+    if (_isRunning()) {
+      toastInfo(context, "Stop running first");
+      return;
+    }
+    if (_selectedSlices.isEmpty) {
+      toastInfo(context, "No breaks selected");
+      return;
+    }
+
+    _startTimer();
+    SignalService.makeSignalPattern(START);
+    notify(0, "Timer started", true, preferenceService: _preferenceService, notificationService: _notificationService);
+
+    final list = _selectedList();
+    debugPrint("$list");
+    for (int i=0; i < list.length; i++) {
+      final signal = i + 1;
+      final slice = list[i];
+      Function f = signalFunction(signal);
+      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+          _getDelay(slice), signal, f)
+          .then((value) => debugPrint("shot $signal on $slice: $value"));
+    }
+
+    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+        _getDelay(MAX_SLICE), 1000, signalEnd)
+        .then((value) => debugPrint("shot end: $value"));
+
+    _updateRunning();
+
+  }
+
+  void _stopRun(BuildContext context) {
+    debugPrint("stopped");
+    _stopTimer();
+    _notificationService.cancelAllNotifications();
+    SignalService.makeSignalPattern(CANCEL);
+    for (int slice = 1; slice <= MAX_SLICE; slice++) {
+      AndroidAlarmManager.cancel(slice);
+    }
+    AndroidAlarmManager.cancel(1000);
+  }
+
 }
 
