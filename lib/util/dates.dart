@@ -24,14 +24,25 @@ String formatToTime(DateTime dateTime) {
 }
 
 
-String formatDuration(Duration duration) {
+String formatDuration(Duration duration, {bool withLineBreak = false}) {
+  final betweenChar = withLineBreak ? "\n" : " ";
   if (duration.inMinutes >= 60) {
     var remainingMinutes = duration.inMinutes % 60;
-    return "${duration.inHours} hrs\n$remainingMinutes min";
+    if (remainingMinutes != 0) {
+      return "${duration.inHours} hrs$betweenChar$remainingMinutes min";
+    }
+    else {
+      return "${duration.inHours} hrs";
+    }
   }
   if (duration.inSeconds >= 60) {
     var remainingSeconds = duration.inSeconds % 60;
-    return "${duration.inMinutes} min\n$remainingSeconds sec";
+    if (remainingSeconds != 0) {
+      return "${duration.inMinutes} min$betweenChar$remainingSeconds sec";
+    }
+    else {
+      return "${duration.inMinutes} min";
+    }
   }
   return "${duration.inSeconds} sec";
 }

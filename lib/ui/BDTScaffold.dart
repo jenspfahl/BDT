@@ -192,10 +192,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
+  DateTime? _getFinalTime() => _startedAt?.add(_duration);
+
   Duration? _getDelta() {
     final now = DateTime.now();
     final delta = _startedAt?.difference(now).abs();
     return delta;
+  }
+
+  Duration? _getRemaining() {
+    final finalTime = _getFinalTime();
+    final now = DateTime.now();
+    return finalTime?.difference(now).abs();
   }
 
   _stopTimer() {
@@ -254,7 +262,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
             selectedColor: ACCENT_COLOR,
           ),
           AspectRatio(
-            aspectRatio: MediaQuery.of(context).orientation == Orientation.portrait ? 1.2 : 2.7,
+            aspectRatio: 1,
             child: Stack(
               children: [
                 PieChart(
@@ -306,7 +314,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   child: Center(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      child: Text(_isRunning() ? formatDuration(_getDelta()!) : formatDuration(_duration)),
+                      child: _createCycleWidget(),
                       onTap: () {
                         if (!_isRunning()) {
                           _changeDuration(context);
@@ -369,6 +377,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  Widget _createCycleWidget() {
+    return _isRunning()
+        ? Column(children: [
+            Text("${formatDuration(_getDelta()!)}"),
+            SizedBox(
+              width: 80,
+                child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+            ),
+            Text("${formatDuration(_getRemaining()!)}"),
+          ], mainAxisAlignment: MainAxisAlignment.center,)
+        : Text(formatDuration(_duration));
+  }
+
   void _changeDuration(BuildContext context) {
     final initialDuration = _duration;
     Duration? _tempSelectedDuration;
@@ -400,6 +421,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
       final isSelected = _selected.contains(slice);
+      final isFinalSlice = slice == MAX_SLICE;
       final list = _selectedList();
       final indexOfSelected = list.indexOf(slice) + 1;
       var radius = isTouched ? r * 1.3 : r;
@@ -418,7 +440,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final sliceDuration = _getDelay(slice);
 
       return PieChartSectionData(
-        color: slice == MAX_SLICE
+        color: isFinalSlice
             ? ACCENT_COLOR
             : (isPassed || isInTransition ? FOREGROUND_COLOR : BUTTON_COLOR).withOpacity(
             isSelected
@@ -427,8 +449,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ),
         value: value,
         radius: radius,
-        showTitle: isTouched || isSelected,
-        title: formatDuration(sliceDuration),
+        showTitle: isTouched || isSelected || isFinalSlice,
+        title: formatDuration(sliceDuration, withLineBreak: true),
         titlePositionPercentageOffset: 1.25,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
       );
