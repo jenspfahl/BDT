@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 
+import '../model/BreakDown.dart';
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
@@ -30,6 +31,7 @@ class BDTScaffold extends StatefulWidget {
 }
 
 enum TimerMode {RELATIVE, ABSOLUTE}
+enum Direction {ASC, DESC}
 
 class BDTScaffoldState extends State<BDTScaffold> {
 
@@ -46,12 +48,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   late List<bool> _timerModeSelection;
   TimerMode _timerMode = TimerMode.RELATIVE;
+  Direction _direction = Direction.ASC;
 
+  BreakDown? _selectedBreakDown = null;
 
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
   Timer? _runTimer;
-  Timer? _absoluteRefreshUiTimer;
   DateTime? _startedAt;
 
 
@@ -132,8 +135,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(END);
   }
 
-  static Function signalFunction(int signal) {
-    switch (signal) {
+  Function _signalFunction(int signal) {
+    int s = signal;
+    if (_direction == Direction.DESC) {
+      s = _selectedSlices.length + 1 - signal;
+    }
+    debugPrint("signal=$signal s=$s");
+    switch (s) {
       case 1: return signal1;
       case 2: return signal2;
       case 3: return signal3;
@@ -177,7 +185,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _notificationService.init();
     _timerModeSelection = List.generate(TimerMode.values.length, (index) => index == _timerMode.index);
 
-    _absoluteRefreshUiTimer = Timer.periodic(Duration(minutes: 1), (_) {
+    Timer.periodic(Duration(minutes: 1), (_) {
       setState((){
         debugPrint("refresh ui values");
       });
@@ -251,9 +259,21 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   toastError(context, "Stop running first");
                   return;
                 }
-                setState(() => _selectedSlices.clear());
+                setState(() {
+                  _selectedSlices.clear();
+                  _selectedBreakDown = null;
+                });
               },
               icon: Icon(MdiIcons.restart)),
+          IconButton(
+              onPressed: () {
+                if (_isRunning()) {
+                  toastError(context, "Stop running first");
+                  return;
+                }
+                setState(() => _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC));
+              },
+              icon: Icon(Icons.sync_alt)),
           IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
@@ -261,6 +281,32 @@ class BDTScaffoldState extends State<BDTScaffold> {
       ),
       body: Column(
         children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+            child: DropdownButtonFormField<BreakDown?>(
+              onTap: () => FocusScope.of(context).unfocus(),
+              value: _selectedBreakDown,
+              hint: Text("Break downs"),
+              iconEnabledColor: BUTTON_COLOR,
+              icon: Icon(Icons.av_timer),
+              isExpanded: true,
+              onChanged:  _isRunning() ? null : (value) {
+                setState(() {
+                  _selectedBreakDown = value;
+                  _selectedSlices.clear();
+                  if (value != null) {
+                    _selectedSlices.addAll(value.slices.toList());
+                  }
+                });
+              },
+              items: predefinedBreakDowns.map((BreakDown breakDown) {
+                return DropdownMenuItem(
+                  value: breakDown,
+                  child: Text(breakDown.name),
+                );
+              }).toList(),
+            ),
+          ),
           ToggleButtons(
             children: [
               Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
@@ -365,7 +411,25 @@ class BDTScaffoldState extends State<BDTScaffold> {
         child: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
         onPressed: () {
           if (_isRunning()) {
-            _stopRun(context);
+            if (_isOver()) {
+              _stopRun(context);
+            }
+            else {
+              showConfirmationDialog(
+                context,
+                "Stop run",
+                "Really want to stop the run befor it is finished?",
+                icon: const Icon(MdiIcons.stopCircle),
+                okPressed: () {
+                  Navigator.pop(
+                      context); // dismiss dialog, should be moved in Dialogs.dart somehow
+                  _stopRun(context);
+                },
+                cancelPressed: () =>
+                    Navigator.pop(
+                        context), // dismiss dialog, should be moved in Dialogs.dart somehow
+              );
+            }
           }
           else {
             if (_isOver()) {
@@ -562,7 +626,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         title: _showSliceTitle(slice),
         titleStyle: isFinalSlice ? TextStyle(fontSize: 14) : TextStyle(fontSize: 10),
         titlePositionPercentageOffset: isTouched ? 0.9 : 1.2,
-        badgeWidget: isSelected ? _getIconForNumber(indexOfSelected) : null,
+        badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
   }
@@ -585,8 +649,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
-  Widget? _getIconForNumber(int number) {
-    switch (number) {
+  Widget? _getIconForNumber(int number, int count) {
+    int n = number;
+    if (_direction == Direction.DESC && number != 0) {
+      n = count + 1 - number;
+    }
+    switch (n) {
       case 0: return Icon(MdiIcons.numeric0BoxOutline);
       case 1: return Icon(MdiIcons.numeric1BoxOutline);
       case 2: return Icon(MdiIcons.numeric2BoxOutline);
@@ -639,7 +707,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     for (int i=0; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
-      Function f = signalFunction(signal);
+      Function f = _signalFunction(signal);
       AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _getDelay(slice), signal, f)
           .then((value) => debugPrint("shot $signal on $slice: $value"));
