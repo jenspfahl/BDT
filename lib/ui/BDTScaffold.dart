@@ -418,7 +418,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               showConfirmationDialog(
                 context,
                 "Stop run",
-                "Really want to stop the run befor it is finished?",
+                "Really want to stop the run before it is finished?",
                 icon: const Icon(MdiIcons.stopCircle),
                 okPressed: () {
                   Navigator.pop(
