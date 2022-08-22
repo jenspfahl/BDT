@@ -252,27 +252,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
               onPressed: () {},
               icon: Icon(Icons.volume_up_rounded)),
           IconButton(
-              onPressed: () {
-                if (_isRunning()) {
-                  toastError(context, "Stop running first");
-                  return;
-                }
-                setState(() {
-                  _selectedSlices.clear();
-                  _selectedBreakDown = null;
-                });
-              },
-              icon: Icon(MdiIcons.restart)),
-          IconButton(
-              onPressed: () {
-                if (_isRunning()) {
-                  toastError(context, "Stop running first");
-                  return;
-                }
-                setState(() => _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC));
-              },
-              icon: Icon(Icons.sync_alt)),
-          IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
         ],
@@ -287,7 +266,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 Flexible(
                     child: IconButton(
                       onPressed: () => _moveBreakDownSelectionToNext(),
-                      color: BUTTON_COLOR,
+                      color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : BUTTON_COLOR,
                       icon: Icon(Icons.arrow_back_ios),
                     )),
                 Expanded(
@@ -326,7 +305,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   ),
                 ),
                 Flexible(child: IconButton(
-                  color: BUTTON_COLOR,
+                  color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : BUTTON_COLOR,
                   onPressed: () => _moveBreakDownSelectionToPrevious(),
                   icon: Icon(Icons.arrow_forward_ios),
                 )),
@@ -335,11 +314,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onPanUpdate: _switchTimerMode,
+            onHorizontalDragEnd: _switchTimerMode,
             child: CupertinoSlidingSegmentedControl<TimerMode>(
               backgroundColor: Colors.black,
               thumbColor: BUTTON_COLOR,
-              padding: EdgeInsets.all(4),
+              padding: EdgeInsets.all(8),
               children: <TimerMode, Widget> {
                 TimerMode.RELATIVE: Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
                 TimerMode.ABSOLUTE: Icon(Icons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
@@ -353,10 +332,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
             ),
           ),
           AspectRatio(
-            aspectRatio: 1,
+            aspectRatio: 0.97,
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
-              onPanUpdate: _switchTimerMode,
+              onHorizontalDragEnd: _switchTimerMode,
               child: Stack(
                 children: [
                   PieChart(
@@ -419,6 +398,45 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       },
                     ),
                   ),
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: IconButton(
+                      color: BUTTON_COLOR,
+                      onPressed: () {
+                        if (_isRunning()) {
+                          toastError(context, "Stop running first");
+                          return;
+                        }
+                        if (_selectedSlices.isEmpty) {
+                          toastInfo(context, "No breaks to reset");
+                        }
+                        else {
+                          setState(() {
+                            _selectedSlices.clear();
+                            _selectedBreakDown = null;
+                          });
+                        }
+                      },
+                      icon: Icon(MdiIcons.restart)),
+                  ),
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                      color: BUTTON_COLOR,
+                      onPressed: () {
+                        if (_isRunning()) {
+                          toastError(context, "Stop running first");
+                          return;
+                        }
+                        setState(() {
+                          _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
+                          toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
+                        });
+                      },
+                      icon: Icon(Icons.swap_vert)),
+                  ),
                 ],
               ),
             ),
@@ -434,20 +452,40 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
-  void _switchTimerMode(details) {
+  void _switchTimerMode(DragEndDetails details) {
     // Swiping in right direction.
-    if (details.delta.dx > 0) {
-      setState(() => _timerMode = TimerMode.ABSOLUTE);
+    if (details.velocity.pixelsPerSecond.dx > 0) {
+      setState(() => _timerMode = TimerMode.RELATIVE);
     }
 
     // Swiping in left direction.
-    if (details.delta.dx < 0) {
-      setState(() => _timerMode = TimerMode.RELATIVE);
+    if (details.velocity.pixelsPerSecond.dx < 0) {
+      setState(() => _timerMode = TimerMode.ABSOLUTE);
     }
   }
 
-  void _moveBreakDownSelectionToPrevious() {
+  bool _isBreakDownSelectionAtStart() {
     if (predefinedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+          .indexOf(_selectedBreakDown!);
+
+      return currIndex <= 0;
+    }
+    return false;
+  }
+
+  bool _isBreakDownSelectionAtEnd() {
+    if (predefinedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+          .indexOf(_selectedBreakDown!);
+
+      return currIndex == predefinedBreakDowns.length - 1;
+    }
+    return false;
+  }
+
+  void _moveBreakDownSelectionToPrevious() {
+    if (!_isRunning() && predefinedBreakDowns.isNotEmpty) {
       var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
           .indexOf(_selectedBreakDown!);
 
@@ -462,7 +500,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   void _moveBreakDownSelectionToNext() {
-    if (predefinedBreakDowns.isNotEmpty) {
+    if (!_isRunning() && predefinedBreakDowns.isNotEmpty) {
       var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
           .indexOf(_selectedBreakDown!);
 
@@ -493,9 +531,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
       backgroundColor: BUTTON_COLOR,
       baseColor: PRIMARY_COLOR,
       highlightedColor: ACCENT_COLOR,
-      height: 50,
+      height: 48,
       width: 200,
-      buttonSize: 50,
+      buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
       label: Text("➡️  Swipe to Stop",
@@ -557,7 +595,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return Text("$remainingBreaks breaks left");
     }
     else {
-      return Text("${_selectedSlices.length} breaks selected");
+      return Text("${_selectedSlices.length} breaks placed");
     }
   }
 
@@ -767,7 +805,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               : isInTransition
                 ? TextStyle(fontSize: 8)
                 : TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : 1.2,
+        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? 1.35 : 1.2,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
