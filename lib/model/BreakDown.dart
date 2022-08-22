@@ -1,14 +1,19 @@
 import 'dart:collection';
 
-class BreakDown {
+class BreakDown implements Comparable<BreakDown> {
 
-  int? id;
+  int id;
   String name;
   Set<int> slices = HashSet<int>();
 
   BreakDown(this.id, this.name, this.slices);
 
   BreakDown.data(int id, String name, List<int> slices) : this(id * -10000, name, slices.toSet());
+
+  @override
+  int compareTo(BreakDown other) {
+    return id.compareTo(other.id);
+  }
 
 }
 

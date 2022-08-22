@@ -1,19 +1,19 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/BDTApp.dart';
-import 'package:bdt/ui/HoldOnButton.dart';
 import 'package:bdt/ui/utils.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:slider_button/slider_button.dart';
 
 import '../model/BreakDown.dart';
 import '../service/LocalNotificationService.dart';
@@ -46,7 +46,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   final _selectedSlices = HashSet<int>();
 
-  late List<bool> _timerModeSelection;
   TimerMode _timerMode = TimerMode.RELATIVE;
   Direction _direction = Direction.ASC;
 
@@ -183,7 +182,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     super.initState();
     _time = _deriveTime();
     _notificationService.init();
-    _timerModeSelection = List.generate(TimerMode.values.length, (index) => index == _timerMode.index);
 
     Timer.periodic(Duration(minutes: 1), (_) {
       setState((){
@@ -282,104 +280,130 @@ class BDTScaffoldState extends State<BDTScaffold> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-            child: DropdownButtonFormField<BreakDown?>(
-              onTap: () => FocusScope.of(context).unfocus(),
-              value: _selectedBreakDown,
-              hint: Text("Break downs"),
-              iconEnabledColor: BUTTON_COLOR,
-              icon: Icon(Icons.av_timer),
-              isExpanded: true,
-              onChanged:  _isRunning() ? null : (value) {
-                setState(() {
-                  _selectedBreakDown = value;
-                  _selectedSlices.clear();
-                  if (value != null) {
-                    _selectedSlices.addAll(value.slices.toList());
-                  }
-                });
-              },
-              items: predefinedBreakDowns.map((BreakDown breakDown) {
-                return DropdownMenuItem(
-                  value: breakDown,
-                  child: Text(breakDown.name),
-                );
-              }).toList(),
+            padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                    child: IconButton(
+                      onPressed: () => _moveBreakDownSelectionToNext(),
+                      color: BUTTON_COLOR,
+                      icon: Icon(Icons.arrow_back_ios),
+                    )),
+                Expanded(
+                  flex: 9,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragEnd: (details) {
+                      // Swiping in left direction.
+                      if (details.velocity.pixelsPerSecond.dx < 0) {
+                        _moveBreakDownSelectionToPrevious();
+                      }
+
+                      // Swiping in right direction.
+                      if (details.velocity.pixelsPerSecond.dx > 0) {
+                        _moveBreakDownSelectionToNext();
+                      }
+                    },
+                    child: DropdownButtonFormField<BreakDown?>(
+                      focusColor: ACCENT_COLOR,
+                      onTap: () => FocusScope.of(context).unfocus(),
+                      value: _selectedBreakDown,
+                      hint: Text("Break downs"),
+                      iconEnabledColor: BUTTON_COLOR,
+                      icon: Icon(Icons.av_timer),
+                      isExpanded: true,
+                      onChanged:  _isRunning() ? null : (value) {
+                        _updateSelectedSlices(value);
+                      },
+                      items: predefinedBreakDowns.map((BreakDown breakDown) {
+                        return DropdownMenuItem(
+                          value: breakDown,
+                          child: Text(breakDown.name),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                Flexible(child: IconButton(
+                  color: BUTTON_COLOR,
+                  onPressed: () => _moveBreakDownSelectionToPrevious(),
+                  icon: Icon(Icons.arrow_forward_ios),
+                )),
+              ],
             ),
           ),
-          ToggleButtons(
-            children: [
-              Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
-              Icon(MdiIcons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
-            ],
-            isSelected: _timerModeSelection,
-            onPressed: (int index) {
-              setState(() {
-                _timerModeSelection[_timerMode.index] = false;
-                _timerModeSelection[index] = true;
-                _timerMode = TimerMode.values.elementAt(index);
-              });
-            },
-            renderBorder: true,
-            borderWidth: 1.5,
-            borderRadius: BorderRadius.all(Radius.circular(29)),
-            borderColor: BUTTON_COLOR,
-            color: BUTTON_COLOR,
-            selectedBorderColor: ACCENT_COLOR,
-            highlightColor: FOREGROUND_COLOR,
-            selectedColor: ACCENT_COLOR,
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanUpdate: _switchTimerMode,
+            child: CupertinoSlidingSegmentedControl<TimerMode>(
+              backgroundColor: Colors.black,
+              thumbColor: BUTTON_COLOR,
+              padding: EdgeInsets.all(4),
+              children: <TimerMode, Widget> {
+                TimerMode.RELATIVE: Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
+                TimerMode.ABSOLUTE: Icon(Icons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
+              },
+              onValueChanged: (value) {
+                if (value != null) {
+                  setState(() => _timerMode = value);
+                }
+              },
+              groupValue: _timerMode,
+            ),
           ),
           AspectRatio(
             aspectRatio: 1,
-            child: Stack(
-              children: [
-                PieChart(
-                  PieChartData(
-                      pieTouchData: PieTouchData(
-                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                            setState(() {
-                              if (_isRunning()) {
-                                return;
-                              }
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                _touchedIndex = -1;
-                                return;
-                              }
-                              _touchedIndex =
-                                  (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
-                              debugPrint("_touchedIndex=$_touchedIndex");
-                              if (_touchedIndex != 0) {
-                                if (_selectedSlices.contains(_touchedIndex)) {
-                                  _selectedSlices.remove(_touchedIndex);
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanUpdate: _switchTimerMode,
+              child: Stack(
+                children: [
+                  PieChart(
+                    PieChartData(
+                        pieTouchData: PieTouchData(
+                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                              setState(() {
+                                if (_isRunning()) {
+                                  return;
                                 }
-                                else {
-                                  if (_selectedSlices.length < 10) {
-                                    _selectedSlices.add(_touchedIndex);
+                                if (!event.isInterestedForInteractions ||
+                                    pieTouchResponse == null ||
+                                    pieTouchResponse.touchedSection == null) {
+                                  _touchedIndex = -1;
+                                  return;
+                                }
+                                _touchedIndex =
+                                    (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
+                                debugPrint("_touchedIndex=$_touchedIndex");
+                                if (_touchedIndex != 0) {
+                                  if (_selectedSlices.contains(_touchedIndex)) {
+                                    _selectedSlices.remove(_touchedIndex);
                                   }
                                   else {
-                                    toastError(context, "max 10 breaks allowed");
+                                    if (_selectedSlices.length < 10) {
+                                      _selectedSlices.add(_touchedIndex);
+                                    }
+                                    else {
+                                      toastError(context, "max 10 breaks allowed");
+                                    }
                                   }
                                 }
-                              }
-                              debugPrint("_selected=$_selectedSlices");
+                                debugPrint("_selected=$_selectedSlices");
 
-                            });
-                          }),
-                      borderData: FlBorderData(
-                          show: false
-                      ),
-                      sectionsSpace: 1,
-                      centerSpaceRadius: CENTER_RADIUS,
-                      sections: _createSections(),
-                      startDegreeOffset: 270 + 2.5
+                              });
+                            }),
+                        borderData: FlBorderData(
+                            show: false
+                        ),
+                        sectionsSpace: 1,
+                        centerSpaceRadius: CENTER_RADIUS,
+                        sections: _createSections(),
+                        startDegreeOffset: 270 + 2.5
+                    ),
+                    swapAnimationDuration: Duration(milliseconds: 75),
                   ),
-                  swapAnimationDuration: Duration(milliseconds: 75),
-                ),
-                Visibility(
-                  visible: true,
-                  child: Center(
+                  Center(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
                       child: _createCycleWidget(),
@@ -395,8 +419,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       },
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Center(
@@ -404,43 +428,120 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: BUTTON_COLOR,
-        splashColor: FOREGROUND_COLOR,
-        foregroundColor: ACCENT_COLOR,
-        child: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-        onPressed: () {
-          if (_isRunning()) {
-            if (_isOver()) {
-              _stopRun(context);
-            }
-            else {
-              showConfirmationDialog(
-                context,
-                "Stop run",
-                "Really want to stop the run before it is finished?",
-                icon: const Icon(MdiIcons.stopCircle),
-                okPressed: () {
-                  Navigator.pop(
-                      context); // dismiss dialog, should be moved in Dialogs.dart somehow
-                  _stopRun(context);
-                },
-                cancelPressed: () =>
-                    Navigator.pop(
-                        context), // dismiss dialog, should be moved in Dialogs.dart somehow
-              );
-            }
+      floatingActionButton: _isRunning() && !_isOver()
+          ? _createSwipeToStopButton(context)
+          : _createStartButton(context),
+    );
+  }
+
+  void _switchTimerMode(details) {
+    // Swiping in right direction.
+    if (details.delta.dx > 0) {
+      setState(() => _timerMode = TimerMode.ABSOLUTE);
+    }
+
+    // Swiping in left direction.
+    if (details.delta.dx < 0) {
+      setState(() => _timerMode = TimerMode.RELATIVE);
+    }
+  }
+
+  void _moveBreakDownSelectionToPrevious() {
+    if (predefinedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+          .indexOf(_selectedBreakDown!);
+
+      if (currIndex != -1) {
+        currIndex = min(currIndex + 1, predefinedBreakDowns.length - 1);
+      }
+      else {
+        currIndex = 0;
+      }
+      _updateSelectedSlices(predefinedBreakDowns[currIndex]);
+    }
+  }
+
+  void _moveBreakDownSelectionToNext() {
+    if (predefinedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+          .indexOf(_selectedBreakDown!);
+
+      if (currIndex != -1) {
+        currIndex = max(currIndex - 1, 0);
+      }
+      _updateSelectedSlices(predefinedBreakDowns[currIndex]);
+    }
+  }
+
+  void _updateSelectedSlices(BreakDown? value) {
+    setState(() {
+      _selectedBreakDown = value;
+      _selectedSlices.clear();
+      if (value != null) {
+        _selectedSlices.addAll(value.slices.toList());
+      }
+    });
+  }
+
+  Widget _createSwipeToStopButton(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final FloatingActionButtonThemeData floatingActionButtonTheme = theme.floatingActionButtonTheme;
+    return SliderButton(
+      action: () {
+        _stopRun(context);
+      },
+      backgroundColor: BUTTON_COLOR,
+      baseColor: PRIMARY_COLOR,
+      highlightedColor: ACCENT_COLOR,
+      height: 50,
+      width: 200,
+      buttonSize: 50,
+      shimmer: false,
+      dismissThresholds: 0.99,
+      label: Text("➡️  Swipe to Stop",
+          style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ACCENT_COLOR)),
+      icon: Icon(Icons.stop, color: BUTTON_COLOR),
+    );
+  }
+
+  Widget _createStartButton(BuildContext context) {
+    return FloatingActionButton.extended(
+      backgroundColor: BUTTON_COLOR,
+      splashColor: FOREGROUND_COLOR,
+      foregroundColor: ACCENT_COLOR,
+      icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
+      label: Text(_isOver() ? "Reset" : _isRunning() ? "Stop" : "Start"),
+      onPressed: () {
+        if (_isRunning()) {
+          if (_isOver()) {
+            _stopRun(context);
           }
           else {
-            if (_isOver()) {
-              toastError(context, "Timer time still reached, set it new");
-            }
-            else {
-              _startRun(context);
-            }
+            showConfirmationDialog(
+              context,
+              "Stop run",
+              "Really want to stop the run before it is finished?",
+              icon: const Icon(MdiIcons.stopCircle),
+              okPressed: () {
+                Navigator.pop(
+                    context); // dismiss dialog, should be moved in Dialogs.dart somehow
+                _stopRun(context);
+              },
+              cancelPressed: () =>
+                  Navigator.pop(
+                      context), // dismiss dialog, should be moved in Dialogs.dart somehow
+            );
           }
-        },
-      ),
+        }
+        else {
+          if (_isOver()) {
+            toastError(context, "Timer time still reached, set it new");
+          }
+          else {
+            _startRun(context);
+          }
+        }
+      },
     );
   }
 
@@ -476,12 +577,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (_isOver()) {
       return Column(
         children: [
-          Text("${formatDuration(_duration)}"),
+          Text("${formatDuration(_duration)}",
+            style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
           ),
           Text("${formatDuration(Duration.zero)}"),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text("${formatDuration(_duration)}",
+              style: TextStyle(fontSize: 8)),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -489,12 +597,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
     else if (_isRunning()) {
       return Column(
         children: [
-          Text("${formatDuration(_getDelta()!)}"),
+          Text("${formatDuration(_getDelta()!)}",
+            style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
           ),
           Text("${formatDuration(_getRemaining()!)}"),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
+          Text("${formatDuration(_duration)}",
+              style: TextStyle(fontSize: 8)),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -509,12 +624,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (_isOver()) {
       return Column(
         children: [
+          Text(
+            formatToDateTime(_startedAt!, withSeconds: true),
+            style: TextStyle(fontSize: 8),
+          ),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
           Text(formatToDateTime(_time, withSeconds: true)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
           ),
-          Text(formatToDateTime(_startedAt!, withSeconds: true)),
+          Text(
+            formatToDateTime(_time, withSeconds: true),
+            style: TextStyle(fontSize: 8),
+          ),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -522,12 +648,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
     else if (_isRunning()) {
       return Column(
         children: [
+          Text(
+            formatToDateTime(_startedAt!, withSeconds: true),
+            style: TextStyle(fontSize: 8),
+          ),
+          SizedBox(
+              width: 80,
+              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+          ),
           Text(formatToDateTime(DateTime.now(), withSeconds: true)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
           ),
-          Text(formatToDateTime(_startedAt!, withSeconds: true)),
+          Text(
+            formatToDateTime(_time, withSeconds: true),
+            style: TextStyle(fontSize: 8),
+          ),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -622,19 +759,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ),
         value: value,
         radius: radius,
-        showTitle: isTouched || isSelected || isFinalSlice,
-        title: _showSliceTitle(slice),
-        titleStyle: isFinalSlice ? TextStyle(fontSize: 14) : TextStyle(fontSize: 10),
+        showTitle: isTouched || isSelected || isFinalSlice || isInTransition,
+        title: _showSliceTitle(slice, isInTransition),
+        titleStyle:
+          isFinalSlice
+              ? TextStyle(fontSize: 14)
+              : isInTransition
+                ? TextStyle(fontSize: 8)
+                : TextStyle(fontSize: 10),
         titlePositionPercentageOffset: isTouched ? 0.9 : 1.2,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
   }
 
-  String _showSliceTitle(int slice) {
+  String _showSliceTitle(int slice, bool showCurrent) {
     if (_timerMode == TimerMode.RELATIVE) {
       final sliceDuration = _getDelay(slice);
-      return formatDuration(sliceDuration, withLineBreak: true);
+      return formatDuration(
+          showCurrent ? _getDelta()??sliceDuration : sliceDuration,
+          withLineBreak: true);
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
       final nowOrStartedAt = _startedAt ?? DateTime.now();
@@ -642,7 +786,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final sliceDuration = Duration(seconds: (delta.inSeconds * slice / MAX_SLICE).round());
       debugPrint("nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration");
       final sliceTime = roundToMinute(nowOrStartedAt.add(sliceDuration));
-      return formatToDateTime(sliceTime, withLineBreak: true);
+      return formatToDateTime(
+          showCurrent ? DateTime.now() : sliceTime,
+          withLineBreak: true);
     }
     else {
       throw Exception("unknown timerMode " + _timerMode.toString());
