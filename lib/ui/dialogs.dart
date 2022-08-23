@@ -1,3 +1,4 @@
+import 'package:bdt/ui/SliderDialog.dart';
 import 'package:flutter/material.dart';
 
 import 'ChoiceWidget.dart';
@@ -40,6 +41,25 @@ void showConfirmationDialog(BuildContext context, String title, String message,
     builder: (BuildContext context) {
       return alert;
     },
+  );
+}
+
+Future<double?> showSliderDialog(BuildContext context, {Key? key,
+  String? title,
+  required double initialSelection,
+  required double min,
+  required double max,
+  int? divisions,
+}) {
+  return showDialog<double>(
+    context: context,
+    builder: (context) => SliderDialog(
+      title: title,
+      min: min,
+      max: max,
+      initialSelection: initialSelection,
+      divisions: divisions,
+    )
   );
 }
 

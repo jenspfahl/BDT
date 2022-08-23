@@ -48,10 +48,10 @@ dependencies:
   flutter_translate: ^4.0.2
   android_alarm_manager_plus: ^2.0.6
   vibration: ^1.7.4-nullsafety.0
-  flutter_beep: ^1.0.0
   material_design_icons_flutter: ^5.0.6595
   slider_button: ^2.0.0
-
+  flutter_sound_bridge:
+    path: ../flutter_sound_bridge
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

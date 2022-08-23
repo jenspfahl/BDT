@@ -7,10 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PreferenceService implements ITranslatePreferences {
 
   static final PREF_LANGUAGE_SELECTION = "common/languageSelection";
-
-  static final PREF_SHOW_TIME_OF_DAY_AS_TEXT = "common/showTimeOfDayAsText";
-  
-  static final PREF_SHOW_WEEKDAYS = "common/showWeekdays";
   static final PREF_DATE_FORMAT_SELECTION = "common/dateFormatSelection";
   
   static final PREF_SHOW_ACTION_NOTIFICATIONS = "common/showActionNotifications";
@@ -23,18 +19,6 @@ class PreferenceService implements ITranslatePreferences {
   }
 
   PreferenceService._internal() {
-    getBool(PreferenceService.PREF_SHOW_TIME_OF_DAY_AS_TEXT)
-        .then((value) {
-          if (value != null) {
-            showTimeOfDayAsText = value;
-          }
-    }); 
-    getBool(PreferenceService.PREF_SHOW_WEEKDAYS)
-        .then((value) {
-          if (value != null) {
-            showWeekdays = value;
-          }
-    });
     getInt(PreferenceService.PREF_DATE_FORMAT_SELECTION)
         .then((value) {
       if (value != null) {
@@ -43,8 +27,6 @@ class PreferenceService implements ITranslatePreferences {
     });
   }
 
-  bool showTimeOfDayAsText = true;
-  bool showWeekdays = true;
   int dateFormatSelection = 1;
   int languageSelection = 0;
 
@@ -74,7 +56,6 @@ class PreferenceService implements ITranslatePreferences {
 
   Future<bool> setInt(String key, int value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-
     return prefs.setInt(key, value);
   }
 
@@ -117,6 +98,11 @@ class PreferenceService implements ITranslatePreferences {
       case 2: return Locale('de');
     }
     return null;
+  }
+
+  Future<void> reload() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
   }
 
 }

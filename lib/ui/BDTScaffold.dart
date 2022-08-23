@@ -19,6 +19,7 @@ import '../model/BreakDown.dart';
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
+import '../util/prefs.dart';
 import 'dialogs.dart';
 
 
@@ -55,6 +56,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   final _preferenceService = PreferenceService();
   Timer? _runTimer;
   DateTime? _startedAt;
+  int _volume = 100;
 
 
 
@@ -173,15 +175,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _notificationService.showNotification("", id, "BDT", msg, "bdt_signals", keepAsProgress, "");
   }
 
-  static Future<bool> canNotify(PreferenceService preferenceService) async {
-    return await preferenceService.getBool("CAN_NOTIFY") == true;
-  }
-
   @override
   void initState() {
     super.initState();
     _time = _deriveTime();
     _notificationService.init();
+
+    getVolume(_preferenceService).then((value) {
+      if (value != null) {
+        setState(() => _volume = value);
+      }
+    });
 
     Timer.periodic(Duration(minutes: 1), (_) {
       setState((){
@@ -249,8 +253,22 @@ class BDTScaffoldState extends State<BDTScaffold> {
         title: Text("BDT"),
         actions: [
           IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.volume_up_rounded)),
+              onPressed: () async {
+                final volume = await showSliderDialog(context,
+                  title: "Volume",
+                  min: 0,
+                  max: 100,
+                  initialSelection: _volume.toDouble(),
+                );
+                if (volume != null) {
+                  _volume = volume.round();
+                  setVolume(_preferenceService, _volume);
+                  setState(() {}); // update
+                }
+              },
+              icon: Icon(_volume == 0
+                  ? Icons.volume_off
+                  : _volume <= 10 ? Icons.volume_mute : _volume <= 66 ? Icons.volume_down_rounded : Icons.volume_up_rounded)),
           IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
@@ -399,8 +417,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     ),
                   ),
                   Positioned(
-                    top: 10,
-                    left: 10,
+                    top: 20,
+                    left: 20,
                     child: IconButton(
                       color: BUTTON_COLOR,
                       onPressed: () {
@@ -421,8 +439,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       icon: Icon(MdiIcons.restart)),
                   ),
                   Positioned(
-                    top: 10,
-                    right: 10,
+                    top: 20,
+                    right: 20,
                     child: IconButton(
                       color: BUTTON_COLOR,
                       onPressed: () {
@@ -882,8 +900,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     else if (_timerMode == TimerMode.ABSOLUTE) {
       setState(() => _duration = startedAt.difference(_time).abs());
     }
-
-    SignalService.makeSignalPattern(START);
+    SignalService.makeSignalPattern(START,
+        volume: _volume, preferenceService: _preferenceService);
     notify(0, "Timer started", true, preferenceService: _preferenceService, notificationService: _notificationService);
 
     final list = _selectedList();
@@ -909,7 +927,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     debugPrint("stopped");
     _stopTimer();
     _notificationService.cancelAllNotifications();
-    SignalService.makeSignalPattern(CANCEL);
+    SignalService.makeSignalPattern(CANCEL,
+        volume: _volume, preferenceService: _preferenceService);
     for (int slice = 1; slice <= MAX_SLICE; slice++) {
       AndroidAlarmManager.cancel(slice);
     }
