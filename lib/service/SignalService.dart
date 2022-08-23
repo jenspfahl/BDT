@@ -49,26 +49,24 @@ class SignalService {
         case "|" : await makeShortSignal(); break;
         case "-" : await makeNormalSignal(); break;
         case "_" : await makeLongSignal(); break;
-        case " " : await pause(Duration(milliseconds: 500)); break;
+        case " " : await pause(Duration(milliseconds: 1000)); break;
       }
     }
   }
 
   static makeShortSignal() async {
     await makeSignal(Duration(milliseconds: 50));
-    await pause(Duration(milliseconds: 350));
+    await pause(Duration(milliseconds: 300));
   }
 
   static makeNormalSignal() async {
-    await pause(Duration(milliseconds: 200));
-    await makeSignal(Duration(milliseconds: 300));
-    await pause(Duration(milliseconds: 200));
+    await makeSignal(Duration(milliseconds: 400));
+    await pause(Duration(milliseconds: 400));
   }
 
   static makeLongSignal() async {
-    await pause(Duration(milliseconds: 200));
     await makeSignal(Duration(milliseconds: 1000));
-    await pause(Duration(milliseconds: 200));
+    await pause(Duration(milliseconds: 400));
   }
 
   static makeSignal(Duration duration) async {

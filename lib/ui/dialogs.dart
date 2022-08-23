@@ -1,4 +1,4 @@
-import 'package:bdt/ui/SliderDialog.dart';
+import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/material.dart';
 
 import 'ChoiceWidget.dart';
@@ -44,21 +44,15 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   );
 }
 
-Future<double?> showSliderDialog(BuildContext context, {Key? key,
-  String? title,
+Future<double?> showVolumeSliderDialog(BuildContext context, {Key? key,
   required double initialSelection,
-  required double min,
-  required double max,
-  int? divisions,
+  Function(double)? onChangedEnd,
 }) {
   return showDialog<double>(
     context: context,
-    builder: (context) => SliderDialog(
-      title: title,
-      min: min,
-      max: max,
+    builder: (context) => VolumeSliderDialog(
       initialSelection: initialSelection,
-      divisions: divisions,
+      onChangedEnd: onChangedEnd,
     )
   );
 }

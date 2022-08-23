@@ -20,6 +20,7 @@ import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
+import 'VolumeSliderDialog.dart';
 import 'dialogs.dart';
 
 
@@ -56,7 +57,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   final _preferenceService = PreferenceService();
   Timer? _runTimer;
   DateTime? _startedAt;
-  int _volume = 100;
+  int _volume = MAX_VOLUME;
 
 
 
@@ -254,21 +255,21 @@ class BDTScaffoldState extends State<BDTScaffold> {
         actions: [
           IconButton(
               onPressed: () async {
-                final volume = await showSliderDialog(context,
-                  title: "Volume",
-                  min: 0,
-                  max: 100,
+                final volume = await showVolumeSliderDialog(context,
                   initialSelection: _volume.toDouble(),
+                  onChangedEnd: (value) {
+                    SignalService.setSignalVolume(value.round());
+                    SignalService.makeShortSignal();
+                  }
                 );
                 if (volume != null) {
                   _volume = volume.round();
                   setVolume(_preferenceService, _volume);
                   setState(() {}); // update
                 }
+                SignalService.setSignalVolume(_volume);
               },
-              icon: Icon(_volume == 0
-                  ? Icons.volume_off
-                  : _volume <= 10 ? Icons.volume_mute : _volume <= 66 ? Icons.volume_down_rounded : Icons.volume_up_rounded)),
+              icon: createVolumeIcon(_volume)),
           IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
@@ -403,7 +404,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   Center(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      child: _createCycleWidget(),
+                      child: SizedBox(
+                        width: CENTER_RADIUS * 1.5,
+                        height: CENTER_RADIUS * 1.5,
+                        child: Center(child: _createCycleWidget())),
                       onTap: () {
                         if (!_isRunning()) {
                           if (_timerMode == TimerMode.RELATIVE) {
@@ -610,7 +614,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .where((index) => index >= _passedIndex)
           .toList()
           .length;
-      return Text("$remainingBreaks breaks left");
+      return Text("$remainingBreaks of ${_selectedSlices.length} breaks left");
     }
     else {
       return Text("${_selectedSlices.length} breaks placed");
