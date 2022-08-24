@@ -14,6 +14,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:slider_button/slider_button.dart';
+import 'package:sound_mode/sound_mode.dart';
+import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 
 import '../model/BreakDown.dart';
 import '../service/LocalNotificationService.dart';
@@ -58,6 +60,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Timer? _runTimer;
   DateTime? _startedAt;
   int _volume = MAX_VOLUME;
+  RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
 
 
@@ -188,8 +191,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
     });
 
-    Timer.periodic(Duration(minutes: 1), (_) {
+    Timer.periodic(Duration(seconds: 15), (_) {
       setState((){
+        SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
         debugPrint("refresh ui values");
       });
     });
@@ -255,6 +259,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
         actions: [
           IconButton(
               onPressed: () async {
+                _ringerStatus = await SoundMode.ringerModeStatus;
+                setState((){});
+                if (_isDeviceMuted()) {
+                  toastInfo(context, "Device is muted. Unmute first to set volume.");
+                  return;
+                }
+
                 final volume = await showVolumeSliderDialog(context,
                   initialSelection: _volume.toDouble(),
                   onChangedEnd: (value) {
@@ -269,7 +280,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 }
                 SignalService.setSignalVolume(_volume);
               },
-              icon: createVolumeIcon(_volume)),
+              icon: _isDeviceMuted() ? Icon(Icons.volume_off) : createVolumeIcon(_volume)),
           IconButton(
               onPressed: () {},
               icon: Icon(Icons.settings)),
@@ -473,6 +484,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
           : _createStartButton(context),
     );
   }
+
+  bool _isDeviceMuted() => _ringerStatus == RingerModeStatus.silent || _ringerStatus == RingerModeStatus.vibrate;
 
   void _switchTimerMode(DragEndDetails details) {
     // Swiping in right direction.

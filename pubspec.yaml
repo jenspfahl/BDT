@@ -50,6 +50,7 @@ dependencies:
   vibration: ^1.7.4-nullsafety.0
   material_design_icons_flutter: ^5.0.6595
   slider_button: ^2.0.0
+  sound_mode: ^2.0.2
   flutter_sound_bridge:
     path: ../flutter_sound_bridge
 
