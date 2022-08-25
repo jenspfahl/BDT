@@ -71,12 +71,12 @@ class LocalNotificationService {
         });
   }
 
-  Future<void> showNotification(String receiverKey, int id, String title, String message, String channelId, bool keepAsProgress, String payload, [Color? color]) async {
+  Future<void> showNotification(String receiverKey, int id, String title, String message, String channelId, bool keepAsProgress, bool ongoing, int? progress, String payload, [Color? color]) async {
     await _flutterLocalNotificationsPlugin.show(
       id,
       title, 
       message,
-      NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress)),
+      NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress, ongoing, progress)),
       payload: receiverKey + "-" + payload,
     );
   }
@@ -88,7 +88,7 @@ class LocalNotificationService {
         title,
         message,
         when.subtract(Duration(seconds: when.second)), // trunc seconds
-        NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false)),
+        NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         payload: receiverKey + "-" + id.toString());
@@ -141,7 +141,7 @@ class LocalNotificationService {
   }
 
 
-  AndroidNotificationDetails _createAndroidNotificationDetails(Color? color, String channelId, bool keepAsProgress) {
+  AndroidNotificationDetails _createAndroidNotificationDetails(Color? color, String channelId, bool keepAsProgress, bool ongoing, int? progress) {
     return AndroidNotificationDetails(
       channelId,
       APP_NAME,
@@ -149,12 +149,14 @@ class LocalNotificationService {
       color: color,
       playSound: false,
       vibrationPattern: null,
-      indeterminate: keepAsProgress,
-      usesChronometer: keepAsProgress,
+      usesChronometer: false,
+      indeterminate: keepAsProgress && progress == null,
       showProgress: keepAsProgress,
+      progress: progress??0,
+      maxProgress: 100,
       autoCancel: false,
       icon: null, //TODO have TaskGroup Icons would be an option
-      ongoing: keepAsProgress,
+      ongoing: ongoing,
       priority: Priority.high,
       importance: Importance.high,
     );

@@ -136,7 +136,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   static Future<void> signalEnd() async {
     debugPrint("sig end");
-    await notify(100, "Timer finished", false);
+    await notify(100, "Timer finished", showBreakInfo: true, showProgress: true);
     await SignalService.makeSignalPattern(END);
   }
 
@@ -162,12 +162,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   static Future<void> notifySignal(int signal) async {
-    await notify(signal, "Break $signal reached", true);
+    final prefService = PreferenceService();
+    final breaksCount = await getBreaksCount(prefService);
+
+    await notify(signal, "Break $signal of $breaksCount reached",
+        showProgress: true, showBreakInfo: true, fixed: true);
   }
 
-  static Future<void> notify(int id, String msg, bool keepAsProgress,
-      {PreferenceService? preferenceService, LocalNotificationService? notificationService}) async {
-    if (await canNotify(preferenceService ?? PreferenceService()) != true) {
+  static Future<void> notify(int id, String msg, {
+    PreferenceService? preferenceService, 
+    LocalNotificationService? notificationService,
+    bool showProgress = false, 
+    bool showBreakInfo = false, 
+    bool showStartInfo = false,
+    bool fixed = false,
+  }) async {
+    final prefService = preferenceService ?? PreferenceService();
+    if (await canNotify(prefService) != true) {
       debugPrint("notification disabled");
    //   return; //TODO impl it
     }
@@ -176,7 +187,24 @@ class BDTScaffoldState extends State<BDTScaffold> {
       await _notificationService.init();
     }
     _notificationService.cancelAllNotifications();
-    _notificationService.showNotification("", id, "BDT", msg, "bdt_signals", keepAsProgress, "");
+    var message = msg;
+    int? progress = null;
+    final now = DateTime.now();
+    if (showBreakInfo) {
+      progress = await getProgress(prefService);
+      final startedAt = await getStartedAt(prefService);
+      if (startedAt != null) {
+        final duration = startedAt.difference(now).abs();
+       // message = "$msg after ${formatDuration(duration)} at ${formatToDateTime(now)}";
+        message = "$msg after ${formatDuration(duration)}";
+      }
+    }
+    else if (showStartInfo) {
+      final breaksCount = await getBreaksCount(prefService);
+      message = "$msg with $breaksCount breaks";
+    }
+    _notificationService.showNotification("", id, "BDT", message, "bdt_signals", 
+        showProgress, fixed, progress, "");
   }
 
   @override
@@ -211,6 +239,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   void _updateRunning() {
+    final progress = _getProgress();
+    setProgress(_preferenceService, progress != null ? (progress * 100).round() : null);
+    setStartedAt(_preferenceService, _startedAt);
+    setBreaksCount(_preferenceService, _selectedSlices.length);
+    
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
@@ -241,6 +274,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return null;
     }
     return Duration(seconds: finalTime.difference(now).abs().inSeconds + 1);
+  }
+
+  double? _getProgress() {
+    final progressed = _getDelta();
+    if (progressed != null) {
+      return progressed.inSeconds / _duration.inSeconds;
+    }
+    else {
+      return null;
+    }
   }
 
   _stopTimer() {
@@ -906,6 +949,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _startTimer();
+    _updateRunning();
 
     final startedAt = _startedAt;
     if (startedAt == null) {
@@ -919,7 +963,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     SignalService.makeSignalPattern(START,
         volume: _volume, preferenceService: _preferenceService);
-    notify(0, "Timer started", true, preferenceService: _preferenceService, notificationService: _notificationService);
+    notify(0, "Timer started",
+        preferenceService: _preferenceService,
+        notificationService: _notificationService,
+        showProgress: true,
+        showStartInfo: true,
+        fixed: true);
 
     final list = _selectedList();
     debugPrint("$list");
@@ -935,8 +984,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
         _getDelay(MAX_SLICE), 1000, signalEnd)
         .then((value) => debugPrint("shot end: $value"));
-
-    _updateRunning();
 
   }
 
