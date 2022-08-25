@@ -942,7 +942,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       toastError(context, "No breaks selected");
       return;
     }
-    if (!truncToMinutes(_time).isAfter(truncToMinutes(DateTime.now()))) {
+    if (_timerMode == TimerMode.ABSOLUTE && !truncToMinutes(_time).isAfter(truncToMinutes(DateTime.now()))) {
       toastError(context, "Time already reached, set a new one");
       return;
     }
