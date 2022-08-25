@@ -650,12 +650,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           }
         }
         else {
-          if (_isOver()) {
-            toastError(context, "Timer time still reached, set it new");
-          }
-          else {
-            _startRun(context);
-          }
+          _startRun(context);
         }
       },
     );
@@ -945,6 +940,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     if (_selectedSlices.isEmpty) {
       toastError(context, "No breaks selected");
+      return;
+    }
+    if (!truncToMinutes(_time).isAfter(truncToMinutes(DateTime.now()))) {
+      toastError(context, "Time already reached, set a new one");
       return;
     }
 
