@@ -1,34 +1,25 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PreferenceService implements ITranslatePreferences {
 
-  static final PREF_LANGUAGE_SELECTION = "common/languageSelection";
-  static final PREF_DATE_FORMAT_SELECTION = "common/dateFormatSelection";
+  static final PREF_COLOR_SCHEME = "common/colorScheme";
+  static final PREF_NOTIFY_AT_BREAKS = "run/notifyAtBreaks";
+  static final PREF_VIBRATE_AT_BREAKS = "run/vibrateAtBreaks";
+  static final PREF_BREAK_ORDER_DESCENDING = "run/breakOrderDescending";
   
-  static final PREF_SHOW_ACTION_NOTIFICATIONS = "common/showActionNotifications";
-  static final PREF_SHOW_ACTION_NOTIFICATION_DURATION_SELECTION = "common/showActionNotificationDurationSelection";
 
   static final PreferenceService _service = PreferenceService._internal();
+
+  var languageSelection;
 
   factory PreferenceService() {
     return _service;
   }
 
-  PreferenceService._internal() {
-    getInt(PreferenceService.PREF_DATE_FORMAT_SELECTION)
-        .then((value) {
-      if (value != null) {
-        dateFormatSelection = value;
-      }
-    });
-  }
-
-  int dateFormatSelection = 1;
-  int languageSelection = 0;
+  PreferenceService._internal() {}
 
   Future<String?> getString(String key) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -71,9 +62,16 @@ class PreferenceService implements ITranslatePreferences {
     return prefs.remove(key);
   }
 
+
+  Future<void> reload() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+  }
+
+
   @override
   Future<Locale?> getPreferredLocale() async {
-    final languageSelection = await getInt(PREF_LANGUAGE_SELECTION);
+    final languageSelection = null;//await getInt(PREF_LANGUAGE_SELECTION);
 
     this.languageSelection = languageSelection??0;
 
@@ -99,11 +97,5 @@ class PreferenceService implements ITranslatePreferences {
     }
     return null;
   }
-
-  Future<void> reload() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.reload();
-  }
-
 }
 

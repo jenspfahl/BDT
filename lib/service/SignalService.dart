@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound_bridge/flutter_sound_bridge.dart';
@@ -33,12 +34,9 @@ class SignalService {
     int? volume,
     PreferenceService? preferenceService
   }) async {
-    if (await canSignal(preferenceService ?? PreferenceService()) != true) {
-      debugPrint("signal disabled");
-      //   return; //TODO impl it
-    }
+    final prefService = preferenceService ?? PreferenceService();
 
-    final vol = volume ?? await getVolume(preferenceService ?? PreferenceService()) ?? 11;
+    final vol = volume ?? await getVolume(prefService) ?? MAX_VOLUME;
     debugPrint("volume $vol");
 
     SignalService.setSignalVolume(vol);
@@ -71,10 +69,13 @@ class SignalService {
 
   static makeSignal(Duration duration) async {
     debugPrint("signal $duration");
-    var hasVibration = await Vibration.hasVibrator() ?? false;
+    final vibrateAllowed = await mayVibrate(PreferenceService());
 
-    if (hasVibration) {
-      Vibration.vibrate(duration: duration.inMilliseconds);
+    if (vibrateAllowed) {
+      final hasVibration = await Vibration.hasVibrator() ?? false;
+      if (hasVibration) {
+        Vibration.vibrate(duration: duration.inMilliseconds);
+      }
     }
 
     await FlutterSoundBridge.playSysSound(

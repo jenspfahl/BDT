@@ -22,6 +22,7 @@ import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
+import 'SettingsScreen.dart';
 import 'VolumeSliderDialog.dart';
 import 'dialogs.dart';
 
@@ -178,9 +179,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
     bool fixed = false,
   }) async {
     final prefService = preferenceService ?? PreferenceService();
-    if (await canNotify(prefService) != true) {
+    if (await mayNotify(prefService) != true) {
       debugPrint("notification disabled");
-   //   return; //TODO impl it
+      return;
     }
     final _notificationService = notificationService ?? LocalNotificationService();
     if (notificationService != null) {
@@ -212,6 +213,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     super.initState();
     _time = _deriveTime();
     _notificationService.init();
+    _updateBreakOrder();
 
     getVolume(_preferenceService).then((value) {
       if (value != null) {
@@ -225,6 +227,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
         debugPrint("refresh ui values");
       });
     });
+  }
+
+  void _updateBreakOrder() {
+    _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING)
+        .then((isDescending) {
+          if (isDescending == true) {
+            _direction = Direction.DESC;
+          }
+          else {
+            _direction = Direction.ASC;
+          }
+        });
   }
 
   _startTimer() {
@@ -325,7 +339,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
               },
               icon: _isDeviceMuted() ? Icon(Icons.volume_off) : createVolumeIcon(_volume)),
           IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
+                    .then((value) => setState(() => _updateBreakOrder()));
+              },
               icon: Icon(Icons.settings)),
         ],
       ),
@@ -820,7 +837,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
           }
           _duration = now.difference(_time).abs();
           if (_duration.inMinutes < 1) {
-            toastInfo(context, "Clock value should be more in the future");
+            toastInfo(context, "Clock value should be a bit more in the future");
+            _duration = Duration(minutes: 1);
           }
         });
       }
@@ -836,7 +854,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   List<PieChartSectionData> _createSections() {
     var slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
-    double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (20 * 2);
+    double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (23 * 2);
     final sliceSeconds = _duration.inSeconds / MAX_SLICE;
 
     return slices.map((slice) {
@@ -878,7 +896,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               : isInTransition
                 ? TextStyle(fontSize: 8)
                 : TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? 1.35 : 1.2,
+        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? 1.35 : 1.25,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();

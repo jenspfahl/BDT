@@ -1,11 +1,11 @@
 import '../service/PreferenceService.dart';
 
-Future<bool> canNotify(PreferenceService preferenceService) async {
-  return await preferenceService.getBool("CAN_NOTIFY") == true;
+Future<bool> mayNotify(PreferenceService preferenceService) async {
+  return await preferenceService.getBool(PreferenceService.PREF_NOTIFY_AT_BREAKS)??true == true;
 }
 
-Future<bool> canSignal(PreferenceService preferenceService) async {
-  return await preferenceService.getBool("CAN_SIGNAL") == true;
+Future<bool> mayVibrate(PreferenceService preferenceService) async {
+  return await preferenceService.getBool(PreferenceService.PREF_VIBRATE_AT_BREAKS) == true;
 }
 
 Future<int?> getVolume(PreferenceService preferenceService) async {
