@@ -22,7 +22,7 @@ class PreferenceService implements ITranslatePreferences {
 
   PreferenceService._internal() {}
 
-  int get colorSchema => _colorSchemaSelection??1;
+  int get colorSchema => _colorSchemaSelection??0;
 
 
   init() async {

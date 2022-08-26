@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifyAtBreaks = true;
   bool _vibrateAtBreaks = true;
   bool _breakOrderDescending = false;
-  int _colorScheme = 1;
+  int _colorScheme = 0;
 
   @override
   Widget build(BuildContext context) {
