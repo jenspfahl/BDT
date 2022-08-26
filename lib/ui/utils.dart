@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../service/ColorService.dart';
 import 'BDTApp.dart';
 
 
@@ -17,7 +18,7 @@ Widget createCheckIcon(bool checked) {
   }
   return Icon(
     Icons.check,
-    color: BUTTON_COLOR,
+    color: ColorService().getCurrentScheme().button,
   );
 }
 

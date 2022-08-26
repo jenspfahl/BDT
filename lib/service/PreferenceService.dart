@@ -14,12 +14,24 @@ class PreferenceService implements ITranslatePreferences {
   static final PreferenceService _service = PreferenceService._internal();
 
   var languageSelection;
+  int? _colorSchemaSelection = null;
 
   factory PreferenceService() {
     return _service;
   }
 
   PreferenceService._internal() {}
+
+  int get colorSchema => _colorSchemaSelection??1;
+
+
+  init() async {
+    await refresh();
+  }
+
+  refresh() async {
+    _colorSchemaSelection = await getInt(PREF_COLOR_SCHEME);
+  }
 
   Future<String?> getString(String key) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -63,9 +75,10 @@ class PreferenceService implements ITranslatePreferences {
   }
 
 
-  Future<void> reload() async {
+  reload() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.reload();
+    await refresh();
   }
 
 
@@ -97,5 +110,6 @@ class PreferenceService implements ITranslatePreferences {
     }
     return null;
   }
+
 }
 

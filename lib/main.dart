@@ -15,6 +15,7 @@ Future<void> main() async {
 
   await LocalNotificationService().init();
   await AndroidAlarmManager.initialize();
+  await PreferenceService().init();
 
   var delegate = await LocalizationDelegate.create(
     preferences: PreferenceService(),

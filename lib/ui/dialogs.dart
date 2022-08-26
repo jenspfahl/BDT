@@ -105,7 +105,7 @@ Future<bool?> showDurationPickerDialog({
 }
 
 
-Future<void> showChoiceDialog(BuildContext context, String title, List<String> choices, {
+Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWidgetRow> choices, {
   Function()? okPressed,
   Function()? cancelPressed,
   int? initialSelected,

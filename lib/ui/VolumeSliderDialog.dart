@@ -3,6 +3,8 @@ import 'package:bdt/util/prefs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../service/ColorService.dart';
+
 class VolumeSliderDialog extends StatefulWidget {
   final double initialSelection;
   final Function(double)? onChangedEnd;
@@ -50,8 +52,8 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
                   min: 0,
                   max: MAX_VOLUME.toDouble(),
                   divisions: 20,
-                  activeColor: BUTTON_COLOR,
-                  thumbColor: ACCENT_COLOR,
+                  activeColor: ColorService().getCurrentScheme().button,
+                  thumbColor: ColorService().getCurrentScheme().accent,
                   onChanged: (value) {
                     setState(() {
                       _currentValue = value;
@@ -62,8 +64,8 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
               ),
             ),
             SwitchListTile(
-              activeColor: BUTTON_COLOR,
-              hoverColor: ACCENT_COLOR,
+              activeColor: ColorService().getCurrentScheme().button,
+              hoverColor: ColorService().getCurrentScheme().accent,
               value: _currentValue == 0,
               title: Text("Mute"),
               onChanged: (value) {

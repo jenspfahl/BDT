@@ -18,6 +18,7 @@ import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 
 import '../model/BreakDown.dart';
+import '../service/ColorService.dart';
 import '../service/LocalNotificationService.dart';
 import '../service/PreferenceService.dart';
 import '../util/dates.dart';
@@ -25,7 +26,6 @@ import '../util/prefs.dart';
 import 'SettingsScreen.dart';
 import 'VolumeSliderDialog.dart';
 import 'dialogs.dart';
-
 
 class BDTScaffold extends StatefulWidget {
 
@@ -222,10 +222,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
 
     Timer.periodic(Duration(seconds: 15), (_) {
-      setState((){
-        SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-        debugPrint("refresh ui values");
-      });
+      if (mounted) {
+        setState(() {
+          SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
+          debugPrint("refresh ui values");
+        });
+      }
     });
   }
 
@@ -244,10 +246,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
   _startTimer() {
     _startedAt = DateTime.now();
     _runTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      _updateRunning();
-      debugPrint(".. timer refresh #${_runTimer?.tick} ..");
       if (_isOver()) {
         timer.cancel();
+      }
+      if (mounted) {
+        _updateRunning();
+        debugPrint(".. timer refresh #${_runTimer?.tick} ..");
       }
     });
   }
@@ -356,7 +360,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 Flexible(
                     child: IconButton(
                       onPressed: () => _moveBreakDownSelectionToNext(),
-                      color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : BUTTON_COLOR,
+                      color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                       icon: Icon(Icons.arrow_back_ios),
                     )),
                 Expanded(
@@ -375,11 +379,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       }
                     },
                     child: DropdownButtonFormField<BreakDown?>(
-                      focusColor: ACCENT_COLOR,
+                      focusColor: ColorService().getCurrentScheme().accent,
                       onTap: () => FocusScope.of(context).unfocus(),
                       value: _selectedBreakDown,
                       hint: Text("Break downs"),
-                      iconEnabledColor: BUTTON_COLOR,
+                      iconEnabledColor: ColorService().getCurrentScheme().button,
                       icon: Icon(Icons.av_timer),
                       isExpanded: true,
                       onChanged:  _isRunning() ? null : (value) {
@@ -395,7 +399,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   ),
                 ),
                 Flexible(child: IconButton(
-                  color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : BUTTON_COLOR,
+                  color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                   onPressed: () => _moveBreakDownSelectionToPrevious(),
                   icon: Icon(Icons.arrow_forward_ios),
                 )),
@@ -406,12 +410,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
             behavior: HitTestBehavior.translucent,
             onHorizontalDragEnd: _switchTimerMode,
             child: CupertinoSlidingSegmentedControl<TimerMode>(
-              backgroundColor: Colors.black,
-              thumbColor: BUTTON_COLOR,
+              backgroundColor: ColorService().getCurrentScheme().background,
+              thumbColor: ColorService().getCurrentScheme().button,
               padding: EdgeInsets.all(8),
               children: <TimerMode, Widget> {
-                TimerMode.RELATIVE: Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ACCENT_COLOR : BUTTON_COLOR),
-                TimerMode.ABSOLUTE: Icon(Icons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ACCENT_COLOR : BUTTON_COLOR),
+                TimerMode.RELATIVE: Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                TimerMode.ABSOLUTE: Icon(Icons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
               },
               onValueChanged: (value) {
                 if (value != null) {
@@ -495,7 +499,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     top: 20,
                     left: 20,
                     child: IconButton(
-                      color: BUTTON_COLOR,
+                      color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
                           toastError(context, "Stop running first");
@@ -517,7 +521,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     top: 20,
                     right: 20,
                     child: IconButton(
-                      color: BUTTON_COLOR,
+                      color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
                           toastError(context, "Stop running first");
@@ -623,25 +627,25 @@ class BDTScaffoldState extends State<BDTScaffold> {
       action: () {
         _stopRun(context);
       },
-      backgroundColor: BUTTON_COLOR,
-      baseColor: PRIMARY_COLOR,
-      highlightedColor: ACCENT_COLOR,
+      backgroundColor: ColorService().getCurrentScheme().button,
+      baseColor: ColorService().getCurrentScheme().primary,
+      highlightedColor: ColorService().getCurrentScheme().accent,
       height: 48,
       width: 200,
       buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
       label: Text("➡️  Swipe to Stop",
-          style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ACCENT_COLOR)),
-      icon: Icon(Icons.stop, color: BUTTON_COLOR),
+          style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
+      icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
     );
   }
 
   Widget _createStartButton(BuildContext context) {
     return FloatingActionButton.extended(
-      backgroundColor: BUTTON_COLOR,
-      splashColor: FOREGROUND_COLOR,
-      foregroundColor: ACCENT_COLOR,
+      backgroundColor: ColorService().getCurrentScheme().button,
+      splashColor: ColorService().getCurrentScheme().foreground,
+      foregroundColor: ColorService().getCurrentScheme().accent,
       icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
       label: Text(_isOver() ? "Reset" : _isRunning() ? "Stop" : "Start"),
       onPressed: () {
@@ -709,12 +713,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
             style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text("${formatDuration(Duration.zero)}"),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text("${formatDuration(_duration)}",
               style: TextStyle(fontSize: 8)),
@@ -729,12 +733,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
             style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text("${formatDuration(_getRemaining()!)}"),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text("${formatDuration(_duration)}",
               style: TextStyle(fontSize: 8)),
@@ -758,12 +762,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(formatToDateTime(_time, withSeconds: true)),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(
             formatToDateTime(_time, withSeconds: true),
@@ -782,12 +786,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(formatToDateTime(DateTime.now(), withSeconds: true)),
           SizedBox(
               width: 80,
-              child: Divider(thickness: 0.5, color: ACCENT_COLOR, height: 5)
+              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(
             formatToDateTime(_time, withSeconds: true),
@@ -880,8 +884,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
       return PieChartSectionData(
         color: isFinalSlice
-            ? ACCENT_COLOR
-            : (isPassed || isInTransition ? FOREGROUND_COLOR : BUTTON_COLOR).withOpacity(
+            ? ColorService().getCurrentScheme().accent
+            : (isPassed || isInTransition ? ColorService().getCurrentScheme().foreground : ColorService().getCurrentScheme().button).withOpacity(
             isSelected
                 ? (isPassed ? 1 : 0.9)
                 : (isPassed ? 0.7 : (isInTransition ? 0.5 : 0.4))

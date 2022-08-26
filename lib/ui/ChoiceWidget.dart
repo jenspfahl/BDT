@@ -1,8 +1,14 @@
 import 'package:bdt/ui/utils.dart';
 import 'package:flutter/material.dart';
 
+class ChoiceWidgetRow {
+  String text;
+  TextStyle style;
+  
+  ChoiceWidgetRow(this.text, this.style);
+}
 class ChoiceWidget extends StatefulWidget {
-  final List<String> choices;
+  final List<ChoiceWidgetRow> choices;
   final int? initialSelected;
   final ValueChanged<int> onChanged;
 
@@ -38,7 +44,7 @@ class _ChoiceWidgetState extends State<ChoiceWidget> {
 
   List<Widget> _buildChoices() {
 
-    return widget.choices.asMap().map((index, choiceString) => MapEntry(index, SimpleDialogOption(
+    return widget.choices.asMap().map((index, choice) => MapEntry(index, SimpleDialogOption(
         onPressed: () {
           setState(() {
             _currentSelected = index;
@@ -49,7 +55,7 @@ class _ChoiceWidgetState extends State<ChoiceWidget> {
           children: [
             createCheckIcon(index == _currentSelected),
             Spacer(),
-            Text(choiceString),
+            Text(choice.text, style: choice.style),
           ],
         ),
       )
