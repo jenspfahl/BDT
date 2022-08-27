@@ -60,12 +60,6 @@ String formatToDateTime(DateTime dateTime, {bool withLineBreak = false, bool wit
   }
 }
 
-String formatToTime(DateTime dateTime) {
-  final DateFormat formatter = DateFormat.Hms();
-  return formatter.format(dateTime);
-}
-
-
 String formatDuration(Duration duration, {bool withLineBreak = false}) {
   final betweenChar = withLineBreak ? "\n" : " ";
   if (duration.inMinutes >= 60) {

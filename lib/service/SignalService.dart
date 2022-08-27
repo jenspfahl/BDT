@@ -22,6 +22,7 @@ final SIG_7 = "|| _--";
 final SIG_8 = "|| _---";
 final SIG_9 = "|| _----";
 final SIG_10 = "|| __";
+final SIG_11 = "|| __-";
 final END = "|| ___";
 
 class SignalService {

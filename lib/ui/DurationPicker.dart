@@ -24,7 +24,7 @@ class DurationPicker extends StatefulWidget {
 }
 
 class _DurationPickerState extends State<DurationPicker> {
-  final MAX_HOURS = 12;
+  final MAX_HOURS = 23;
   final MAX_MINUTES = 59;
 
   int _hours = 0;
