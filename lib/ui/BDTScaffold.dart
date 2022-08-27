@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
@@ -204,7 +205,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
         final duration = startedAt.difference(now).abs();
-       // message = "$msg after ${formatDuration(duration)} at ${formatToDateTime(now)}";
         message = "$msg after ${formatDuration(duration)}";
       }
     }
@@ -212,6 +212,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final breaksCount = await getBreaksCount(prefService);
       message = "$msg with $breaksCount breaks";
     }
+
     _notificationService.showNotification("", id, "BDT", message, "bdt_signals", 
         showProgress, fixed, progress, "");
   }
@@ -219,6 +220,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   @override
   void initState() {
     super.initState();
+
     _time = _deriveTime();
     _notificationService.init();
     _updateBreakOrder();
@@ -228,6 +230,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         setState(() => _volume = value);
       }
     });
+    SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
 
     Timer.periodic(Duration(seconds: 15), (_) {
       if (mounted) {
@@ -235,6 +238,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
           debugPrint("refresh ui values");
         });
+      }
+    });
+
+    getRunState(_preferenceService).then((persistedState) {
+      if (persistedState != null) {
+        Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
+        debugPrint("!!!!!!FOUND persisted state: $stateAsJson");
+        _setStateFromJson(stateAsJson);
+        _startTimer();
       }
     });
   }
@@ -252,7 +264,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   _startTimer() {
-    _startedAt = DateTime.now();
     _runTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_isOver()) {
         timer.cancel();
@@ -925,7 +936,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final sliceDuration = _getDelay(slice);
       return formatDuration(
           showCurrent ? _getDelta()??sliceDuration : sliceDuration,
-          withLineBreak: true);
+          withLineBreak: true,
+          noSeconds: _duration.inMinutes >= 60);
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
       final nowOrStartedAt = _startedAt ?? DateTime.now();
@@ -985,13 +997,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return;
     }
 
+    _startedAt = DateTime.now();
     _startTimer();
     _updateRunning();
 
     final startedAt = _startedAt;
-    if (startedAt == null) {
-      return;
+    if (startedAt == null) { // should not happen
+      throw Exception("_startedAt should not be null here");
     }
+
+    final stateAsJson = jsonEncode(this);
+    debugPrint("!!!!State to persist: $stateAsJson");
+    setRunState(_preferenceService, stateAsJson);
+
     if (_timerMode == TimerMode.RELATIVE) {
       setState(() => _time = startedAt.add(_duration));
     }
@@ -1015,12 +1033,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal);
-      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true, rescheduleOnReboot: true, //TODO option to disable that
           _getDelay(slice), signal, f)
           .then((value) => debugPrint("shot $signal on $slice: $value"));
     }
 
-    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true, rescheduleOnReboot: true, //TODO option to disable that
         _getDelay(MAX_SLICE), 1000, signalEnd)
         .then((value) => debugPrint("shot end: $value"));
 
@@ -1031,6 +1049,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _stopRun(BuildContext context) {
     debugPrint("stopped");
     _stopTimer();
+    setRunState(_preferenceService, null);
     _notificationService.cancelAllNotifications();
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume, preferenceService: _preferenceService);
@@ -1041,6 +1060,36 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   DateTime _deriveTime() => roundToHour(DateTime.now().add(_duration));
+
+  Map<String, dynamic> toJson() => {
+    'duration' : _duration.inSeconds,
+    'time': _time.millisecondsSinceEpoch,
+    'timerMode': _timerMode.index,
+    'direction': _direction.index,
+    'startedAt': _startedAt?.millisecondsSinceEpoch,
+    'selectedSlices': _selectedSlices.map((e) => e.toString()).reduce((value, element) => "$value,$element"),
+    'selectedBreakDown': _selectedBreakDown?.id,
+  };
+
+  void _setStateFromJson(Map<String, dynamic> jsonMap) {
+    _duration = Duration(seconds: jsonMap['duration']);
+    _time = DateTime.fromMillisecondsSinceEpoch(jsonMap['time']);
+    _timerMode = TimerMode.values.elementAt(jsonMap['timerMode']);
+    _direction = Direction.values.elementAt(jsonMap['direction']);
+    _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
+
+    _selectedSlices.clear();
+    jsonMap['selectedSlices'].toString().split(",")
+        .map((e) => int.parse(e))
+        .forEach((e) => _selectedSlices.add(e));
+
+    if (jsonMap['selectedBreakDown'] != null) {
+      _selectedBreakDown = predefinedBreakDowns
+          .where((e) => e.id == jsonMap['selectedBreakDown'])
+          .first;
+    }
+
+  }
 
 }
 

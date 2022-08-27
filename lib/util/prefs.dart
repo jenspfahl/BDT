@@ -17,6 +17,20 @@ setVolume(PreferenceService preferenceService, int volume) async {
   await preferenceService.setInt("SIGNAL_VOLUME", volume);
 }
 
+Future<String?> getRunState(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  return await preferenceService.getString("RUN_STATE");
+}
+
+setRunState(PreferenceService preferenceService, String? value) async {
+  if (value != null) {
+    await preferenceService.setString("RUN_STATE", value);
+  }
+  else {
+    await preferenceService.remove("RUN_STATE");
+  }
+}
+
 Future<int?> getBreaksCount(PreferenceService preferenceService) async {
   await preferenceService.reload();
   return await preferenceService.getInt("RUN_BREAKS_COUNT");

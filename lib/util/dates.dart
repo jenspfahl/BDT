@@ -60,7 +60,7 @@ String formatToDateTime(DateTime dateTime, {bool withLineBreak = false, bool wit
   }
 }
 
-String formatDuration(Duration duration, {bool withLineBreak = false}) {
+String formatDuration(Duration duration, {bool withLineBreak = false, bool noSeconds = false}) {
   final betweenChar = withLineBreak ? "\n" : " ";
   if (duration.inMinutes >= 60) {
     var remainingMinutes = duration.inMinutes % 60;
@@ -73,7 +73,7 @@ String formatDuration(Duration duration, {bool withLineBreak = false}) {
   }
   if (duration.inSeconds >= 60) {
     var remainingSeconds = duration.inSeconds % 60;
-    if (remainingSeconds != 0) {
+    if (!noSeconds && remainingSeconds != 0) {
       return "${duration.inMinutes} min$betweenChar$remainingSeconds sec";
     }
     else {
