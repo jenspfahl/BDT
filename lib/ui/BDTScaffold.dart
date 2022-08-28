@@ -16,6 +16,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
+import 'package:system_clock/system_clock.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -40,7 +41,7 @@ enum Direction {ASC, DESC}
 
 class BDTScaffoldState extends State<BDTScaffold> {
 
-  final MAX_BREAKS = 11;
+  final MAX_BREAKS = 20;
   final MAX_SLICE = 60;
   final CENTER_RADIUS = 60.0;
 
@@ -143,6 +144,69 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_11);
   }
 
+  static Future<void> signal12() async {
+    debugPrint("sig 12");
+
+    await notifySignal(12);
+    await SignalService.makeSignalPattern(SIG_12);
+  }
+
+  static Future<void> signal13() async {
+    debugPrint("sig 13");
+
+    await notifySignal(13);
+    await SignalService.makeSignalPattern(SIG_13);
+  }
+
+  static Future<void> signal14() async {
+    debugPrint("sig 14");
+
+    await notifySignal(14);
+    await SignalService.makeSignalPattern(SIG_14);
+  }
+
+  static Future<void> signal15() async {
+    debugPrint("sig 15");
+
+    await notifySignal(15);
+    await SignalService.makeSignalPattern(SIG_15);
+  }
+
+  static Future<void> signal16() async {
+    debugPrint("sig 16");
+
+    await notifySignal(16);
+    await SignalService.makeSignalPattern(SIG_16);
+  }
+
+  static Future<void> signal17() async {
+    debugPrint("sig 17");
+
+    await notifySignal(17);
+    await SignalService.makeSignalPattern(SIG_17);
+  }
+
+  static Future<void> signal18() async {
+    debugPrint("sig 18");
+
+    await notifySignal(18);
+    await SignalService.makeSignalPattern(SIG_18);
+  }
+
+  static Future<void> signal19() async {
+    debugPrint("sig 19");
+
+    await notifySignal(19);
+    await SignalService.makeSignalPattern(SIG_19);
+  }
+
+  static Future<void> signal20() async {
+    debugPrint("sig 20");
+
+    await notifySignal(20);
+    await SignalService.makeSignalPattern(SIG_20);
+  }
+
   static Future<void> signalEnd() async {
     debugPrint("sig end");
     await notify(100, "Timer finished", showBreakInfo: true, showProgress: true);
@@ -167,6 +231,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 9: return signal9;
       case 10: return signal10;
       case 11: return signal11;
+      case 12: return signal12;
+      case 13: return signal13;
+      case 14: return signal14;
+      case 15: return signal15;
+      case 16: return signal16;
+      case 17: return signal17;
+      case 18: return signal18;
+      case 19: return signal19;
+      case 20: return signal20;
     }
     throw Exception("unknown signal $signal");
   }
@@ -175,7 +248,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final prefService = PreferenceService();
     final breaksCount = await getBreaksCount(prefService);
 
-    await notify(signal, "Break $signal of $breaksCount reached",
+    final signalAsString = signal <= 10 ? signal.toString() : "10+${signal % 10} ($signal)";
+    await notify(signal, "Break $signalAsString of $breaksCount reached",
         showProgress: true, showBreakInfo: true, fixed: true);
   }
 
@@ -223,6 +297,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     _time = _deriveTime();
     _notificationService.init();
+
     _updateBreakOrder();
 
     getVolume(_preferenceService).then((value) {
@@ -245,8 +320,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (persistedState != null) {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
         debugPrint("!!!!!!FOUND persisted state: $stateAsJson");
-        _setStateFromJson(stateAsJson);
-        _startTimer();
+        final lastBoot = DateTime.now().subtract(SystemClock.elapsedRealtime());
+        final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(stateAsJson['startedAt']);
+        debugPrint("last boot was ${formatDateTime(lastBoot)}, persisted state is from ${formatDateTime(persistedStateFrom)}");
+        if (lastBoot.isBefore(persistedStateFrom)) {
+          debugPrint("State is from this session, using it");
+          _setStateFromJson(stateAsJson);
+          _startTimer();
+        }
+        else {
+          debugPrint("State is outdated, deleting it");
+          setRunState(_preferenceService, null);
+        }
       }
     });
   }
@@ -780,21 +865,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return Column(
         children: [
           Text(
-            formatToDateTime(_startedAt!, withSeconds: true),
+            formatDateTime(_startedAt!, withSeconds: true),
             style: TextStyle(fontSize: 8),
+            textAlign: TextAlign.center
           ),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text(formatToDateTime(_time, withSeconds: true)),
+          Text(formatDateTime(_time, withSeconds: true), textAlign: TextAlign.center),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(
-            formatToDateTime(_time, withSeconds: true),
+            formatDateTime(_time, withSeconds: true),
             style: TextStyle(fontSize: 8),
+            textAlign: TextAlign.center
           ),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
@@ -804,28 +891,30 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return Column(
         children: [
           Text(
-            formatToDateTime(_startedAt!, withSeconds: true),
+            formatDateTime(_startedAt!, withSeconds: true),
             style: TextStyle(fontSize: 8),
+            textAlign: TextAlign.center
           ),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text(formatToDateTime(DateTime.now(), withSeconds: true)),
+          Text(formatDateTime(DateTime.now(), withSeconds: true), textAlign: TextAlign.center),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
           Text(
-            formatToDateTime(_time, withSeconds: true),
+            formatDateTime(_time, withSeconds: true),
             style: TextStyle(fontSize: 8),
+            textAlign: TextAlign.center
           ),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
     }
     else {
-      return Text(formatToDateTime(_time));
+      return Text(formatDateTime(_time));
     }
   }
 
@@ -945,7 +1034,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
       debugPrint("nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration");
       final sliceTime = nowOrStartedAt.add(sliceDuration);
-      return formatToDateTime(
+      return formatDateTime(
           showCurrent ? DateTime.now() : sliceTime,
           withLineBreak: true,
           withSeconds: delta.inMinutes < 10);
@@ -973,6 +1062,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 9: return Icon(MdiIcons.numeric9BoxOutline);
       case 10: return Icon(MdiIcons.numeric10BoxOutline);
       case 11: return Icon(MdiIcons.numeric1BoxMultipleOutline);
+      case 12: return Icon(MdiIcons.numeric2BoxMultipleOutline);
+      case 13: return Icon(MdiIcons.numeric3BoxMultipleOutline);
+      case 14: return Icon(MdiIcons.numeric4BoxMultipleOutline);
+      case 15: return Icon(MdiIcons.numeric5BoxMultipleOutline);
+      case 16: return Icon(MdiIcons.numeric6BoxMultipleOutline);
+      case 17: return Icon(MdiIcons.numeric7BoxMultipleOutline);
+      case 18: return Icon(MdiIcons.numeric8BoxMultipleOutline);
+      case 19: return Icon(MdiIcons.numeric9BoxMultipleOutline);
+      case 20: return Icon(MdiIcons.numeric10BoxMultipleOutline);
     }
     return null;
   }
@@ -1033,12 +1131,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal);
-      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true, rescheduleOnReboot: true, //TODO option to disable that
+      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _getDelay(slice), signal, f)
           .then((value) => debugPrint("shot $signal on $slice: $value"));
     }
 
-    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true, rescheduleOnReboot: true, //TODO option to disable that
+    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
         _getDelay(MAX_SLICE), 1000, signalEnd)
         .then((value) => debugPrint("shot end: $value"));
 

@@ -47,9 +47,9 @@ bool isYesterday(DateTime? dateTime) {
   return truncToDate(dateTime) == truncToDate(DateTime.now().subtract(Duration(days: 1)));
 }
 
-String formatToDateTime(DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
+String formatDateTime(DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
   final betweenChar = withLineBreak ? "\n" : " ";
-  final DateFormat dateFormatter = DateFormat.yM();
+  final DateFormat dateFormatter = DateFormat.Md();
   final DateFormat timeFormatter = withSeconds ? DateFormat.Hms() : DateFormat.Hm();
   if (isToday(dateTime)) {
     return timeFormatter.format(dateTime);
