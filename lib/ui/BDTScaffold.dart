@@ -39,11 +39,12 @@ class BDTScaffold extends StatefulWidget {
 enum TimerMode {RELATIVE, ABSOLUTE}
 enum Direction {ASC, DESC}
 
-class BDTScaffoldState extends State<BDTScaffold> {
 
-  final MAX_BREAKS = 20;
-  final MAX_SLICE = 60;
-  final CENTER_RADIUS = 60.0;
+final MAX_BREAKS = 20;
+final MAX_SLICE = 60;
+final CENTER_RADIUS = 60.0;
+
+class BDTScaffoldState extends State<BDTScaffold> {
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
@@ -248,12 +249,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final prefService = PreferenceService();
     final breaksCount = await getBreaksCount(prefService);
 
-    final signalAsString = _breakToString(signal);
+    final signalAsString = _breakNumberToString(signal);
     await notify(signal, "Break $signalAsString of $breaksCount reached",
         showProgress: true, showBreakInfo: true, fixed: true);
   }
 
-  static String _breakToString(int signal) => signal <= 10 ? signal.toString() : "10+${signal % 10} ($signal)";
+  static String _breakNumberToString(int signal) => signal <= 10 ? signal.toString() : "10+${signal-10} ($signal)";
 
   static Future<void> notify(int id, String msg, {
     PreferenceService? preferenceService, 
@@ -437,20 +438,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
                             child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                           ),
-                          Text("Break ${_breakToString(i)}: "),
+                          Text("Break ${_breakNumberToString(i)}: "),
                           Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
                         ]))
                             .toList();
-                        rows.insert(0, Row(
-                          children: [
-                            Text("A break is signalled like follows:"),
-                          ],
-                        ));
+
                         rows.add(Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                               child: Text(""),
                             ),
                             Text("Timer end: "),
@@ -460,7 +457,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       return AlertDialog(
                         insetPadding: EdgeInsets.zero,
                         contentPadding: EdgeInsets.all(16),
-                        title: Text("Help"),
+                        title: Column(
+                          children: [
+                            Text("Help"),
+                            Text(""),
+                            Text("With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.",
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                            Text("Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows:",
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                          ],
+                        ),
                         content: Builder(
                           builder: (context) {
                             var height = MediaQuery.of(context).size.height;
