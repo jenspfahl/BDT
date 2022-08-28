@@ -30,9 +30,9 @@ final SIG_15 = "||| _";
 final SIG_16 = "||| _-";
 final SIG_17 = "||| _--";
 final SIG_18 = "||| _---";
-final SIG_19 = "||| _---";
+final SIG_19 = "||| _----";
 final SIG_20 = "||| __";
-final END = "|| ___";
+final SIG_END = "|| ___";
 
 class SignalService {
 
@@ -60,6 +60,17 @@ class SignalService {
         case " " : await pause(Duration(milliseconds: 1000)); break;
       }
     }
+  }
+
+  static String signalPatternToString(String pattern) {
+    return pattern.characters.map((character) {
+      switch (character) {
+        case "|" : return "pip ";
+        case "-" : return "piep ";
+        case "_" : return "peeeep ";
+        case " " : return "   ";
+      }
+    }).join();
   }
 
   static makeShortSignal() async {

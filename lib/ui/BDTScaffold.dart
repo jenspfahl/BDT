@@ -206,11 +206,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await notifySignal(20);
     await SignalService.makeSignalPattern(SIG_20);
   }
-
+  
   static Future<void> signalEnd() async {
     debugPrint("sig end");
     await notify(100, "Timer finished", showBreakInfo: true, showProgress: true);
-    await SignalService.makeSignalPattern(END);
+    await SignalService.makeSignalPattern(SIG_END);
   }
 
   Function _signalFunction(int signal) {
@@ -248,10 +248,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final prefService = PreferenceService();
     final breaksCount = await getBreaksCount(prefService);
 
-    final signalAsString = signal <= 10 ? signal.toString() : "10+${signal % 10} ($signal)";
+    final signalAsString = _breakToString(signal);
     await notify(signal, "Break $signalAsString of $breaksCount reached",
         showProgress: true, showBreakInfo: true, fixed: true);
   }
+
+  static String _breakToString(int signal) => signal <= 10 ? signal.toString() : "10+${signal % 10} ($signal)";
 
   static Future<void> notify(int id, String msg, {
     PreferenceService? preferenceService, 
@@ -422,6 +424,72 @@ class BDTScaffoldState extends State<BDTScaffold> {
       appBar: AppBar(
         title: Text("BDT"),
         actions: [
+          IconButton(
+              onPressed: () async {
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
+                      .map((i) => Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                            child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
+                          ),
+                          Text("Break ${_breakToString(i)}: "),
+                          Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
+                        ]))
+                            .toList();
+                        rows.insert(0, Row(
+                          children: [
+                            Text("A break is signalled like follows:"),
+                          ],
+                        ));
+                        rows.add(Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: Text(""),
+                            ),
+                            Text("Timer end: "),
+                            Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
+                          ])
+                      );
+                      return AlertDialog(
+                        insetPadding: EdgeInsets.zero,
+                        contentPadding: EdgeInsets.all(16),
+                        title: Text("Help"),
+                        content: Builder(
+                          builder: (context) {
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - 100,
+                              width: width - 4,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: rows,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        actions: [
+                          TextButton(
+                            child: Text("Close"),
+                            onPressed:  () {
+                              Navigator.pop(context);
+                            },
+                          )
+                        ],
+                      );
+                    }
+                );
+              },
+              icon: Icon(Icons.help_outline)),
           IconButton(
               onPressed: () async {
                 _ringerStatus = await SoundMode.ringerModeStatus;
@@ -603,6 +671,25 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     top: 20,
                     left: 20,
                     child: IconButton(
+                        color: ColorService().getCurrentScheme().button,
+                        onPressed: () {
+
+                        },
+                        icon: Icon(Icons.push_pin_outlined)), //Icons.push_pin, Icons.push_pin_outlined
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    child: IconButton(
+                        color: ColorService().getCurrentScheme().button,
+                        onPressed: () {
+                        },
+                        icon: Icon(Icons.save)), //Icons.delete_forever
+                  ),
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: IconButton(
                       color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
@@ -622,7 +709,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       icon: Icon(MdiIcons.restart)),
                   ),
                   Positioned(
-                    top: 20,
+                    bottom: 20,
                     right: 20,
                     child: IconButton(
                       color: ColorService().getCurrentScheme().button,
@@ -636,7 +723,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
                         });
                       },
-                      icon: Icon(Icons.swap_vert)),
+                      icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
                   ),
                 ],
               ),
@@ -1014,7 +1101,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               : isInTransition
                 ? TextStyle(fontSize: 8)
                 : TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? (_isRunning() ? 1.45 : 1.4) : 1.23,
+        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? (_isRunning() ? (isPassed ? 1.23 : 1.45) : 1.4) : 1.23,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
@@ -1044,9 +1131,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
-  Widget? _getIconForNumber(int number, int count) {
+  Icon? _getIconForNumber(int number, int count, {bool forceAsc = false}) {
     int n = number;
-    if (_direction == Direction.DESC && number != 0) {
+    if (!forceAsc && _direction == Direction.DESC && number != 0) {
       n = count + 1 - number;
     }
     switch (n) {
@@ -1187,6 +1274,33 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .first;
     }
 
+  }
+
+  String _getSignalStringForNumber(int signal) {
+    switch (signal) {
+      case 1: return SignalService.signalPatternToString(SIG_1);
+      case 2: return SignalService.signalPatternToString(SIG_2);
+      case 3: return SignalService.signalPatternToString(SIG_3);
+      case 4: return SignalService.signalPatternToString(SIG_4);
+      case 5: return SignalService.signalPatternToString(SIG_5);
+      case 6: return SignalService.signalPatternToString(SIG_6);
+      case 7: return SignalService.signalPatternToString(SIG_7);
+      case 8: return SignalService.signalPatternToString(SIG_8);
+      case 9: return SignalService.signalPatternToString(SIG_9);
+      case 10: return SignalService.signalPatternToString(SIG_10);
+      case 11: return SignalService.signalPatternToString(SIG_11);
+      case 12: return SignalService.signalPatternToString(SIG_12);
+      case 13: return SignalService.signalPatternToString(SIG_13);
+      case 14: return SignalService.signalPatternToString(SIG_14);
+      case 15: return SignalService.signalPatternToString(SIG_15);
+      case 16: return SignalService.signalPatternToString(SIG_16);
+      case 17: return SignalService.signalPatternToString(SIG_17);
+      case 18: return SignalService.signalPatternToString(SIG_18);
+      case 19: return SignalService.signalPatternToString(SIG_19);
+      case 20: return SignalService.signalPatternToString(SIG_20);
+      case 100: return SignalService.signalPatternToString(SIG_END);
+    }
+    throw Exception("unknown signal $signal");
   }
 
 }
