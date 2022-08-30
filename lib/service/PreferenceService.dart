@@ -9,7 +9,8 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_NOTIFY_AT_BREAKS = "run/notifyAtBreaks";
   static final PREF_VIBRATE_AT_BREAKS = "run/vibrateAtBreaks";
   static final PREF_BREAK_ORDER_DESCENDING = "run/breakOrderDescending";
-  
+  static final DATA_SAVED_BREAK_DOWNS_PREFIX = "data/savedBreakDowns_";
+
 
   static final PreferenceService _service = PreferenceService._internal();
 
@@ -49,6 +50,12 @@ class PreferenceService implements ITranslatePreferences {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     return prefs.getBool(key);
+  }
+
+  Future<List<String>> getKeys(String prefix) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    return prefs.getKeys().where((key) => key.startsWith(prefix)).toList();
   }
 
   Future<bool> setString(String key, String value) async {

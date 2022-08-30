@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:bdt/service/BreakDownService.dart';
 import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
@@ -57,6 +58,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   TimerMode _timerMode = TimerMode.RELATIVE;
   Direction _direction = Direction.ASC;
 
+  List<BreakDown> _loadedBreakDowns = predefinedBreakDowns;
   BreakDown? _selectedBreakDown = null;
 
   final _notificationService = LocalNotificationService();
@@ -301,6 +303,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _time = _deriveTime();
     _notificationService.init();
 
+    _loadBreakDowns();
     _updateBreakOrder();
 
     getVolume(_preferenceService).then((value) {
@@ -337,6 +340,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
         }
       }
     });
+  }
+
+  void _loadBreakDowns() {
+    BreakDownService().getAllBreakDowns()
+        .then((value) {
+          setState(() => _loadedBreakDowns = value);
+        });
   }
 
   void _updateBreakOrder() {
@@ -557,6 +567,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       }
                     },
                     child: DropdownButtonFormField<BreakDown?>(
+                      isDense: true,
                       focusColor: ColorService().getCurrentScheme().accent,
                       onTap: () => FocusScope.of(context).unfocus(),
                       value: _selectedBreakDown,
@@ -567,7 +578,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       onChanged:  _isRunning() ? null : (value) {
                         _updateSelectedSlices(value);
                       },
-                      items: predefinedBreakDowns.map((BreakDown breakDown) {
+                      items: _loadedBreakDowns.map((BreakDown breakDown) {
+                        debugPrint("inList=$breakDown");
                         return DropdownMenuItem(
                           value: breakDown,
                           child: Text(breakDown.name),
@@ -679,18 +691,88 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     child: IconButton(
                         color: ColorService().getCurrentScheme().button,
                         onPressed: () {
-
+                          if (_isRunning()) {
+                            toastError(context, "Stop running first");
+                            return;
+                          }
                         },
                         icon: Icon(Icons.push_pin_outlined)), //Icons.push_pin, Icons.push_pin_outlined
                   ),
-                  Positioned(
-                    bottom: 20,
-                    left: 20,
-                    child: IconButton(
-                        color: ColorService().getCurrentScheme().button,
-                        onPressed: () {
-                        },
-                        icon: Icon(Icons.save)), //Icons.delete_forever
+                  Visibility(
+                    visible: _hasSliceSelectionChanged() || _canDeleteUnchangedUserBreakDown(),
+                    child: Positioned(
+                      bottom: 20,
+                      left: 20,
+                      child: IconButton(
+                          color: ColorService().getCurrentScheme().button,
+                          onPressed: () {
+                            if (_isRunning()) {
+                              toastError(context, "Stop running first");
+                              return;
+                            }
+                            if (_canDeleteUnchangedUserBreakDown()) {
+                              final breakDownName = _selectedBreakDown?.name;
+                              showConfirmationDialog(context, "Delete saved preset", "Are you sure to delete '$breakDownName' permanently?",
+                              okPressed: () {
+                                if (_selectedBreakDown != null) {
+                                  BreakDownService().deleteBreakDown(
+                                      _selectedBreakDown!);
+                                  _selectedBreakDown = null; // this not in setState
+                                  _loadBreakDowns();
+                                }
+                                Navigator.pop(context);
+                                toastInfo(context, "'$breakDownName' deleted");
+                              },
+                              cancelPressed: () {
+                                Navigator.pop(context);
+                              });
+                            }
+                            else {
+                              var newName = _selectedBreakDown?.name;
+                              var isPredefined = _selectedBreakDown?.isPredefined() == true;
+                              if (isPredefined) {
+                                newName = newName != null ? newName + " (modified)" : null;
+                              }
+                              showInputDialog(context, "Save preset", "Enter a name for your preset to save.",
+                                  initText: newName,
+                                  hintText: "choose a name",
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return "Preset name missing";
+                                    }
+                                    return null;
+                                  },
+                                  cancelPressed: () => Navigator.pop(context),
+                                  okPressed: (input) async {
+
+                                    final id = isPredefined ? null : _selectedBreakDown?.id;
+                                    var newName = input.trim();
+                                    final allBreakDowns = await BreakDownService().getAllBreakDowns();
+                                    final foundWithSameName = allBreakDowns
+                                        .where((e) => e.name == newName && e.id != id)
+                                        .isNotEmpty;
+                                    if (foundWithSameName) {
+                                      Navigator.pop(context);
+                                      toastError(context, "Preset name still used. Choose another one");
+                                      return;
+                                    }
+
+                                    final newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
+                                    BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
+                                      _selectedBreakDown = savedBreakDown; // this not in setState
+                                      _loadBreakDowns(); // here setState is called
+
+                                      toastInfo(context, "'$newName' saved");
+                                    });
+
+                                    Navigator.pop(context);
+                                  });
+                            }
+                          },
+                          icon: _canDeleteUnchangedUserBreakDown()
+                              ? Icon(Icons.delete_forever)
+                              : Icon(Icons.save),
+                    )),
                   ),
                   Positioned(
                     top: 20,
@@ -746,6 +828,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  bool _canDeleteUnchangedUserBreakDown() => _selectedBreakDown != null && (_selectedBreakDown?.isPredefined() == false) && !_hasBreakDownChanged();
+
+  bool _hasSliceSelectionChanged() => (_selectedBreakDown?.getSlicesAsString()??"") != _selectedSortedSlicesToString();
+
+  bool _hasBreakDownChanged() {
+    return _selectedBreakDown?.getSlicesAsString() != _selectedSortedSlicesToString();
+  }
+
   bool _isDeviceMuted() => _ringerStatus == RingerModeStatus.silent || _ringerStatus == RingerModeStatus.vibrate;
 
   void _switchTimerMode(DragEndDetails details) {
@@ -765,8 +855,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   bool _isBreakDownSelectionAtStart() {
-    if (predefinedBreakDowns.isNotEmpty) {
-      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+    if (_loadedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : _loadedBreakDowns
           .indexOf(_selectedBreakDown!);
 
       return currIndex <= 0;
@@ -775,39 +865,39 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   bool _isBreakDownSelectionAtEnd() {
-    if (predefinedBreakDowns.isNotEmpty) {
-      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+    if (_loadedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : _loadedBreakDowns
           .indexOf(_selectedBreakDown!);
 
-      return currIndex == predefinedBreakDowns.length - 1;
+      return currIndex == _loadedBreakDowns.length - 1;
     }
     return false;
   }
 
   void _moveBreakDownSelectionToPrevious() {
-    if (!_isRunning() && predefinedBreakDowns.isNotEmpty) {
-      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+    if (!_isRunning() && _loadedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : _loadedBreakDowns
           .indexOf(_selectedBreakDown!);
 
       if (currIndex != -1) {
-        currIndex = min(currIndex + 1, predefinedBreakDowns.length - 1);
+        currIndex = min(currIndex + 1, _loadedBreakDowns.length - 1);
       }
       else {
         currIndex = 0;
       }
-      _updateSelectedSlices(predefinedBreakDowns[currIndex]);
+      _updateSelectedSlices(_loadedBreakDowns[currIndex]);
     }
   }
 
   void _moveBreakDownSelectionToNext() {
-    if (!_isRunning() && predefinedBreakDowns.isNotEmpty) {
-      var currIndex = _selectedBreakDown == null ? -1 : predefinedBreakDowns
+    if (!_isRunning() && _loadedBreakDowns.isNotEmpty) {
+      var currIndex = _selectedBreakDown == null ? -1 : _loadedBreakDowns
           .indexOf(_selectedBreakDown!);
 
       if (currIndex != -1) {
         currIndex = max(currIndex - 1, 0);
       }
-      _updateSelectedSlices(predefinedBreakDowns[currIndex]);
+      _updateSelectedSlices(_loadedBreakDowns[currIndex]);
     }
   }
 
@@ -1056,10 +1146,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
   }
 
-  List<int> _selectedList() {
-    final list = _selectedSlices.toList()..sort();
-    return list;
-  }
+  List<int> _selectedSortedSlices() => _selectedSlices.toList()..sort();
 
   Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / MAX_SLICE).round());
 
@@ -1074,7 +1161,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final isInTransition = slice == _passedIndex;
       final isSelected = _selectedSlices.contains(slice);
       final isFinalSlice = slice == MAX_SLICE;
-      final list = _selectedList();
+      final list = _selectedSortedSlices();
       final indexOfSelected = list.indexOf(slice) + 1;
       var radius = isTouched ? r * 1.3 : r;
       if (isInTransition) {
@@ -1107,7 +1194,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               : isInTransition
                 ? TextStyle(fontSize: 8)
                 : TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : isFinalSlice ? (_isRunning() ? (isPassed ? 1.23 : 1.45) : 1.4) : 1.23,
+        titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,//isFinalSlice ? (_isRunning() ? (isPassed ? 1.23 : 1.45) : 1.4) : 1.23,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
@@ -1218,7 +1305,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         showStartInfo: true,
         fixed: true);
 
-    final list = _selectedList();
+    final list = _selectedSortedSlices();
     debugPrint("$list");
     for (int i=0; i < list.length; i++) {
       final signal = i + 1;
@@ -1252,15 +1339,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   DateTime _deriveTime() => roundToHour(DateTime.now().add(_duration));
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() {
+
+    return {
     'duration' : _duration.inSeconds,
     'time': _time.millisecondsSinceEpoch,
     'timerMode': _timerMode.index,
     'direction': _direction.index,
     'startedAt': _startedAt?.millisecondsSinceEpoch,
-    'selectedSlices': _selectedSlices.map((e) => e.toString()).reduce((value, element) => "$value,$element"),
+    'selectedSlices': _selectedSortedSlicesToString(),
     'selectedBreakDown': _selectedBreakDown?.id,
   };
+  }
+
+  String _selectedSortedSlicesToString() => _selectedSortedSlices().join(",");
 
   void _setStateFromJson(Map<String, dynamic> jsonMap) {
     _duration = Duration(seconds: jsonMap['duration']);
@@ -1275,11 +1367,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
         .forEach((e) => _selectedSlices.add(e));
 
     if (jsonMap['selectedBreakDown'] != null) {
-      _selectedBreakDown = predefinedBreakDowns
+      _selectedBreakDown = _loadedBreakDowns
           .where((e) => e.id == jsonMap['selectedBreakDown'])
           .first;
     }
-
   }
 
   String _getSignalStringForNumber(int signal) {

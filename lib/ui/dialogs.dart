@@ -44,6 +44,66 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   );
 }
 
+void showInputDialog(BuildContext context, String title, String message,
+    {Icon? icon,
+      String? initText,
+      String? hintText,
+      String? Function(String?)? validator,
+      Function(String)? okPressed,
+      Function()? cancelPressed}) {
+
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    final _textFieldController = TextEditingController(text: initText);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: icon != null
+              ? Row(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
+              child: icon,
+            ),
+            Text(title)
+          ],)
+              : Text(title),
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _textFieldController,
+                    decoration: InputDecoration(hintText: hintText),
+                    maxLength: 50,
+                    keyboardType: TextInputType.text,
+                    validator: validator,
+                    autovalidateMode: AutovalidateMode.onUserInteraction
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: cancelPressed
+            ),
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () {
+                if (okPressed != null && _formKey.currentState!.validate()) {
+                  okPressed(_textFieldController.text);
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+}
+
 Future<double?> showVolumeSliderDialog(BuildContext context, {Key? key,
   required double initialSelection,
   Function(double)? onChangedEnd,
