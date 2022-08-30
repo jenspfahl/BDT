@@ -9,6 +9,7 @@ import 'package:bdt/ui/BDTScaffold.dart';
 import '../main.dart';
 
 StreamController<int> colorSchemeController = StreamController();
+StreamController<int> audioSchemeController = StreamController();
 
 class BDTApp extends StatelessWidget {
 

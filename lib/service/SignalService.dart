@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:bdt/service/AudioService.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -42,14 +43,26 @@ class SignalService {
    */
   static makeSignalPattern(String pattern, {
     int? volume,
-    PreferenceService? preferenceService
+    PreferenceService? preferenceService,
+    bool neverSignalTwice = false
   }) async {
     final prefService = preferenceService ?? PreferenceService();
 
     final vol = volume ?? await getVolume(prefService) ?? MAX_VOLUME;
-    debugPrint("volume $vol");
+    final signalTwice = await shouldSignalTwice(PreferenceService());
+    debugPrint("volume $vol signal twice=$signalTwice");
 
     SignalService.setSignalVolume(vol);
+
+    await _makeSignalPattern(pattern);
+    if (signalTwice && !neverSignalTwice) {
+      await pause(Duration(seconds: 2));
+      await _makeSignalPattern(pattern);
+    }
+  }
+
+  static _makeSignalPattern(String pattern) async {
+    await FlutterSoundBridge.stopSysSound();
 
     for (int i = 0; i < pattern.length; i++) {
       var character=new String.fromCharCode(pattern.codeUnitAt(i));
@@ -88,7 +101,7 @@ class SignalService {
     await pause(Duration(milliseconds: 400));
   }
 
-  static makeSignal(Duration duration) async {
+  static makeSignal(Duration duration, {int? audioSchemeId}) async {
     debugPrint("signal $duration");
     final vibrateAllowed = await mayVibrate(PreferenceService());
 
@@ -99,8 +112,10 @@ class SignalService {
       }
     }
 
+    final audioScheme = AudioService().getScheme(audioSchemeId ?? PreferenceService().audioSchema);
+
     await FlutterSoundBridge.playSysSound(
-        AndroidSoundIDs.TONE_DTMF_C, duration); //TONE_DTMF_C
+        audioScheme.soundId, duration); //TONE_DTMF_C
     await pause(duration);
   }
 
@@ -108,6 +123,10 @@ class SignalService {
 
   static setSignalVolume(int volume) async {
     await FlutterSoundBridge.setVolume(volume);
+  }
+
+  Future<void> stopAll() async {
+    await FlutterSoundBridge.stopSysSound();
   }
 
 }

@@ -8,6 +8,10 @@ Future<bool> mayVibrate(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_VIBRATE_AT_BREAKS) == true;
 }
 
+Future<bool> shouldSignalTwice(PreferenceService preferenceService) async {
+  return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE) == true;
+}
+
 Future<int?> getVolume(PreferenceService preferenceService) async {
   await preferenceService.reload();
   return await preferenceService.getInt("SIGNAL_VOLUME");

@@ -3,11 +3,15 @@ import 'dart:ui';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/AudioScheme.dart';
+
 class PreferenceService implements ITranslatePreferences {
 
   static final PREF_COLOR_SCHEME = "common/colorScheme";
+  static final PREF_AUDIO_SCHEME = "common/audioScheme";
   static final PREF_NOTIFY_AT_BREAKS = "run/notifyAtBreaks";
   static final PREF_VIBRATE_AT_BREAKS = "run/vibrateAtBreaks";
+  static final PREF_SIGNAL_TWICE = "run/signalTwice";
   static final PREF_BREAK_ORDER_DESCENDING = "run/breakOrderDescending";
   static final DATA_SAVED_BREAK_DOWNS_PREFIX = "data/savedBreakDowns_";
 
@@ -16,6 +20,7 @@ class PreferenceService implements ITranslatePreferences {
 
   var languageSelection;
   int? _colorSchemaSelection = null;
+  int? _audioSchemaSelection = null;
 
   factory PreferenceService() {
     return _service;
@@ -24,6 +29,7 @@ class PreferenceService implements ITranslatePreferences {
   PreferenceService._internal() {}
 
   int get colorSchema => _colorSchemaSelection??0;
+  int get audioSchema => _audioSchemaSelection??DEFAULT_AUDIO_SCHEME_ID;
 
 
   init() async {
@@ -32,6 +38,7 @@ class PreferenceService implements ITranslatePreferences {
 
   refresh() async {
     _colorSchemaSelection = await getInt(PREF_COLOR_SCHEME);
+    _audioSchemaSelection = await getInt(PREF_AUDIO_SCHEME);
   }
 
   Future<String?> getString(String key) async {

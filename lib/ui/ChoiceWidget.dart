@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class ChoiceWidgetRow {
   String text;
-  TextStyle style;
+  TextStyle? style;
   
   ChoiceWidgetRow(this.text, this.style);
 }

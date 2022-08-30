@@ -1,10 +1,13 @@
 import 'package:bdt/main.dart';
+import 'package:bdt/service/SignalService.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../model/AudioScheme.dart';
 import '../model/ColorScheme.dart';
+import '../service/AudioService.dart';
 import '../service/ColorService.dart';
 import '../service/PreferenceService.dart';
 import 'BDTApp.dart';
@@ -27,8 +30,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _notifyAtBreaks = true;
   bool _vibrateAtBreaks = true;
+  bool _signalTwice = false;
   bool _breakOrderDescending = false;
   int _colorScheme = 0;
+  int _audioScheme = DEFAULT_AUDIO_SCHEME_ID;
 
   String _version = "n/a";
 
@@ -85,6 +90,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 );
               },
             ),
+            SettingsTile(
+              title: Text("Audio signals"),
+              description: Text(_getAudioSchemaName(_preferenceService.audioSchema)),
+              onPressed: (context) {
+                final choices = predefinedAudioSchemes
+                    .map((e) => ChoiceWidgetRow(e.name, null))
+                    .toList();
+                showChoiceDialog(context, "Select an audio scheme",
+                    choices,
+                    initialSelected: _audioScheme,
+                    okPressed: () {
+                      Navigator.pop(context);
+                      _preferenceService.setInt(PreferenceService.PREF_AUDIO_SCHEME, _audioScheme)
+                          .then((value) async {
+                        await _preferenceService.refresh();
+                        setState(() {
+                          _audioScheme = _preferenceService.audioSchema;
+                          audioSchemeController.add(_audioScheme);
+                        });
+                      });
+                    },
+                    cancelPressed: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        _audioScheme = _preferenceService.audioSchema;
+                      });
+                    },
+                    selectionChanged: (selection) {
+                      SignalService.makeSignal(Duration(milliseconds: 200), audioSchemeId: selection);
+                      _audioScheme = selection;
+                    }
+                );
+              },
+            ),
           ],
         ),
         SettingsSection(
@@ -108,6 +147,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onToggle: (bool value) {
                 _preferenceService.setBool(PreferenceService.PREF_VIBRATE_AT_BREAKS, value);
                 setState(() => _vibrateAtBreaks = value);
+              },
+            ),
+            SettingsTile.switchTile(
+              title: Text("Signal twice on reached breaks"),
+              description: Text("To not miss it, signal every break twice."),
+              initialValue: _signalTwice,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_SIGNAL_TWICE, value);
+                setState(() => _signalTwice = value);
               },
             ),
             CustomSettingsTile(child: Divider()),
@@ -178,6 +227,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (vibrateAtBreaks != null) {
       _vibrateAtBreaks = vibrateAtBreaks;
     }
+    final signalTwice = await _preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE);
+    if (signalTwice != null) {
+      _signalTwice = signalTwice;
+    }
     final breakOrderDescending = await _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING);
     if (breakOrderDescending != null) {
       _breakOrderDescending = breakOrderDescending;
@@ -185,12 +238,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final colorScheme = await _preferenceService.getInt(PreferenceService.PREF_COLOR_SCHEME);
     if (colorScheme != null) {
       _colorScheme = colorScheme;
+    } 
+    final audioScheme = await _preferenceService.getInt(PreferenceService.PREF_AUDIO_SCHEME);
+    if (audioScheme != null) {
+      _audioScheme = audioScheme;
     }
 
   }
 
   String _getColorSchemeName(int colorSchema) {
     return ColorService().getScheme(colorSchema).name;
+  }
+
+  String _getAudioSchemaName(int audioSchema) {
+    return AudioService().getScheme(audioSchema).name;
   }
 
 }
