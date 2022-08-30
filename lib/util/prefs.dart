@@ -17,6 +17,20 @@ setVolume(PreferenceService preferenceService, int volume) async {
   await preferenceService.setInt("SIGNAL_VOLUME", volume);
 }
 
+Future<int?> getPinnedBreakDown(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  return await preferenceService.getInt("PINNED_BREAKDOWN");
+}
+
+setPinnedBreakDown(PreferenceService preferenceService, int? id) async {
+  if (id != null) {
+    await preferenceService.setInt("PINNED_BREAKDOWN", id);
+  }
+  else {
+    await preferenceService.remove("PINNED_BREAKDOWN");
+  }
+}
+
 Future<String?> getRunState(PreferenceService preferenceService) async {
   await preferenceService.reload();
   return await preferenceService.getString("RUN_STATE");
