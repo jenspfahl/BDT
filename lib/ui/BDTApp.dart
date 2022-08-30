@@ -23,7 +23,7 @@ class BDTApp extends StatelessWidget {
         stream: colorSchemeController.stream,
         builder: (context, snapshot) {
           return MaterialApp(
-            title: APP_NAME,
+            title: APP_NAME_SHORT,
             localizationsDelegates: [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,

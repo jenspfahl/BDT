@@ -1,4 +1,6 @@
+import 'package:bdt/main.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -17,8 +19,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
 
-  final HOMEPAGE = "jepfa.de";
+  final HOMEPAGE = "github.com";
   final HOMEPAGE_SCHEME = "https://";
+  final HOMEPAGE_PATH = "/jenspfahl/bdt";
 
   final PreferenceService _preferenceService = PreferenceService();
 
@@ -27,10 +30,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _breakOrderDescending = false;
   int _colorScheme = 0;
 
+  String _version = "n/a";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("BDT Settings")),
+      appBar: AppBar(title: Text("$APP_NAME_SHORT Settings")),
       body: FutureBuilder(
         future: _loadAllPrefs(),
         builder: (context, AsyncSnapshot snapshot) => _buildSettingsList(),
@@ -126,14 +131,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onPressed: (value) {
                 showAboutDialog(
                     context: context,
-                    applicationVersion: "0.0.1",
+                    applicationVersion: _version,
+                    applicationName: APP_NAME_SHORT,
                     children: [
+                      Text("alias", style: TextStyle(fontSize: 12)),
+                      Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      Divider(),
                       Text("A timer with several breaks."),
                       Text(""),
                       InkWell(
-                          child: Text("Visit $HOMEPAGE for more"),
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Visit ',
+                              children: <TextSpan>[
+                                TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
+                                TextSpan(text: ' to view the code, report bugs and give stars!'),
+                              ],
+                            ),
+                          ),
                           onTap: () {
-                            launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE);
+                            launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH);
                           }),
                       Divider(),
                       Text("© Jens Pfahl 2022", style: TextStyle(fontSize: 12)),
@@ -149,6 +166,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   _loadAllPrefs() async {
+
+    final packageInfo = await PackageInfo.fromPlatform();
+    _version = packageInfo.version;
 
     final notifyAtBreaks = await _preferenceService.getBool(PreferenceService.PREF_NOTIFY_AT_BREAKS);
     if (notifyAtBreaks != null) {

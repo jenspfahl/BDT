@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:bdt/main.dart';
 import 'package:bdt/service/BreakDownService.dart';
 import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
@@ -293,7 +294,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       message = "$msg with $breaksCount breaks";
     }
 
-    _notificationService.showNotification("", id, "BDT", message, "bdt_signals", 
+    _notificationService.showNotification("", id, APP_NAME_SHORT, message, "bdt_signals",
         showProgress, fixed, progress, "");
   }
 
@@ -451,7 +452,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("BDT"),
+        title: Text(APP_NAME_SHORT),
         actions: [
           IconButton(
               onPressed: () async {
@@ -1235,22 +1236,22 @@ class BDTScaffoldState extends State<BDTScaffold> {
         value: value,
         radius: radius,
         showTitle: isTouched || isSelected || isFinalSlice || isInTransition,
-        title: _showSliceTitle(slice, isInTransition),
+        title: _showSliceTitle(slice, isInTransition, isFinalSlice),
         titleStyle:
           isFinalSlice
               ? TextStyle(fontSize: 14)
               : isInTransition
                 ? TextStyle(fontSize: 8)
                 : TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,//isFinalSlice ? (_isRunning() ? (isPassed ? 1.23 : 1.45) : 1.4) : 1.23,
+        titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
     }).toList();
   }
 
-  String _showSliceTitle(int slice, bool showCurrent) {
+  String _showSliceTitle(int slice, bool showCurrent, bool isFinalSlice) {
     if (_timerMode == TimerMode.RELATIVE) {
-      final sliceDuration = _getDelay(slice);
+      final sliceDuration = isFinalSlice ? _duration : _getDelay(slice);
       return formatDuration(
           showCurrent ? _getDelta()??sliceDuration : sliceDuration,
           withLineBreak: true,
@@ -1261,7 +1262,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
       debugPrint("nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration");
-      final sliceTime = nowOrStartedAt.add(sliceDuration);
+      final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
           showCurrent ? DateTime.now() : sliceTime,
           withLineBreak: true,
