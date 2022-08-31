@@ -19,6 +19,7 @@ import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -591,7 +592,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       value: _selectedBreakDown,
                       hint: Text("Break downs"),
                       iconEnabledColor: ColorService().getCurrentScheme().button,
-                      icon: Icon(Icons.av_timer),
+                      icon: ImageIcon(AssetImage("assets/launcher_bdt_adaptive_fore.png")),
                       isExpanded: true,
                       onChanged:  _isRunning() ? null : (value) {
                         _updateSelectedSlices(value);

@@ -44,7 +44,7 @@ class LocalNotificationService {
 
   Future<void> init() async {
     final AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/launcher_bdt');
+    AndroidInitializationSettings('@drawable/ic_bdt_bnw'); //'@mipmap/launcher_bdt'
 
     final IOSInitializationSettings initializationSettingsIOS =
     IOSInitializationSettings(

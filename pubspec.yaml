@@ -52,6 +52,7 @@ dependencies:
   slider_button: ^2.0.0
   sound_mode: ^2.0.2
   system_clock: ^1.2.0
+  flutter_svg: ^1.1.4
   flutter_sound_bridge:
     path: ../flutter_sound_bridge
 
@@ -97,6 +98,7 @@ flutter:
 
   assets:
     - assets/i18n/en.json
+    - assets/launcher_bdt_adaptive_fore.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

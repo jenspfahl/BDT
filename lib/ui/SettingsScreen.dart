@@ -204,7 +204,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Divider(),
                       Text("© Jens Pfahl 2022", style: TextStyle(fontSize: 12)),
                     ],
-                    applicationIcon: Icon(Icons.av_timer));
+                    applicationIcon: SizedBox(width: 64, height: 64,
+                        child: ImageIcon(AssetImage("assets/launcher_bdt_adaptive_fore.png"))));
               },
             ),
           ],
