@@ -20,16 +20,14 @@ class AudioScheme implements Comparable<AudioScheme> {
 
 }
 
-const DEFAULT_AUDIO_SCHEME_ID = 2; //TONE_DTMF_C
+const DEFAULT_AUDIO_SCHEME_ID = 2; //TONE_DTMF_D
 
 List<AudioScheme> predefinedAudioSchemes = [
-  AudioScheme(0, "DTMF A", AndroidSoundIDs.TONE_DTMF_A),
-  AudioScheme(1, "DTMF B", AndroidSoundIDs.TONE_DTMF_B),
-  AudioScheme(2, "DTMF C", AndroidSoundIDs.TONE_DTMF_C),
-  AudioScheme(3, "DTMF D", AndroidSoundIDs.TONE_DTMF_D),
-  AudioScheme(4, "DTMF P", AndroidSoundIDs.TONE_DTMF_P),
-  AudioScheme(5, "DTMF S", AndroidSoundIDs.TONE_DTMF_S),
-  AudioScheme(6, "DTMF 0", AndroidSoundIDs.TONE_DTMF_0),
+  AudioScheme(0, "Peep A", AndroidSoundIDs.TONE_DTMF_1),
+  AudioScheme(1, "Peep B", AndroidSoundIDs.TONE_DTMF_5),
+  AudioScheme(2, "Peep C", AndroidSoundIDs.TONE_DTMF_9),
+  AudioScheme(3, "Peep D", AndroidSoundIDs.TONE_DTMF_D),
+  AudioScheme(4, "Beep", AndroidSoundIDs.TONE_SUP_DIAL),
 
 
 

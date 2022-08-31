@@ -305,11 +305,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _time = _deriveTime();
     _notificationService.init();
 
-    getPinnedBreakDown(_preferenceService).then((value) {
-      setState(() => _pinnedBreakDownId = value);
-    });
-
-    _loadBreakDowns(true);
     _updateBreakOrder();
 
     getVolume(_preferenceService).then((value) {
@@ -329,6 +324,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
 
     getRunState(_preferenceService).then((persistedState) {
+      var focusPinned = true;
       if (persistedState != null) {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
         debugPrint("!!!!!!FOUND persisted state: $stateAsJson");
@@ -339,12 +335,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
           debugPrint("State is from this session, using it");
           _setStateFromJson(stateAsJson);
           _startTimer();
+          focusPinned = false;
         }
         else {
           debugPrint("State is outdated, deleting it");
           setRunState(_preferenceService, null);
         }
       }
+      _loadBreakDowns(focusPinned);
+
     });
   }
 
@@ -603,7 +602,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           value: breakDown,
                           child: breakDown.id == _pinnedBreakDownId
                               ? Row(children: [
-                                      Icon(Icons.push_pin),
+                                      Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
                                       Text(breakDown.name)
                                 ])
                               : Text(breakDown.name),
@@ -1404,6 +1403,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     'startedAt': _startedAt?.millisecondsSinceEpoch,
     'selectedSlices': _selectedSortedSlicesToString(),
     'selectedBreakDown': _selectedBreakDown?.id,
+    'pinnedBreakDownId': _pinnedBreakDownId,
   };
   }
 
@@ -1426,6 +1426,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .where((e) => e.id == jsonMap['selectedBreakDown'])
           .first;
     }
+    _pinnedBreakDownId = jsonMap['pinnedBreakDownId'];
   }
 
   String _getSignalStringForNumber(int signal) {
