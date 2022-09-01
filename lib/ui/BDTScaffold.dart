@@ -14,6 +14,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
@@ -464,7 +465,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
                             child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                           ),
-                          Text('Break ${_breakNumberToString(i)}: '),
+                          Text('Break ${_breakNumberToString(i)}: ',
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                           Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
                         ]))
                             .toList();
@@ -476,7 +478,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                               child: const Text(''),
                             ),
-                            const Text('Timer end: '),
+                            const Text('Timer end: ',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                             Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
                           ])
                       );

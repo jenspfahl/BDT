@@ -110,8 +110,8 @@ class SignalService {
     return pattern.characters.map((character) {
       switch (character) {
         case '|' : return 'bep ';
-        case '-' : return 'beeep ';
-        case '_' : return 'beeeeeep ';
+        case '-' : return 'beep ';
+        case '_' : return 'beeeeep ';
         case ' ' : return '   ';
       }
     }).join();
