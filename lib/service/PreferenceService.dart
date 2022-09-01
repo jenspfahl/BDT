@@ -1,62 +1,72 @@
 import 'dart:ui';
 
+import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter_translate/flutter_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/AudioScheme.dart';
 
+class PrefDef {
+  String key;
+  dynamic defaultValue;
+  PrefDef(this.key, this.defaultValue);
+}
 class PreferenceService implements ITranslatePreferences {
 
-  static final PREF_COLOR_SCHEME = "common/colorScheme";
-  static final PREF_AUDIO_SCHEME = "common/audioScheme";
-  static final PREF_NOTIFY_AT_BREAKS = "run/notifyAtBreaks";
-  static final PREF_VIBRATE_AT_BREAKS = "run/vibrateAtBreaks";
-  static final PREF_SIGNAL_TWICE = "run/signalTwice";
-  static final PREF_BREAK_ORDER_DESCENDING = "run/breakOrderDescending";
-  static final DATA_SAVED_BREAK_DOWNS_PREFIX = "data/savedBreakDowns_";
+  static final PREF_COLOR_SCHEME = PrefDef("pref/common/colorScheme", 0);
+  static final PREF_AUDIO_SCHEME = PrefDef("pref/common/audioScheme", DEFAULT_AUDIO_SCHEME_ID);
+  static final PREF_NOTIFY_AT_BREAKS = PrefDef("pref/run/notifyAtBreaks", true);
+  static final PREF_VIBRATE_AT_BREAKS = PrefDef("pref/run/vibrateAtBreaks", true);
+  static final PREF_SIGNAL_TWICE = PrefDef("pref/run/signalTwice", false);
+  static final PREF_BREAK_ORDER_DESCENDING = PrefDef("pref/run/breakOrderDescending", false);
+  static final PREF_SIGNAL_VOLUME = PrefDef("pref/run/signalVolume", MAX_VOLUME);
+  
+  static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef("data/savedBreakDowns_", null);
+  static final DATA_PINNED_BREAK_DOWN = PrefDef("data/pinnedBreakDown", null);
+  
+  static final STATE_RUN_STATE = PrefDef("state/runState", null);
+  static final STATE_RUN_BREAKS_COUNT = PrefDef("state/runBreaksCount", null);
+  static final STATE_RUN_PROGRESS = PrefDef("state/runProgress", null);
+  static final STATE_RUN_STARTED_AT = PrefDef("state/runStartedAt", null);
 
 
   static final PreferenceService _service = PreferenceService._internal();
 
   var languageSelection;
-  int? _colorSchemaSelection = null;
-  int? _audioSchemaSelection = null;
+  int colorSchema = PREF_COLOR_SCHEME.defaultValue;
+  int audioSchema = PREF_AUDIO_SCHEME.defaultValue;
 
   factory PreferenceService() {
     return _service;
   }
 
   PreferenceService._internal() {}
-
-  int get colorSchema => _colorSchemaSelection??0;
-  int get audioSchema => _audioSchemaSelection??DEFAULT_AUDIO_SCHEME_ID;
-
-
+  
   init() async {
     await refresh();
   }
 
   refresh() async {
-    _colorSchemaSelection = await getInt(PREF_COLOR_SCHEME);
-    _audioSchemaSelection = await getInt(PREF_AUDIO_SCHEME);
+    colorSchema = await getInt(PREF_COLOR_SCHEME) ?? PREF_COLOR_SCHEME.defaultValue;
+    audioSchema = await getInt(PREF_AUDIO_SCHEME) ?? PREF_AUDIO_SCHEME.defaultValue;
   }
 
-  Future<String?> getString(String key) async {
+  Future<String?> getString(PrefDef def) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.getString(key);
+    return prefs.getString(def.key)??def.defaultValue;
   }
 
-  Future<int?> getInt(String key) async {
+  Future<int?> getInt(PrefDef def) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.getInt(key);
+    return prefs.getInt(def.key)??def.defaultValue;
   }
 
-  Future<bool?> getBool(String key) async {
+  Future<bool?> getBool(PrefDef def) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.getBool(key);
+    return prefs.getBool(def.key)??def.defaultValue;
   }
 
   Future<List<String>> getKeys(String prefix) async {
@@ -65,27 +75,27 @@ class PreferenceService implements ITranslatePreferences {
     return prefs.getKeys().where((key) => key.startsWith(prefix)).toList();
   }
 
-  Future<bool> setString(String key, String value) async {
+  Future<bool> setString(PrefDef def, String value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.setString(key, value);
+    return prefs.setString(def.key, value);
   }
 
-  Future<bool> setInt(String key, int value) async {
+  Future<bool> setInt(PrefDef def, int value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.setInt(key, value);
+    return prefs.setInt(def.key, value);
   }
 
-  Future<bool> setBool(String key, bool value) async {
+  Future<bool> setBool(PrefDef def, bool value) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.setBool(key, value);
+    return prefs.setBool(def.key, value);
   }
 
-  Future<bool> remove(String key) async {
+  Future<bool> remove(PrefDef def) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    return prefs.remove(key);
+    return prefs.remove(def.key);
   }
 
 
@@ -120,7 +130,6 @@ class PreferenceService implements ITranslatePreferences {
   Locale? _getLocaleFromSelection(int languageSelection) {
     switch (languageSelection) {
       case 1: return Locale('en');
-      case 2: return Locale('de');
     }
     return null;
   }

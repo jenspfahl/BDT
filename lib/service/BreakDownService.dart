@@ -21,11 +21,11 @@ class BreakDownService {
 
   Future<List<BreakDown>> getAllBreakDowns() async {
     final breakDowns = List.of(predefinedBreakDowns, growable: true);
-    final keys = await PreferenceService().getKeys(PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX);
+    final keys = await PreferenceService().getKeys(PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX.key);
     keys.sort();
     debugPrint("breakdown keys: $keys");
     for (var key in keys) {
-      final jsonString = await PreferenceService().getString(key);
+      final jsonString = await PreferenceService().getString(PrefDef(key, null));
       if (jsonString != null) {
         final savedBreakDown = BreakDown.fromJson(jsonDecode(jsonString));
         breakDowns.add(savedBreakDown);
@@ -74,6 +74,6 @@ class BreakDownService {
     await PreferenceService().remove(key);
   }
 
-  String _createPrefKey(int id) => PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX + id.toString();
+  PrefDef _createPrefKey(int id) => PrefDef(PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX.key + id.toString(), null);
 
 }

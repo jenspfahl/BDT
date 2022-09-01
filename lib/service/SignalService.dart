@@ -48,7 +48,7 @@ class SignalService {
   }) async {
     final prefService = preferenceService ?? PreferenceService();
 
-    final vol = volume ?? await getVolume(prefService) ?? MAX_VOLUME;
+    final vol = volume ?? await getVolume(prefService);
     final signalTwice = await shouldSignalTwice(PreferenceService());
     debugPrint("volume $vol signal twice=$signalTwice");
 
@@ -65,7 +65,7 @@ class SignalService {
     await FlutterSoundBridge.stopSysSound();
 
     for (int i = 0; i < pattern.length; i++) {
-      var character=new String.fromCharCode(pattern.codeUnitAt(i));
+      var character = String.fromCharCode(pattern.codeUnitAt(i));
       switch (character) {
         case "|" : await makeShortSignal(); break;
         case "-" : await makeNormalSignal(); break;
@@ -104,6 +104,7 @@ class SignalService {
   static makeSignal(Duration duration, {int? audioSchemeId}) async {
     debugPrint("signal $duration");
     final vibrateAllowed = await mayVibrate(PreferenceService());
+    debugPrint("vibrate $vibrateAllowed");
 
     if (vibrateAllowed) {
       final hasVibration = await Vibration.hasVibrator() ?? false;

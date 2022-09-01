@@ -11,7 +11,6 @@ import '../service/AudioService.dart';
 import '../service/ColorService.dart';
 import '../service/PreferenceService.dart';
 import 'BDTApp.dart';
-import 'BDTScaffold.dart';
 import 'ChoiceWidget.dart';
 import 'dialogs.dart';
 
@@ -28,12 +27,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final PreferenceService _preferenceService = PreferenceService();
 
-  bool _notifyAtBreaks = true;
-  bool _vibrateAtBreaks = true;
-  bool _signalTwice = false;
-  bool _breakOrderDescending = false;
-  int _colorScheme = 0;
-  int _audioScheme = DEFAULT_AUDIO_SCHEME_ID;
+  bool _notifyAtBreaks = PreferenceService.PREF_NOTIFY_AT_BREAKS.defaultValue;
+  bool _vibrateAtBreaks = PreferenceService.PREF_VIBRATE_AT_BREAKS.defaultValue;
+  bool _signalTwice = PreferenceService.PREF_SIGNAL_TWICE.defaultValue;
+  bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
+  int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
+  int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
 
   String _version = "n/a";
 

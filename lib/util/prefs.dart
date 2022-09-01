@@ -1,7 +1,7 @@
 import '../service/PreferenceService.dart';
 
 Future<bool> mayNotify(PreferenceService preferenceService) async {
-  return await preferenceService.getBool(PreferenceService.PREF_NOTIFY_AT_BREAKS)??true == true;
+  return await preferenceService.getBool(PreferenceService.PREF_NOTIFY_AT_BREAKS) == true;
 }
 
 Future<bool> mayVibrate(PreferenceService preferenceService) async {
@@ -12,69 +12,69 @@ Future<bool> shouldSignalTwice(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE) == true;
 }
 
-Future<int?> getVolume(PreferenceService preferenceService) async {
+Future<int> getVolume(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getInt("SIGNAL_VOLUME");
+  return await preferenceService.getInt(PreferenceService.PREF_SIGNAL_VOLUME) ?? PreferenceService.PREF_SIGNAL_VOLUME.defaultValue;
 }
 
 setVolume(PreferenceService preferenceService, int volume) async {
-  await preferenceService.setInt("SIGNAL_VOLUME", volume);
+  await preferenceService.setInt(PreferenceService.PREF_SIGNAL_VOLUME, volume);
 }
 
 Future<int?> getPinnedBreakDown(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getInt("PINNED_BREAKDOWN");
+  return await preferenceService.getInt(PreferenceService.DATA_PINNED_BREAK_DOWN);
 }
 
 setPinnedBreakDown(PreferenceService preferenceService, int? id) async {
   if (id != null) {
-    await preferenceService.setInt("PINNED_BREAKDOWN", id);
+    await preferenceService.setInt(PreferenceService.DATA_PINNED_BREAK_DOWN, id);
   }
   else {
-    await preferenceService.remove("PINNED_BREAKDOWN");
+    await preferenceService.remove(PreferenceService.DATA_PINNED_BREAK_DOWN);
   }
 }
 
 Future<String?> getRunState(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getString("RUN_STATE");
+  return await preferenceService.getString(PreferenceService.STATE_RUN_STATE);
 }
 
 setRunState(PreferenceService preferenceService, String? value) async {
   if (value != null) {
-    await preferenceService.setString("RUN_STATE", value);
+    await preferenceService.setString(PreferenceService.STATE_RUN_STATE, value);
   }
   else {
-    await preferenceService.remove("RUN_STATE");
+    await preferenceService.remove(PreferenceService.STATE_RUN_STATE);
   }
 }
 
 Future<int?> getBreaksCount(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getInt("RUN_BREAKS_COUNT");
+  return await preferenceService.getInt(PreferenceService.STATE_RUN_BREAKS_COUNT);
 }
 
 setBreaksCount(PreferenceService preferenceService, int count) async {
-  await preferenceService.setInt("RUN_BREAKS_COUNT", count);
+  await preferenceService.setInt(PreferenceService.STATE_RUN_BREAKS_COUNT, count);
 }
 
 Future<int?> getProgress(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getInt("RUN_PROGRESS");
+  return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
 }
 
 setProgress(PreferenceService preferenceService, int? progress) async {
   if (progress != null) {
-    await preferenceService.setInt("RUN_PROGRESS", progress);
+    await preferenceService.setInt(PreferenceService.STATE_RUN_PROGRESS, progress);
   }
   else {
-    await preferenceService.remove("RUN_PROGRESS");
+    await preferenceService.remove(PreferenceService.STATE_RUN_PROGRESS);
   }
 }
 
 Future<DateTime?> getStartedAt(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  final startedAtAsEpochMillis = await preferenceService.getInt("RUN_STARTED_AT");
+  final startedAtAsEpochMillis = await preferenceService.getInt(PreferenceService.STATE_RUN_STARTED_AT);
   if (startedAtAsEpochMillis != null) {
     return DateTime.fromMillisecondsSinceEpoch(startedAtAsEpochMillis);
   }
@@ -85,9 +85,9 @@ Future<DateTime?> getStartedAt(PreferenceService preferenceService) async {
 
 setStartedAt(PreferenceService preferenceService, DateTime? startedAt) async {
   if (startedAt != null) {
-    await preferenceService.setInt("RUN_STARTED_AT", startedAt.millisecondsSinceEpoch);
+    await preferenceService.setInt(PreferenceService.STATE_RUN_STARTED_AT, startedAt.millisecondsSinceEpoch);
   }
   else {
-    await preferenceService.remove("RUN_STARTED_AT");
+    await preferenceService.remove(PreferenceService.STATE_RUN_STARTED_AT);
   }
 }
