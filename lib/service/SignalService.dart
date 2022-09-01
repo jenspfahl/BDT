@@ -109,9 +109,9 @@ class SignalService {
   static String signalPatternToString(String pattern) {
     return pattern.characters.map((character) {
       switch (character) {
-        case '|' : return 'pip ';
-        case '-' : return 'piep ';
-        case '_' : return 'peeeep ';
+        case '|' : return 'bep ';
+        case '-' : return 'beeep ';
+        case '_' : return 'beeeeeep ';
         case ' ' : return '   ';
       }
     }).join();

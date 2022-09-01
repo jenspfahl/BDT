@@ -185,7 +185,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Text('alias', style: TextStyle(fontSize: 12)),
                       Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       Divider(),
-                      Text('A timer with several breaks.'),
+                      Text('A timer with in-between notifications'),
                       Text(''),
                       InkWell(
                           child: Text.rich(
