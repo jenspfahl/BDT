@@ -1322,6 +1322,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
+    _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
 
     _startedAt = DateTime.now();
     _startTimer();
@@ -1345,9 +1346,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
       });
     }
     SignalService.makeSignalPattern(START,
-        volume: _volume,
-        neverSignalTwice: true,
-        preferenceService: _preferenceService,
+      volume: _volume,
+      neverSignalTwice: true,
+      signalAlthoughCancelled: true,
+      preferenceService: _preferenceService,
     );
     notify(0, 'Timer started',
         preferenceService: _preferenceService,
@@ -1384,6 +1386,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume,
         neverSignalTwice: true,
+        signalAlthoughCancelled: true,
         preferenceService: _preferenceService);
     for (int slice = 1; slice <= MAX_SLICE; slice++) {
       AndroidAlarmManager.cancel(slice);

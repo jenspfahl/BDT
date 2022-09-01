@@ -44,12 +44,13 @@ class SignalService {
   static makeSignalPattern(String pattern, {
     int? volume,
     PreferenceService? preferenceService,
-    bool neverSignalTwice = false
+    bool neverSignalTwice = false,
+    bool signalAlthoughCancelled = false
   }) async {
     final prefService = preferenceService ?? PreferenceService();
     final id = Random().nextInt(10000000);
 
-    initCurrentSignalling(prefService, id);
+    await initCurrentSignalling(prefService, id);
 
     final vol = volume ?? await getVolume(prefService);
     final signalTwice = await shouldSignalTwice(PreferenceService());
@@ -57,23 +58,23 @@ class SignalService {
 
     SignalService.setSignalVolume(vol);
 
-    await _makeSignalPattern(pattern, prefService, id);
+    await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
 
-    if (await _cancelSignalling(prefService, id)) {
+    if (!signalAlthoughCancelled && await _cancelSignalling(prefService, id)) {
       return;
     }
 
     if (signalTwice && !neverSignalTwice) {
       await pause(Duration(seconds: 2));
-      await _makeSignalPattern(pattern, prefService, id);
+      await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
     }
   }
 
   static Future<bool> _cancelSignalling(PreferenceService preferenceService, id) async {
-    bool isCurrent = await isCurrentSignalling(preferenceService, id);
-    if (!isCurrent) {
+    final otherId = await getCurrentSignalling(preferenceService);
+    if (otherId != null && otherId != id) {
       FlutterSoundBridge.stopSysSound(); // async
-      debugPrint("contCurrent=$id");
+      debugPrint("cancel due to other signal id $otherId than $id");
       return true;
     }
 
@@ -81,15 +82,17 @@ class SignalService {
     debugPrint("cancelRequested=$cancelRequested");
     if (cancelRequested) {
       FlutterSoundBridge.stopSysSound(); // async
+      debugPrint("cancel due to cancelRequested");
     }
     return cancelRequested;
   }
 
-  static _makeSignalPattern(String pattern, PreferenceService preferenceService, int id) async {
+  static _makeSignalPattern(String pattern, PreferenceService preferenceService,
+      int id, bool signalAlthoughCancelled) async {
     await FlutterSoundBridge.stopSysSound();
 
     for (int i = 0; i < pattern.length; i++) {
-      if (await _cancelSignalling(preferenceService, id)) {
+      if (!signalAlthoughCancelled && await _cancelSignalling(preferenceService, id)) {
         return;
       }
 
