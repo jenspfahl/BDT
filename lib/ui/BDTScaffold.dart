@@ -1321,6 +1321,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return;
     }
 
+    _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
+
     _startedAt = DateTime.now();
     _startTimer();
     _updateRunning();

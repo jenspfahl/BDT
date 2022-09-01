@@ -12,6 +12,21 @@ Future<bool> shouldSignalTwice(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE) == true;
 }
 
+Future<bool> shouldCancelSignalling(PreferenceService preferenceService) async {
+  preferenceService.reload();
+  return await preferenceService.getBool(PreferenceService.STATE_SIGNAL_CANCELLING) == true;
+}
+
+Future<bool> isCurrentSignalling(PreferenceService preferenceService, int id) async {
+  preferenceService.reload();
+  return await preferenceService.getInt(PreferenceService.STATE_SIGNAL_PROCESSING) == id;
+}
+
+initCurrentSignalling(PreferenceService preferenceService, int id) async {
+  preferenceService.reload();
+  await preferenceService.setInt(PreferenceService.STATE_SIGNAL_PROCESSING, id);
+}
+
 Future<int> getVolume(PreferenceService preferenceService) async {
   await preferenceService.reload();
   return await preferenceService.getInt(PreferenceService.PREF_SIGNAL_VOLUME) ?? PreferenceService.PREF_SIGNAL_VOLUME.defaultValue;

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:bdt/service/AudioService.dart';
 import 'package:flutter/cupertino.dart';
@@ -46,6 +47,9 @@ class SignalService {
     bool neverSignalTwice = false
   }) async {
     final prefService = preferenceService ?? PreferenceService();
+    final id = Random().nextInt(10000000);
+
+    initCurrentSignalling(prefService, id);
 
     final vol = volume ?? await getVolume(prefService);
     final signalTwice = await shouldSignalTwice(PreferenceService());
@@ -53,17 +57,42 @@ class SignalService {
 
     SignalService.setSignalVolume(vol);
 
-    await _makeSignalPattern(pattern);
+    await _makeSignalPattern(pattern, prefService, id);
+
+    if (await _cancelSignalling(prefService, id)) {
+      return;
+    }
+
     if (signalTwice && !neverSignalTwice) {
       await pause(Duration(seconds: 2));
-      await _makeSignalPattern(pattern);
+      await _makeSignalPattern(pattern, prefService, id);
     }
   }
 
-  static _makeSignalPattern(String pattern) async {
+  static Future<bool> _cancelSignalling(PreferenceService preferenceService, id) async {
+    bool isCurrent = await isCurrentSignalling(preferenceService, id);
+    if (!isCurrent) {
+      FlutterSoundBridge.stopSysSound(); // async
+      debugPrint("contCurrent=$id");
+      return true;
+    }
+
+    bool cancelRequested = await shouldCancelSignalling(preferenceService);
+    debugPrint("cancelRequested=$cancelRequested");
+    if (cancelRequested) {
+      FlutterSoundBridge.stopSysSound(); // async
+    }
+    return cancelRequested;
+  }
+
+  static _makeSignalPattern(String pattern, PreferenceService preferenceService, int id) async {
     await FlutterSoundBridge.stopSysSound();
 
     for (int i = 0; i < pattern.length; i++) {
+      if (await _cancelSignalling(preferenceService, id)) {
+        return;
+      }
+
       var character = String.fromCharCode(pattern.codeUnitAt(i));
       switch (character) {
         case '|' : await makeShortSignal(); break;
@@ -126,6 +155,7 @@ class SignalService {
   }
 
   Future<void> stopAll() async {
+    PreferenceService().setBool(PreferenceService.STATE_SIGNAL_CANCELLING, true);
     await FlutterSoundBridge.stopSysSound();
   }
 

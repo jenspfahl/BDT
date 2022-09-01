@@ -28,6 +28,8 @@ class PreferenceService implements ITranslatePreferences {
   static final STATE_RUN_BREAKS_COUNT = PrefDef('state/runBreaksCount', null);
   static final STATE_RUN_PROGRESS = PrefDef('state/runProgress', null);
   static final STATE_RUN_STARTED_AT = PrefDef('state/runStartedAt', null);
+  static final STATE_SIGNAL_PROCESSING = PrefDef('state/signalProcessing', null);
+  static final STATE_SIGNAL_CANCELLING = PrefDef('state/signalCancelling', null);
 
 
   static final PreferenceService _service = PreferenceService._internal();
