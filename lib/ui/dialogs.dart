@@ -185,10 +185,12 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: ChoiceWidget(
-            choices: choices,
-            initialSelected: initialSelected,
-            onChanged: selectionChanged,
+          content: SingleChildScrollView(
+            child: ChoiceWidget(
+              choices: choices,
+              initialSelected: initialSelected,
+              onChanged: selectionChanged,
+            ),
           ),
           actions: [
             cancelButton,

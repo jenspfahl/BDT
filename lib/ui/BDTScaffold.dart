@@ -628,8 +628,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
               thumbColor: ColorService().getCurrentScheme().button,
               padding: EdgeInsets.all(8),
               children: <TimerMode, Widget> {
-                TimerMode.RELATIVE: Icon(Icons.timer_outlined, color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                TimerMode.ABSOLUTE: Icon(Icons.alarm, color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                TimerMode.RELATIVE: Icon(Icons.timer_outlined,
+                    color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                TimerMode.ABSOLUTE: Icon(Icons.alarm,
+                    color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
               },
               onValueChanged: (value) {
                 if (value != null) {
