@@ -11,14 +11,14 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   List<Widget> actions = [];
   if (cancelPressed != null) {
     Widget cancelButton = TextButton(
-      child: Text("Cancel"),
+      child: Text('Cancel'),
       onPressed:  cancelPressed,
     );
     actions.add(cancelButton);
   }
   if (okPressed != null) {
     Widget okButton = TextButton(
-      child: Text("Ok"),
+      child: Text('Ok'),
       onPressed:  okPressed,
     );
     actions.add(okButton);
@@ -143,11 +143,11 @@ Future<bool?> showDurationPickerDialog({
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
             TextButton(
-              child: Text("Cancel"),
+              child: Text('Cancel'),
               onPressed:  () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text("Ok"),
+              child: Text('Ok'),
               onPressed:  () => Navigator.of(context).pop(true),
             )
             ],)
@@ -172,11 +172,11 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
   required ValueChanged<int> selectionChanged
 }) {
   Widget cancelButton = TextButton(
-    child: Text("Cancel"),
+    child: Text('Cancel'),
     onPressed:  cancelPressed,
   );
   Widget okButton = TextButton(
-    child: Text("Ok"),
+    child: Text('Ok'),
     onPressed:  okPressed,
   );
 

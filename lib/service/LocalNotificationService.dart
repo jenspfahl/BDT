@@ -77,7 +77,7 @@ class LocalNotificationService {
       title, 
       message,
       NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress, ongoing, progress)),
-      payload: receiverKey + "-" + payload,
+      payload: receiverKey + '-' + payload,
     );
   }
 
@@ -91,7 +91,7 @@ class LocalNotificationService {
         NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
         androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        payload: receiverKey + "-" + id.toString());
+        payload: receiverKey + '-' + id.toString());
   }
 
   Future<void> cancelNotification(int id) async {
@@ -112,7 +112,7 @@ class LocalNotificationService {
     });
 
     _flutterLocalNotificationsPlugin.pendingNotificationRequests().then((pendingNotifications) {
-      pendingNotifications.forEach((element) {debugPrint("pending notification: ${element.id} ${element.title} ${element.payload}");});
+      pendingNotifications.forEach((element) {debugPrint('pending notification: ${element.id} ${element.title} ${element.payload}');});
     });
 
     AndroidFlutterLocalNotificationsPlugin? nativePlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation();
@@ -125,9 +125,9 @@ class LocalNotificationService {
   }
 
   void _handlePayload(bool isAppLaunch, String payload) {
-    debugPrint("_handlePayload=$payload $isAppLaunch");
+    debugPrint('_handlePayload=$payload $isAppLaunch');
 
-    var index = payload.indexOf("-");
+    var index = payload.indexOf('-');
     if (index != -1) {
       final receiverKey = payload.substring(0, index);
       final actualPayload = payload.substring(index + 1);
@@ -136,7 +136,7 @@ class LocalNotificationService {
   }
   
   void _handleActiveNotification(int id, String? channelId) {
-    debugPrint("active notification: $id $channelId");
+    debugPrint('active notification: $id $channelId');
     _activeNotificationHandler.forEach((h) => h.call(id, channelId));
   }
 
@@ -145,7 +145,7 @@ class LocalNotificationService {
     return AndroidNotificationDetails(
       channelId,
       APP_NAME,
-      channelDescription: "Timer points",
+      channelDescription: 'Timer points',
       color: color,
       playSound: false,
       vibrationPattern: null,

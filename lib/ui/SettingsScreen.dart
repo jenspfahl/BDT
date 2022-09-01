@@ -21,9 +21,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
 
-  final HOMEPAGE = "github.com";
-  final HOMEPAGE_SCHEME = "https://";
-  final HOMEPAGE_PATH = "/jenspfahl/bdt";
+  final HOMEPAGE = 'github.com';
+  final HOMEPAGE_SCHEME = 'https://';
+  final HOMEPAGE_PATH = '/jenspfahl/bdt';
 
   final PreferenceService _preferenceService = PreferenceService();
 
@@ -34,12 +34,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
 
-  String _version = "n/a";
+  String _version = 'n/a';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("$APP_NAME_SHORT Settings")),
+      appBar: AppBar(title: Text('$APP_NAME_SHORT Settings')),
       body: FutureBuilder(
         future: _loadAllPrefs(),
         builder: (context, AsyncSnapshot snapshot) => _buildSettingsList(),
@@ -52,10 +52,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return SettingsList(
       sections: [
         SettingsSection(
-          title: Text("Common", style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text('Common', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
-              title: Text("Color scheme"),
+              title: Text('Color scheme'),
               description: Text(_getColorSchemeName(_preferenceService.colorSchema)),
               onPressed: (context) {
                 final choices = predefinedColorSchemes
@@ -63,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         e.name,
                         TextStyle(color:  e.foreground)))
                     .toList();
-                showChoiceDialog(context, "Select a color scheme",
+                showChoiceDialog(context, 'Select a color scheme',
                     choices,
                     initialSelected: _colorScheme,
                     okPressed: () {
@@ -90,13 +90,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile(
-              title: Text("Audio signals"),
+              title: Text('Audio signals'),
               description: Text(_getAudioSchemaName(_preferenceService.audioSchema)),
               onPressed: (context) {
                 final choices = predefinedAudioSchemes
                     .map((e) => ChoiceWidgetRow(e.name, null))
                     .toList();
-                showChoiceDialog(context, "Select an audio scheme",
+                showChoiceDialog(context, 'Select an audio scheme',
                     choices,
                     initialSelected: _audioScheme,
                     okPressed: () {
@@ -126,11 +126,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
         SettingsSection(
-          title: Text("Run Settings", style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text('Run Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: Text("Notify on reached breaks"),
-              description: Text("Notifies when a break is reached and a run has started or ended."),
+              title: Text('Notify on reached breaks'),
+              description: Text('Notifies when a break is reached and a run has started or ended.'),
               initialValue: _notifyAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -139,8 +139,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text("Vibrate on reached breaks"),
-              description: Text("Vibrates with a pattern when a break is reached and a run has started or ended."),
+              title: Text('Vibrate on reached breaks'),
+              description: Text('Vibrates with a pattern when a break is reached and a run has started or ended.'),
               initialValue: _vibrateAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -149,8 +149,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text("Signal twice on reached breaks"),
-              description: Text("To not miss it, signal every break twice."),
+              title: Text('Signal twice on reached breaks'),
+              description: Text('To not miss it, signal every break twice.'),
               initialValue: _signalTwice,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -160,8 +160,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             CustomSettingsTile(child: Divider()),
             SettingsTile.switchTile(
-              title: Text("Break order descending by default"),
-              description: Text("Instead of sequencing 1,2,3 .. it sequences ..,3,2,1."),
+              title: Text('Break order descending by default'),
+              description: Text('Instead of sequencing 1,2,3 .. it sequences ..,3,2,1.'),
               initialValue: _breakOrderDescending,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -172,21 +172,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
         SettingsSection(
-          title: Text("Info", style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
-              title: Text("About the app"),
+              title: Text('About the app'),
               onPressed: (value) {
                 showAboutDialog(
                     context: context,
                     applicationVersion: _version,
                     applicationName: APP_NAME_SHORT,
                     children: [
-                      Text("alias", style: TextStyle(fontSize: 12)),
+                      Text('alias', style: TextStyle(fontSize: 12)),
                       Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       Divider(),
-                      Text("A timer with several breaks."),
-                      Text(""),
+                      Text('A timer with several breaks.'),
+                      Text(''),
                       InkWell(
                           child: Text.rich(
                             TextSpan(
@@ -201,10 +201,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH);
                           }),
                       Divider(),
-                      Text("© Jens Pfahl 2022", style: TextStyle(fontSize: 12)),
+                      Text('© Jens Pfahl 2022', style: TextStyle(fontSize: 12)),
                     ],
                     applicationIcon: SizedBox(width: 64, height: 64,
-                        child: ImageIcon(AssetImage("assets/launcher_bdt_adaptive_fore.png"))));
+                        child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))));
               },
             ),
           ],

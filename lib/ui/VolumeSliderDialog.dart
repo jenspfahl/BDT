@@ -1,6 +1,3 @@
-import 'package:bdt/ui/BDTApp.dart';
-import 'package:bdt/util/prefs.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../service/ColorService.dart';
@@ -67,7 +64,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
               activeColor: ColorService().getCurrentScheme().button,
               hoverColor: ColorService().getCurrentScheme().accent,
               value: _currentValue == 0,
-              title: Text("Mute"),
+              title: Text('Mute'),
               onChanged: (value) {
                 setState(() {
                   if (value) {

@@ -23,7 +23,7 @@ class BreakDownService {
     final breakDowns = List.of(predefinedBreakDowns, growable: true);
     final keys = await PreferenceService().getKeys(PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX.key);
     keys.sort();
-    debugPrint("breakdown keys: $keys");
+    debugPrint('breakdown keys: $keys');
     for (var key in keys) {
       final jsonString = await PreferenceService().getString(PrefDef(key, null));
       if (jsonString != null) {
@@ -31,7 +31,7 @@ class BreakDownService {
         breakDowns.add(savedBreakDown);
       }
     }
-    debugPrint("loaded breakdowns: $breakDowns");
+    debugPrint('loaded breakdowns: $breakDowns');
     return List.of(breakDowns);
   }
 
@@ -45,13 +45,13 @@ class BreakDownService {
       if (jsonString != null) {
         return BreakDown.fromJson(jsonDecode(jsonString));
       }
-      throw Exception("BreakDown for id $id not found in prefs");
+      throw Exception('BreakDown for id $id not found in prefs');
     }
   }
 
   Future<BreakDown> saveBreakDown(BreakDown breakDown) async {
     if (breakDown.isPredefined()) {
-      throw Exception("Predefined breakdowns may not be overwritten");
+      throw Exception('Predefined breakdowns may not be overwritten');
     }
 
     if (breakDown.id == 0) {
@@ -68,7 +68,7 @@ class BreakDownService {
   
   deleteBreakDown(BreakDown breakDown) async {
     if (breakDown.isPredefined()) {
-      throw Exception("Predefined breakdowns may not be deleted");
+      throw Exception('Predefined breakdowns may not be deleted');
     }
     final key = _createPrefKey(breakDown.id);
     await PreferenceService().remove(key);

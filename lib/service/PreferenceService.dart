@@ -13,21 +13,21 @@ class PrefDef {
 }
 class PreferenceService implements ITranslatePreferences {
 
-  static final PREF_COLOR_SCHEME = PrefDef("pref/common/colorScheme", 0);
-  static final PREF_AUDIO_SCHEME = PrefDef("pref/common/audioScheme", DEFAULT_AUDIO_SCHEME_ID);
-  static final PREF_NOTIFY_AT_BREAKS = PrefDef("pref/run/notifyAtBreaks", true);
-  static final PREF_VIBRATE_AT_BREAKS = PrefDef("pref/run/vibrateAtBreaks", true);
-  static final PREF_SIGNAL_TWICE = PrefDef("pref/run/signalTwice", false);
-  static final PREF_BREAK_ORDER_DESCENDING = PrefDef("pref/run/breakOrderDescending", false);
-  static final PREF_SIGNAL_VOLUME = PrefDef("pref/run/signalVolume", MAX_VOLUME);
+  static final PREF_COLOR_SCHEME = PrefDef('pref/common/colorScheme', 0);
+  static final PREF_AUDIO_SCHEME = PrefDef('pref/common/audioScheme', DEFAULT_AUDIO_SCHEME_ID);
+  static final PREF_NOTIFY_AT_BREAKS = PrefDef('pref/run/notifyAtBreaks', true);
+  static final PREF_VIBRATE_AT_BREAKS = PrefDef('pref/run/vibrateAtBreaks', true);
+  static final PREF_SIGNAL_TWICE = PrefDef('pref/run/signalTwice', false);
+  static final PREF_BREAK_ORDER_DESCENDING = PrefDef('pref/run/breakOrderDescending', false);
+  static final PREF_SIGNAL_VOLUME = PrefDef('pref/run/signalVolume', MAX_VOLUME);
   
-  static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef("data/savedBreakDowns_", null);
-  static final DATA_PINNED_BREAK_DOWN = PrefDef("data/pinnedBreakDown", null);
+  static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef('data/savedBreakDowns_', null);
+  static final DATA_PINNED_BREAK_DOWN = PrefDef('data/pinnedBreakDown', null);
   
-  static final STATE_RUN_STATE = PrefDef("state/runState", null);
-  static final STATE_RUN_BREAKS_COUNT = PrefDef("state/runBreaksCount", null);
-  static final STATE_RUN_PROGRESS = PrefDef("state/runProgress", null);
-  static final STATE_RUN_STARTED_AT = PrefDef("state/runStartedAt", null);
+  static final STATE_RUN_STATE = PrefDef('state/runState', null);
+  static final STATE_RUN_BREAKS_COUNT = PrefDef('state/runBreaksCount', null);
+  static final STATE_RUN_PROGRESS = PrefDef('state/runProgress', null);
+  static final STATE_RUN_STARTED_AT = PrefDef('state/runStartedAt', null);
 
 
   static final PreferenceService _service = PreferenceService._internal();

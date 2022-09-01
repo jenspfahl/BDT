@@ -19,7 +19,6 @@ import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -74,148 +73,148 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
 
   static Future<void> signal1() async {
-    debugPrint("sig 1");
+    debugPrint('sig 1');
 
     await notifySignal(1);
     await SignalService.makeSignalPattern(SIG_1);
   }
 
   static Future<void> signal2() async {
-    debugPrint("sig 2");
+    debugPrint('sig 2');
 
     await notifySignal(2);
     await SignalService.makeSignalPattern(SIG_2);
   }
 
   static Future<void> signal3() async {
-    debugPrint("sig 3");
+    debugPrint('sig 3');
 
     await notifySignal(3);
     await SignalService.makeSignalPattern(SIG_3);
   }
 
   static Future<void> signal4() async {
-    debugPrint("sig 4");
+    debugPrint('sig 4');
 
     await notifySignal(4);
     await SignalService.makeSignalPattern(SIG_4);
   }
 
   static Future<void> signal5() async {
-    debugPrint("sig 5");
+    debugPrint('sig 5');
 
     await notifySignal(5);
     await SignalService.makeSignalPattern(SIG_5);
   }
 
   static Future<void> signal6() async {
-    debugPrint("sig 6");
+    debugPrint('sig 6');
 
     await notifySignal(6);
     await SignalService.makeSignalPattern(SIG_6);
   }
 
   static Future<void> signal7() async {
-    debugPrint("sig 7");
+    debugPrint('sig 7');
 
     await notifySignal(7);
     await SignalService.makeSignalPattern(SIG_7);
   }
 
   static Future<void> signal8() async {
-    debugPrint("sig 8");
+    debugPrint('sig 8');
 
     await notifySignal(8);
     await SignalService.makeSignalPattern(SIG_8);
   }
 
   static Future<void> signal9() async {
-    debugPrint("sig 9");
+    debugPrint('sig 9');
 
     await notifySignal(9);
     await SignalService.makeSignalPattern(SIG_9);
   }
 
   static Future<void> signal10() async {
-    debugPrint("sig 10");
+    debugPrint('sig 10');
 
     await notifySignal(10);
     await SignalService.makeSignalPattern(SIG_10);
   }
 
   static Future<void> signal11() async {
-    debugPrint("sig 11");
+    debugPrint('sig 11');
 
     await notifySignal(11);
     await SignalService.makeSignalPattern(SIG_11);
   }
 
   static Future<void> signal12() async {
-    debugPrint("sig 12");
+    debugPrint('sig 12');
 
     await notifySignal(12);
     await SignalService.makeSignalPattern(SIG_12);
   }
 
   static Future<void> signal13() async {
-    debugPrint("sig 13");
+    debugPrint('sig 13');
 
     await notifySignal(13);
     await SignalService.makeSignalPattern(SIG_13);
   }
 
   static Future<void> signal14() async {
-    debugPrint("sig 14");
+    debugPrint('sig 14');
 
     await notifySignal(14);
     await SignalService.makeSignalPattern(SIG_14);
   }
 
   static Future<void> signal15() async {
-    debugPrint("sig 15");
+    debugPrint('sig 15');
 
     await notifySignal(15);
     await SignalService.makeSignalPattern(SIG_15);
   }
 
   static Future<void> signal16() async {
-    debugPrint("sig 16");
+    debugPrint('sig 16');
 
     await notifySignal(16);
     await SignalService.makeSignalPattern(SIG_16);
   }
 
   static Future<void> signal17() async {
-    debugPrint("sig 17");
+    debugPrint('sig 17');
 
     await notifySignal(17);
     await SignalService.makeSignalPattern(SIG_17);
   }
 
   static Future<void> signal18() async {
-    debugPrint("sig 18");
+    debugPrint('sig 18');
 
     await notifySignal(18);
     await SignalService.makeSignalPattern(SIG_18);
   }
 
   static Future<void> signal19() async {
-    debugPrint("sig 19");
+    debugPrint('sig 19');
 
     await notifySignal(19);
     await SignalService.makeSignalPattern(SIG_19);
   }
 
   static Future<void> signal20() async {
-    debugPrint("sig 20");
+    debugPrint('sig 20');
 
     await notifySignal(20);
     await SignalService.makeSignalPattern(SIG_20);
   }
   
   static Future<void> signalEnd() async {
-    debugPrint("sig end");
-    await notify(100, "Timer finished", showBreakInfo: true, showProgress: true);
+    debugPrint('sig end');
+    await notify(100, 'Timer finished', showBreakInfo: true, showProgress: true);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
@@ -224,7 +223,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (_direction == Direction.DESC) {
       s = _selectedSlices.length + 1 - signal;
     }
-    debugPrint("signal=$signal s=$s");
+    debugPrint('signal=$signal s=$s');
     switch (s) {
       case 1: return signal1;
       case 2: return signal2;
@@ -247,7 +246,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 19: return signal19;
       case 20: return signal20;
     }
-    throw Exception("unknown signal $signal");
+    throw Exception('unknown signal $signal');
   }
 
   static Future<void> notifySignal(int signal) async {
@@ -255,11 +254,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final breaksCount = await getBreaksCount(prefService);
 
     final signalAsString = _breakNumberToString(signal);
-    await notify(signal, "Break $signalAsString of $breaksCount reached",
+    await notify(signal, 'Break $signalAsString of $breaksCount reached',
         showProgress: true, showBreakInfo: true, fixed: true);
   }
 
-  static String _breakNumberToString(int signal) => signal <= 10 ? signal.toString() : "10+${signal-10} ($signal)";
+  static String _breakNumberToString(int signal) => signal <= 10 ? signal.toString() : '10+${signal-10} ($signal)';
 
   static Future<void> notify(int id, String msg, {
     PreferenceService? preferenceService, 
@@ -271,7 +270,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }) async {
     final prefService = preferenceService ?? PreferenceService();
     if (await mayNotify(prefService) != true) {
-      debugPrint("notification disabled");
+      debugPrint('notification disabled');
       return;
     }
     final _notificationService = notificationService ?? LocalNotificationService();
@@ -287,16 +286,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
         final duration = startedAt.difference(now).abs();
-        message = "$msg after ${formatDuration(duration)}";
+        message = '$msg after ${formatDuration(duration)}';
       }
     }
     else if (showStartInfo) {
       final breaksCount = await getBreaksCount(prefService);
-      message = "$msg with $breaksCount breaks";
+      message = '$msg with $breaksCount breaks';
     }
 
-    _notificationService.showNotification("", id, APP_NAME_SHORT, message, "bdt_signals",
-        showProgress, fixed, progress, "");
+    _notificationService.showNotification('', id, APP_NAME_SHORT, message, 'bdt_signals',
+        showProgress, fixed, progress, '');
   }
 
   @override
@@ -309,9 +308,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _updateBreakOrder();
 
     getVolume(_preferenceService).then((value) {
-      if (value != null) {
-        setState(() => _volume = value);
-      }
+      setState(() => _volume = value);
     });
     SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
 
@@ -319,7 +316,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-          debugPrint("refresh ui values");
+          debugPrint('refresh ui values');
         });
       }
     });
@@ -328,18 +325,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
       var focusPinned = true;
       if (persistedState != null) {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
-        debugPrint("!!!!!!FOUND persisted state: $stateAsJson");
+        debugPrint('!!!!!!FOUND persisted state: $stateAsJson');
         final lastBoot = DateTime.now().subtract(SystemClock.elapsedRealtime());
         final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(stateAsJson['startedAt']);
-        debugPrint("last boot was ${formatDateTime(lastBoot)}, persisted state is from ${formatDateTime(persistedStateFrom)}");
+        debugPrint('last boot was ${formatDateTime(lastBoot)}, persisted state is from ${formatDateTime(persistedStateFrom)}');
         if (lastBoot.isBefore(persistedStateFrom)) {
-          debugPrint("State is from this session, using it");
+          debugPrint('State is from this session, using it');
           _setStateFromJson(stateAsJson);
           _startTimer();
           focusPinned = false;
         }
         else {
-          debugPrint("State is outdated, deleting it");
+          debugPrint('State is outdated, deleting it');
           setRunState(_preferenceService, null);
         }
       }
@@ -387,7 +384,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
       if (mounted) {
         _updateRunning();
-        debugPrint(".. timer refresh #${_runTimer?.tick} ..");
+        debugPrint('.. timer refresh #${_runTimer?.tick} ..');
       }
     });
   }
@@ -401,7 +398,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
-      debugPrint("delta=$delta, ratio = $ratio");
+      debugPrint('delta=$delta, ratio = $ratio');
       setState(() {
         _passedIndex = (MAX_SLICE * ratio).floor() + 1;
         // update all
@@ -467,7 +464,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
                             child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                           ),
-                          Text("Break ${_breakNumberToString(i)}: "),
+                          Text('Break ${_breakNumberToString(i)}: '),
                           Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
                         ]))
                             .toList();
@@ -477,9 +474,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           children: [
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-                              child: Text(""),
+                              child: const Text(''),
                             ),
-                            Text("Timer end: "),
+                            const Text('Timer end: '),
                             Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
                           ])
                       );
@@ -488,12 +485,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         contentPadding: EdgeInsets.all(16),
                         title: Column(
                           children: [
-                            Text("Help"),
-                            Text(""),
-                            Text("With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.",
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                            Text("Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows:",
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                            const Text('Help'),
+                            const Text(''),
+                            const Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                            const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows:',
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
                           ],
                         ),
                         content: Builder(
@@ -514,7 +511,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         ),
                         actions: [
                           TextButton(
-                            child: Text("Close"),
+                            child: const Text('Close'),
                             onPressed:  () {
                               Navigator.pop(context);
                             },
@@ -524,13 +521,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     }
                 );
               },
-              icon: Icon(Icons.help_outline)),
+              icon: const Icon(Icons.help_outline)),
           IconButton(
               onPressed: () async {
                 _ringerStatus = await SoundMode.ringerModeStatus;
                 setState((){});
                 if (_isDeviceMuted()) {
-                  toastInfo(context, "Device is muted. Unmute first to set volume.");
+                  toastInfo(context, 'Device is muted. Unmute first to set volume.');
                   return;
                 }
 
@@ -548,13 +545,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 }
                 SignalService.setSignalVolume(_volume);
               },
-              icon: _isDeviceMuted() ? Icon(Icons.volume_off) : createVolumeIcon(_volume)),
+              icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
           IconButton(
               onPressed: () {
                 Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
                     .then((value) => setState(() => _updateBreakOrder()));
               },
-              icon: Icon(Icons.settings)),
+              icon: const Icon(Icons.settings)),
         ],
       ),
       body: Column(
@@ -568,7 +565,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     child: IconButton(
                       onPressed: () => _moveBreakDownSelectionToNext(),
                       color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                      icon: Icon(Icons.arrow_back_ios),
+                      icon: const Icon(Icons.arrow_back_ios),
                     )),
                 Expanded(
                   flex: 9,
@@ -590,15 +587,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       focusColor: ColorService().getCurrentScheme().accent,
                       onTap: () => FocusScope.of(context).unfocus(),
                       value: _selectedBreakDown,
-                      hint: Text("Break downs"),
+                      hint: const Text('Break downs'),
                       iconEnabledColor: ColorService().getCurrentScheme().button,
-                      icon: ImageIcon(AssetImage("assets/launcher_bdt_adaptive_fore.png")),
+                      icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
                       isExpanded: true,
                       onChanged:  _isRunning() ? null : (value) {
                         _updateSelectedSlices(value);
                       },
                       items: _loadedBreakDowns.map((BreakDown breakDown) {
-                        debugPrint("inList=$breakDown");
+                        debugPrint('inList=$breakDown');
                         return DropdownMenuItem(
                           value: breakDown,
                           child: breakDown.id == _pinnedBreakDownId
@@ -615,7 +612,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 Flexible(child: IconButton(
                   color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                   onPressed: () => _moveBreakDownSelectionToPrevious(),
-                  icon: Icon(Icons.arrow_forward_ios),
+                  icon: const Icon(Icons.arrow_forward_ios),
                 )),
               ],
             ),
@@ -662,7 +659,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 }
                                 _touchedIndex =
                                     (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
-                                debugPrint("_touchedIndex=$_touchedIndex");
+                                debugPrint('_touchedIndex=$_touchedIndex');
                                 if (_touchedIndex != 0) {
                                   if (_selectedSlices.contains(_touchedIndex)) {
                                     _selectedSlices.remove(_touchedIndex);
@@ -672,11 +669,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                       _selectedSlices.add(_touchedIndex);
                                     }
                                     else {
-                                      toastError(context, "max $MAX_BREAKS breaks allowed");
+                                      toastError(context, 'max $MAX_BREAKS breaks allowed');
                                     }
                                   }
                                 }
-                                debugPrint("_selected=$_selectedSlices");
+                                debugPrint('_selected=$_selectedSlices');
 
                               });
                             }),
@@ -718,7 +715,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           color: ColorService().getCurrentScheme().button,
                           onPressed: () {
                             if (_isRunning()) {
-                              toastError(context, "Stop running first");
+                              toastError(context, 'Stop running first');
                               return;
                             }
                             if (_selectedBreakDown != null) {
@@ -736,8 +733,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             }
                           },
                           icon: _isPinnedBreakDown()
-                              ? Icon(Icons.push_pin)
-                              : Icon(Icons.push_pin_outlined),
+                              ? const Icon(Icons.push_pin)
+                              : const Icon(Icons.push_pin_outlined),
                       ),
                     ),
                   ),
@@ -750,12 +747,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           color: ColorService().getCurrentScheme().button,
                           onPressed: () {
                             if (_isRunning()) {
-                              toastError(context, "Stop running first");
+                              toastError(context, 'Stop running first');
                               return;
                             }
                             if (_canDeleteUnchangedUserBreakDown()) {
                               final breakDownName = _selectedBreakDown?.name;
-                              showConfirmationDialog(context, "Delete saved preset", "Are you sure to delete '$breakDownName' permanently?",
+                              showConfirmationDialog(context, 'Delete saved preset', "Are you sure to delete '$breakDownName' permanently?",
                               okPressed: () {
                                 if (_selectedBreakDown != null) {
                                   BreakDownService().deleteBreakDown(_selectedBreakDown!);
@@ -780,14 +777,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               var newName = _selectedBreakDown?.name;
                               var isPredefined = _selectedBreakDown?.isPredefined() == true;
                               if (isPredefined) {
-                                newName = newName != null ? newName + " (modified)" : null;
+                                newName = newName != null ? newName + ' (modified)' : null;
                               }
-                              showInputDialog(context, "Save preset", "Enter a name for your preset to save.",
+                              showInputDialog(context, 'Save preset', 'Enter a name for your preset to save.',
                                   initText: newName,
-                                  hintText: "choose a name",
+                                  hintText: 'choose a name',
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
-                                      return "Preset name missing";
+                                      return 'Preset name missing';
                                     }
                                     return null;
                                   },
@@ -802,7 +799,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                         .isNotEmpty;
                                     if (foundWithSameName) {
                                       Navigator.pop(context);
-                                      toastError(context, "Preset name still used. Choose another one");
+                                      toastError(context, 'Preset name still used. Choose another one');
                                       return;
                                     }
 
@@ -819,8 +816,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             }
                           },
                           icon: _canDeleteUnchangedUserBreakDown()
-                              ? Icon(Icons.delete_forever)
-                              : Icon(Icons.save),
+                              ? const Icon(Icons.delete_forever)
+                              : const Icon(Icons.save),
                     )),
                   ),
                   Positioned(
@@ -830,11 +827,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
-                          toastError(context, "Stop running first");
+                          toastError(context, 'Stop running first');
                           return;
                         }
                         if (_selectedSlices.isEmpty) {
-                          toastInfo(context, "No breaks to reset");
+                          toastInfo(context, 'No breaks to reset');
                         }
                         else {
                           setState(() {
@@ -843,7 +840,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           });
                         }
                       },
-                      icon: Icon(MdiIcons.restart)),
+                      icon: const Icon(MdiIcons.restart)),
                   ),
                   Positioned(
                     bottom: 20,
@@ -852,7 +849,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
-                          toastError(context, "Stop running first");
+                          toastError(context, 'Stop running first');
                           return;
                         }
                         setState(() {
@@ -879,7 +876,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   bool _canDeleteUnchangedUserBreakDown() => _selectedBreakDown != null && (_selectedBreakDown?.isPredefined() == false) && !_hasBreakDownChanged();
 
-  bool _hasSliceSelectionChanged() => (_selectedBreakDown?.getSlicesAsString()??"") != _selectedSortedSlicesToString();
+  bool _hasSliceSelectionChanged() => (_selectedBreakDown?.getSlicesAsString()??'') != _selectedSortedSlicesToString();
 
   bool _hasBreakDownChanged() {
     return _selectedBreakDown?.getSlicesAsString() != _selectedSortedSlicesToString();
@@ -975,7 +972,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
-      label: Text("➡️  Swipe to Stop",
+      label: Text('➡️  Swipe to Stop',
           style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
       icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
     );
@@ -987,7 +984,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       splashColor: ColorService().getCurrentScheme().foreground,
       foregroundColor: ColorService().getCurrentScheme().accent,
       icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-      label: Text(_isOver() ? "Reset" : _isRunning() ? "Stop" : "Start"),
+      label: Text(_isOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
       onPressed: () {
         if (_isRunning()) {
           if (_isOver()) {
@@ -996,8 +993,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
           else {
             showConfirmationDialog(
               context,
-              "Stop run",
-              "Really want to stop the run before it is finished?",
+              'Stop run',
+              'Really want to stop the run before it is finished?',
               icon: const Icon(MdiIcons.stopCircle),
               okPressed: () {
                 Navigator.pop(
@@ -1019,17 +1016,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   Text _createStatsLine() {
     if (_isOver()) {
-      return Text("Timer finished");
+      return Text('Timer finished');
     }
     else if (_isRunning()) {
       final remainingBreaks = _selectedSlices
           .where((index) => index >= _passedIndex)
           .toList()
           .length;
-      return Text("$remainingBreaks of ${_selectedSlices.length} breaks left");
+      return Text('$remainingBreaks of ${_selectedSlices.length} breaks left');
     }
     else {
-      return Text("${_selectedSlices.length} breaks placed");
+      return Text('${_selectedSlices.length} breaks placed');
     }
   }
 
@@ -1041,7 +1038,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return _createCycleWidgetForAbsoluteMode();
     }
     else {
-      throw Exception("unknown timerMode " + _timerMode.toString());
+      throw Exception('unknown timerMode ' + _timerMode.toString());
     }
   }
 
@@ -1049,19 +1046,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (_isOver()) {
       return Column(
         children: [
-          Text("${formatDuration(_duration)}",
+          Text('${formatDuration(_duration)}',
             style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text("${formatDuration(Duration.zero)}"),
+          Text('${formatDuration(Duration.zero)}'),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text("${formatDuration(_duration)}",
-              style: TextStyle(fontSize: 8)),
+          Text('${formatDuration(_duration)}',
+              style: const TextStyle(fontSize: 8)),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -1069,19 +1066,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
     else if (_isRunning()) {
       return Column(
         children: [
-          Text("${formatDuration(_getDelta()!)}",
+          Text('${formatDuration(_getDelta()!)}',
             style: TextStyle(fontSize: 10)),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text("${formatDuration(_getRemaining()!)}"),
+          Text('${formatDuration(_getRemaining()!)}'),
           SizedBox(
               width: 80,
               child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
           ),
-          Text("${formatDuration(_duration)}",
-              style: TextStyle(fontSize: 8)),
+          Text('${formatDuration(_duration)}',
+              style: const TextStyle(fontSize: 8)),
         ],
         mainAxisAlignment: MainAxisAlignment.center,
       );
@@ -1112,7 +1109,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           Text(
             formatDateTime(_time, withSeconds: true),
-            style: TextStyle(fontSize: 8),
+            style: const TextStyle(fontSize: 8),
             textAlign: TextAlign.center
           ),
         ],
@@ -1138,7 +1135,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           ),
           Text(
             formatDateTime(_time, withSeconds: true),
-            style: TextStyle(fontSize: 8),
+            style: const TextStyle(fontSize: 8),
             textAlign: TextAlign.center
           ),
         ],
@@ -1187,7 +1184,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           }
           _duration = now.difference(_time).abs();
           if (_duration.inMinutes < 1) {
-            toastInfo(context, "Clock value should be a bit more in the future");
+            toastInfo(context, 'Clock value should be a bit more in the future');
             _duration = Duration(minutes: 1);
           }
         });
@@ -1216,7 +1213,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (isInTransition) {
         final deltaSeconds = _getDelta()?.inSeconds ?? 0;
         final transitionSeconds = deltaSeconds % sliceSeconds;
-        debugPrint("tranSec=$transitionSeconds / sliceSec=$sliceSeconds");
+        debugPrint('tranSec=$transitionSeconds / sliceSec=$sliceSeconds');
         radius = radius + (radius * (transitionSeconds / sliceSeconds * 0.1));
       }
       else if (isPassed) {
@@ -1261,7 +1258,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
-      debugPrint("nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration");
+      debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
           showCurrent ? DateTime.now() : sliceTime,
@@ -1269,7 +1266,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           withSeconds: delta.inMinutes < 10);
     }
     else {
-      throw Exception("unknown timerMode " + _timerMode.toString());
+      throw Exception('unknown timerMode ' + _timerMode.toString());
     }
   }
 
@@ -1279,27 +1276,27 @@ class BDTScaffoldState extends State<BDTScaffold> {
       n = count + 1 - number;
     }
     switch (n) {
-      case 0: return Icon(MdiIcons.numeric0BoxOutline);
-      case 1: return Icon(MdiIcons.numeric1BoxOutline);
-      case 2: return Icon(MdiIcons.numeric2BoxOutline);
-      case 3: return Icon(MdiIcons.numeric3BoxOutline);
-      case 4: return Icon(MdiIcons.numeric4BoxOutline);
-      case 5: return Icon(MdiIcons.numeric5BoxOutline);
-      case 6: return Icon(MdiIcons.numeric6BoxOutline);
-      case 7: return Icon(MdiIcons.numeric7BoxOutline);
-      case 8: return Icon(MdiIcons.numeric8BoxOutline);
-      case 9: return Icon(MdiIcons.numeric9BoxOutline);
-      case 10: return Icon(MdiIcons.numeric10BoxOutline);
-      case 11: return Icon(MdiIcons.numeric1BoxMultipleOutline);
-      case 12: return Icon(MdiIcons.numeric2BoxMultipleOutline);
-      case 13: return Icon(MdiIcons.numeric3BoxMultipleOutline);
-      case 14: return Icon(MdiIcons.numeric4BoxMultipleOutline);
-      case 15: return Icon(MdiIcons.numeric5BoxMultipleOutline);
-      case 16: return Icon(MdiIcons.numeric6BoxMultipleOutline);
-      case 17: return Icon(MdiIcons.numeric7BoxMultipleOutline);
-      case 18: return Icon(MdiIcons.numeric8BoxMultipleOutline);
-      case 19: return Icon(MdiIcons.numeric9BoxMultipleOutline);
-      case 20: return Icon(MdiIcons.numeric10BoxMultipleOutline);
+      case 0: return const Icon(MdiIcons.numeric0BoxOutline);
+      case 1: return const Icon(MdiIcons.numeric1BoxOutline);
+      case 2: return const Icon(MdiIcons.numeric2BoxOutline);
+      case 3: return const Icon(MdiIcons.numeric3BoxOutline);
+      case 4: return const Icon(MdiIcons.numeric4BoxOutline);
+      case 5: return const Icon(MdiIcons.numeric5BoxOutline);
+      case 6: return const Icon(MdiIcons.numeric6BoxOutline);
+      case 7: return const Icon(MdiIcons.numeric7BoxOutline);
+      case 8: return const Icon(MdiIcons.numeric8BoxOutline);
+      case 9: return const Icon(MdiIcons.numeric9BoxOutline);
+      case 10: return const Icon(MdiIcons.numeric10BoxOutline);
+      case 11: return const Icon(MdiIcons.numeric1BoxMultipleOutline);
+      case 12: return const Icon(MdiIcons.numeric2BoxMultipleOutline);
+      case 13: return const Icon(MdiIcons.numeric3BoxMultipleOutline);
+      case 14: return const Icon(MdiIcons.numeric4BoxMultipleOutline);
+      case 15: return const Icon(MdiIcons.numeric5BoxMultipleOutline);
+      case 16: return const Icon(MdiIcons.numeric6BoxMultipleOutline);
+      case 17: return const Icon(MdiIcons.numeric7BoxMultipleOutline);
+      case 18: return const Icon(MdiIcons.numeric8BoxMultipleOutline);
+      case 19: return const Icon(MdiIcons.numeric9BoxMultipleOutline);
+      case 20: return const Icon(MdiIcons.numeric10BoxMultipleOutline);
     }
     return null;
   }
@@ -1308,19 +1305,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   void _startRun(BuildContext context) {
     if (_duration.inSeconds == 0) {
-      toastError(context, "Duration might not be zero");
+      toastError(context, 'Duration might not be zero');
       return;
     }
     if (_isRunning()) {
-      toastError(context, "Stop running first");
+      toastError(context, 'Stop running first');
       return;
     }
     if (_selectedSlices.isEmpty) {
-      toastError(context, "No breaks selected");
+      toastError(context, 'No breaks selected');
       return;
     }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
-      toastError(context, "Time already reached, set a new one");
+      toastError(context, 'Time already reached, set a new one');
       return;
     }
 
@@ -1330,11 +1327,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     final startedAt = _startedAt;
     if (startedAt == null) { // should not happen
-      throw Exception("_startedAt should not be null here");
+      throw Exception('_startedAt should not be null here');
     }
 
     final stateAsJson = jsonEncode(this);
-    debugPrint("!!!!State to persist: $stateAsJson");
+    debugPrint('!!!!State to persist: $stateAsJson');
     setRunState(_preferenceService, stateAsJson);
 
     if (_timerMode == TimerMode.RELATIVE) {
@@ -1350,7 +1347,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         neverSignalTwice: true,
         preferenceService: _preferenceService,
     );
-    notify(0, "Timer started",
+    notify(0, 'Timer started',
         preferenceService: _preferenceService,
         notificationService: _notificationService,
         showProgress: true,
@@ -1358,26 +1355,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
         fixed: true);
 
     final list = _selectedSortedSlices();
-    debugPrint("$list");
+    debugPrint('$list');
     for (int i=0; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal);
       AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _getDelay(slice), signal, f)
-          .then((value) => debugPrint("shot $signal on $slice: $value"));
+          .then((value) => debugPrint('shot $signal on $slice: $value'));
     }
 
     AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
         _getDelay(MAX_SLICE), 1000, signalEnd)
-        .then((value) => debugPrint("shot end: $value"));
+        .then((value) => debugPrint('shot end: $value'));
 
   }
 
   bool _isTimeElapsed() => !truncToMinutes(_time).isAfter(truncToMinutes(DateTime.now()));
 
   void _stopRun(BuildContext context) {
-    debugPrint("stopped");
+    debugPrint('stopped');
     _stopTimer();
     SignalService().stopAll();
     setRunState(_preferenceService, null);
@@ -1408,7 +1405,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   };
   }
 
-  String _selectedSortedSlicesToString() => _selectedSortedSlices().join(",");
+  String _selectedSortedSlicesToString() => _selectedSortedSlices().join(',');
 
   void _setStateFromJson(Map<String, dynamic> jsonMap) {
     _duration = Duration(seconds: jsonMap['duration']);
@@ -1418,7 +1415,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
 
     _selectedSlices.clear();
-    jsonMap['selectedSlices'].toString().split(",")
+    jsonMap['selectedSlices'].toString().split(',')
         .map((e) => int.parse(e))
         .forEach((e) => _selectedSlices.add(e));
 
@@ -1454,7 +1451,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 20: return SignalService.signalPatternToString(SIG_20);
       case 100: return SignalService.signalPatternToString(SIG_END);
     }
-    throw Exception("unknown signal $signal");
+    throw Exception('unknown signal $signal');
   }
 
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;

@@ -7,8 +7,8 @@ import 'package:bdt/service/PreferenceService.dart';
 
 import 'ui/BDTApp.dart';
 
-const String APP_NAME = "Break.Down.Timer";
-const String APP_NAME_SHORT = "B.D.T";
+const String APP_NAME = 'Break.Down.Timer';
+const String APP_NAME_SHORT = 'B.D.T';
 
 Future<void> main() async {
 

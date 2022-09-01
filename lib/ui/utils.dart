@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../service/ColorService.dart';
-import 'BDTApp.dart';
 
 
 
@@ -14,7 +13,7 @@ String truncate(String text, { required int length, omission: '...' }) {
 
 Widget createCheckIcon(bool checked) {
   if (!checked) {
-    return Text("");
+    return Text('');
   }
   return Icon(
     Icons.check,

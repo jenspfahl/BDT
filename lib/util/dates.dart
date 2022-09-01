@@ -48,7 +48,7 @@ bool isYesterday(DateTime? dateTime) {
 }
 
 String formatDateTime(DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
-  final betweenChar = withLineBreak ? "\n" : " ";
+  final betweenChar = withLineBreak ? '\n' : ' ';
   final DateFormat dateFormatter = DateFormat.Md();
   final DateFormat timeFormatter = withSeconds ? DateFormat.Hms() : DateFormat.Hm();
   if (isToday(dateTime)) {
@@ -61,14 +61,14 @@ String formatDateTime(DateTime dateTime, {bool withLineBreak = false, bool withS
 }
 
 String formatDuration(Duration duration, {bool withLineBreak = false, bool noSeconds = false}) {
-  final betweenChar = withLineBreak ? "\n" : " ";
+  final betweenChar = withLineBreak ? '\n' : ' ';
   if (duration.inMinutes >= 60) {
     var remainingMinutes = duration.inMinutes % 60;
     if (remainingMinutes != 0) {
       return "${duration.inHours} hrs$betweenChar$remainingMinutes min";
     }
     else {
-      return "${duration.inHours} hrs";
+      return '${duration.inHours} hrs';
     }
   }
   if (duration.inSeconds >= 60) {
@@ -77,9 +77,9 @@ String formatDuration(Duration duration, {bool withLineBreak = false, bool noSec
       return "${duration.inMinutes} min$betweenChar$remainingSeconds sec";
     }
     else {
-      return "${duration.inMinutes} min";
+      return '${duration.inMinutes} min';
     }
   }
-  return "${duration.inSeconds} sec";
+  return '${duration.inSeconds} sec';
 }
 
