@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:bdt/main.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import '../model/ColorScheme.dart';
 import '../service/AudioService.dart';
 import '../service/ColorService.dart';
 import '../service/PreferenceService.dart';
+import '../util/prefs.dart';
 import 'BDTApp.dart';
 import 'ChoiceWidget.dart';
 import 'dialogs.dart';
@@ -116,9 +119,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         _audioScheme = _preferenceService.audioSchema;
                       });
                     },
-                    selectionChanged: (selection) {
-                      SignalService.makeSignal(Duration(milliseconds: 200), audioSchemeId: selection);
+                    selectionChanged: (selection) async {
+                      final origVol = await getVolume(_preferenceService);
+                      final newVol = max(20, origVol); // not too silent
                       _audioScheme = selection;
+                      SignalService.setSignalVolume(newVol);
+                      await SignalService.makeSignal(Duration(milliseconds: 200), audioSchemeId: selection);
+                      SignalService.setSignalVolume(origVol);
                     }
                 );
               },

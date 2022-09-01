@@ -52,10 +52,9 @@ class SignalService {
 
     await initCurrentSignalling(prefService, id);
 
-    final vol = volume ?? await getVolume(prefService);
     final signalTwice = await shouldSignalTwice(PreferenceService());
-    debugPrint('volume $vol signal twice=$signalTwice');
 
+    final vol = volume ?? await getVolume(prefService);
     SignalService.setSignalVolume(vol);
 
     await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
