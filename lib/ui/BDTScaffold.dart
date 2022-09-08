@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:open_settings/open_settings.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
@@ -343,6 +344,40 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
       _loadBreakDowns(focusPinned);
 
+    });
+
+    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN)
+        .then((shown) {
+          if (shown != true) {
+            final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. ";
+            AlertDialog alert = AlertDialog(
+              title: const Text(APP_NAME),
+              content: Text(message),
+              actions: [
+                TextButton(
+                  child: Text('Open Settings'),
+                  onPressed:  () {
+                    Navigator.pop(context);
+                    OpenSettings.openIgnoreBatteryOptimizationSetting();
+                    _preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
+                  },
+                ),
+                TextButton(
+                  child: Text('Dismiss'),
+                  onPressed:  () {
+                    Navigator.pop(context);
+                    _preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
+                  },
+                ),
+              ],
+            );  // show the dialog
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return alert;
+              },
+            );
+          }
     });
   }
 
@@ -1365,17 +1400,18 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     final list = _selectedSortedSlices();
     debugPrint('$list');
-    for (int i=0; i < list.length; i++) {
+    for (int i = 0; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal);
+
       AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _getDelay(slice), signal, f)
           .then((value) => debugPrint('shot $signal on $slice: $value'));
     }
 
     AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-        _getDelay(MAX_SLICE), 1000, signalEnd)
+        _duration, 1000, signalEnd)
         .then((value) => debugPrint('shot end: $value'));
 
   }
