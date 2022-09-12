@@ -755,7 +755,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           color: ColorService().getCurrentScheme().button,
                           onPressed: () {
                             if (_isRunning()) {
-                              toastError(context, 'Stop running first');
+                              toastError(context, _stopRunningMessage());
                               return;
                             }
                             if (_selectedBreakDown != null) {
@@ -787,7 +787,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           color: ColorService().getCurrentScheme().button,
                           onPressed: () {
                             if (_isRunning()) {
-                              toastError(context, 'Stop running first');
+                              toastError(context, _stopRunningMessage());
                               return;
                             }
                             if (_canDeleteUnchangedUserBreakDown()) {
@@ -867,7 +867,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
-                          toastError(context, 'Stop running first');
+                          toastError(context, _stopRunningMessage());
                           return;
                         }
                         if (_selectedSlices.isEmpty) {
@@ -889,7 +889,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       color: ColorService().getCurrentScheme().button,
                       onPressed: () {
                         if (_isRunning()) {
-                          toastError(context, 'Stop running first');
+                          toastError(context, _stopRunningMessage());
                           return;
                         }
                         setState(() {
@@ -1349,11 +1349,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
       return;
     }
     if (_isRunning()) {
-      toastError(context, 'Stop running first');
+      toastError(context, _stopRunningMessage());
       return;
     }
     if (_selectedSlices.isEmpty) {
-      toastError(context, 'No breaks selected');
+      toastError(context, 'No breaks placed');
       return;
     }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
@@ -1501,6 +1501,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
+
+  String _stopRunningMessage() {
+    if (_isOver()) {
+      return 'Reset the timer first';
+    }
+    else {
+      return 'Stop running first';
+    }
+  }
 
 }
 
