@@ -182,6 +182,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
+              title: Text('Battery optimizations'),
+              onPressed: (value) {
+                showBatterySavingHint(context, _preferenceService);
+              }
+            ),
+            SettingsTile(
               title: Text('About the app'),
               onPressed: (value) {
                 showAboutDialog(

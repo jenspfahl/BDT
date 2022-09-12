@@ -16,7 +16,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:open_settings/open_settings.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
@@ -349,34 +348,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN)
         .then((shown) {
           if (shown != true) {
-            final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. ";
-            AlertDialog alert = AlertDialog(
-              title: const Text(APP_NAME),
-              content: Text(message),
-              actions: [
-                TextButton(
-                  child: Text('Open Settings'),
-                  onPressed:  () {
-                    Navigator.pop(context);
-                    OpenSettings.openIgnoreBatteryOptimizationSetting();
-                    _preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
-                  },
-                ),
-                TextButton(
-                  child: Text('Dismiss'),
-                  onPressed:  () {
-                    Navigator.pop(context);
-                    _preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
-                  },
-                ),
-              ],
-            );  // show the dialog
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return alert;
-              },
-            );
+            showBatterySavingHint(context, _preferenceService);
           }
     });
   }
@@ -493,30 +465,48 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     context: context,
                     builder: (BuildContext context) {
                       List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
-                      .map((i) => Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
-                            child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
-                          ),
-                          Text('Break ${_breakNumberToString(i)}: ',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
-                        ]))
-                            .toList();
-
-                        rows.add(Row(
+                      .map((i) => GestureDetector(
+                        onTapUp: (_) {
+                          SignalService.makeSignalPattern(_getSignalForNumber(i),
+                              volume: _volume,
+                              neverSignalTwice: true,
+                              signalAlthoughCancelled: true,
+                              preferenceService: _preferenceService);
+                        },
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-                              child: const Text(''),
+                              padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                              child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                             ),
-                            const Text('Timer end: ',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
-                          ])
+                            Text('Break ${_breakNumberToString(i)}: ',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                            Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
+                          ]),
+                      ))
+                            .toList();
+
+                        rows.add(GestureDetector(
+                          onTapUp: (_) {
+                            SignalService.makeSignalPattern(_getSignalForNumber(100),
+                                volume: _volume,
+                                neverSignalTwice: true,
+                                signalAlthoughCancelled: true,
+                                preferenceService: _preferenceService);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                                child: const Text(''),
+                              ),
+                              const Text('Timer end: ',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
+                            ]),
+                        )
                       );
                       return AlertDialog(
                         insetPadding: EdgeInsets.zero,
@@ -527,7 +517,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             const Text(''),
                             const Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                            const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows:',
+                            const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
                           ],
                         ),
@@ -998,8 +988,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createSwipeToStopButton(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final FloatingActionButtonThemeData floatingActionButtonTheme = theme.floatingActionButtonTheme;
     return SliderButton(
       action: () {
         _stopRun(context);
@@ -1496,6 +1484,33 @@ class BDTScaffoldState extends State<BDTScaffold> {
       case 19: return SignalService.signalPatternToString(SIG_19);
       case 20: return SignalService.signalPatternToString(SIG_20);
       case 100: return SignalService.signalPatternToString(SIG_END);
+    }
+    throw Exception('unknown signal $signal');
+  }
+
+  String _getSignalForNumber(int signal) {
+    switch (signal) {
+      case 1: return SIG_1;
+      case 2: return SIG_2;
+      case 3: return SIG_3;
+      case 4: return SIG_4;
+      case 5: return SIG_5;
+      case 6: return SIG_6;
+      case 7: return SIG_7;
+      case 8: return SIG_8;
+      case 9: return SIG_9;
+      case 10: return SIG_10;
+      case 11: return SIG_11;
+      case 12: return SIG_12;
+      case 13: return SIG_13;
+      case 14: return SIG_14;
+      case 15: return SIG_15;
+      case 16: return SIG_16;
+      case 17: return SIG_17;
+      case 18: return SIG_18;
+      case 19: return SIG_19;
+      case 20: return SIG_20;
+      case 100: return SIG_END;
     }
     throw Exception('unknown signal $signal');
   }

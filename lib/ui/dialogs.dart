@@ -1,6 +1,9 @@
 import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/material.dart';
+import 'package:open_settings/open_settings.dart';
 
+import '../main.dart';
+import '../service/PreferenceService.dart';
 import 'ChoiceWidget.dart';
 import 'DurationPicker.dart';
 
@@ -198,6 +201,39 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
           ],
         );
       }
+  );
+}
+
+
+
+showBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
+  final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. ";
+  AlertDialog alert = AlertDialog(
+    title: const Text(APP_NAME),
+    content: Text(message),
+    actions: [
+      TextButton(
+        child: Text('Open Settings'),
+        onPressed:  () {
+          Navigator.pop(context);
+          OpenSettings.openIgnoreBatteryOptimizationSetting();
+          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
+        },
+      ),
+      TextButton(
+        child: Text('Dismiss'),
+        onPressed:  () {
+          Navigator.pop(context);
+          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
+        },
+      ),
+    ],
+  );  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
   );
 }
 
