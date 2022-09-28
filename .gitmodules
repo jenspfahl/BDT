@@ -1,0 +1,3 @@
+[submodule "flutter_sound_bridge"]
+	path = flutter_sound_bridge
+	url = git@github.com:jenspfahl/flutter_sound_bridge.git

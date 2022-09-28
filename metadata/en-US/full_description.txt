@@ -1,0 +1,22 @@
+This is a handy timer where you can define notifications ("breaks") while the timer is running. Imagine this scenario: You have 45 minutes time to go for a walk, so you should go back after the half of the time. So, set the timer duration to 45 minutes, define a break after the half of the time and start the timer. Now you get a notification (audio signal, vibration, device notification) when the half of the time is reached, AND of course when the complete time is reached.
+
+Other scenarios could be to get notified every quarter of a duration to keep a feeling of the passing and remaining time. Or to get notifications short before the end of the duration.
+
+The notifications are encoded in patterns of audio beeps and/or vibrations to express the reached in-between break. The pattern is very simple: a short beep means "1", a long beeeeep means "5". So, e.g. "beeeeep beep" means "6". All signals are prefixed with a short "bepbep" sequence to attract attention.
+
+With the audio and vibration patterns you can even get notified about the timer progress without pulling your phone out of the pocket and looking on it. This is also very handy during workouts.
+
+<b>Features:</b>
+ - up to 20 notifications ("breaks") during a timer run 
+ - acoustic and haptic feedback 
+ - intuitive patterns to recognise current reached break
+ - two different timer modes, "Timer" and "Clock"
+ - different "break" presets
+ - storing own presets
+ - different color schemes
+
+
+For more information see <a href="https://bdt.jepfa.de">bdt.jepfa.de</a>
+
+If you like the app please star it on <a href="https://github.com/jenspfahl/BDT">Github</a>
+

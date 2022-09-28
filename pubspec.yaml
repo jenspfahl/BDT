@@ -55,7 +55,7 @@ dependencies:
   flutter_svg: ^1.1.4
   open_settings: ^2.0.2
   flutter_sound_bridge:
-    path: ../flutter_sound_bridge
+    path: ./flutter_sound_bridge
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

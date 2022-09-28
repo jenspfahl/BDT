@@ -301,7 +301,7 @@ packages:
   flutter_sound_bridge:
     dependency: "direct main"
     description:
-      path: "../flutter_sound_bridge"
+      path: flutter_sound_bridge
       relative: true
     source: path
     version: "0.0.1"
