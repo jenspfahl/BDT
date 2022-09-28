@@ -677,35 +677,48 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     PieChartData(
                         pieTouchData: PieTouchData(
                             touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                              setState(() {
-                                if (_isRunning()) {
-                                  return;
-                                }
-                                if (!event.isInterestedForInteractions ||
-                                    pieTouchResponse == null ||
-                                    pieTouchResponse.touchedSection == null) {
-                                  _touchedIndex = -1;
-                                  return;
-                                }
-                                _touchedIndex =
-                                    (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
-                                debugPrint('_touchedIndex=$_touchedIndex');
-                                if (_touchedIndex != 0) {
-                                  if (_selectedSlices.contains(_touchedIndex)) {
-                                    _selectedSlices.remove(_touchedIndex);
+                              if (_isRunning()) {
+                                return;
+                              }
+                              if (event is FlTapUpEvent
+                                  || event is FlPointerExitEvent
+                                  || event is FlLongPressEnd
+                                  || event is FlPanEndEvent
+                              ) {
+                                setState(() {
+                                  _touchedIndex = 0;
+                                });
+                              }
+                              else if (event is FlTapDownEvent) {
+                                setState(() {
+                                  if (
+                                      pieTouchResponse == null ||
+                                      pieTouchResponse.touchedSection == null) {
+                                    _touchedIndex = -1;
+                                    return;
                                   }
-                                  else {
-                                    if (_selectedSlices.length < MAX_BREAKS) {
-                                      _selectedSlices.add(_touchedIndex);
+                                  _touchedIndex =
+                                      (pieTouchResponse.touchedSection!
+                                          .touchedSectionIndex + 1) % MAX_SLICE;
+                                  debugPrint('_touchedIndex=$_touchedIndex');
+                                  if (_touchedIndex != 0) {
+                                    if (_selectedSlices.contains(
+                                        _touchedIndex)) {
+                                      _selectedSlices.remove(_touchedIndex);
                                     }
                                     else {
-                                      toastError(context, 'max $MAX_BREAKS breaks allowed');
+                                      if (_selectedSlices.length < MAX_BREAKS) {
+                                        _selectedSlices.add(_touchedIndex);
+                                      }
+                                      else {
+                                        toastError(context,
+                                            'max $MAX_BREAKS breaks allowed');
+                                      }
                                     }
                                   }
-                                }
-                                debugPrint('_selected=$_selectedSlices');
-
-                              });
+                                  debugPrint('_selected=$_selectedSlices');
+                                });
+                              }
                             }),
                         borderData: FlBorderData(
                             show: false
