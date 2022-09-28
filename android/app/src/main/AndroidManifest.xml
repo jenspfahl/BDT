@@ -55,6 +55,9 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- For apps with targetSDK=33 (Android 13) -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <!-- needed to find a browser app to show https links -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
 
     <queries>
         <intent>

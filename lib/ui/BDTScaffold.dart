@@ -20,6 +20,8 @@ import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -48,6 +50,9 @@ final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
 class BDTScaffoldState extends State<BDTScaffold> {
+
+  final HOMEPAGE = 'bdt.jepfa.de';
+  final HOMEPAGE_SCHEME = 'https://';
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
@@ -508,6 +513,32 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             ]),
                         )
                       );
+
+                      rows.add(GestureDetector(
+                        child: Row(
+                            children: [Text("")])));
+
+                      rows.add(GestureDetector(
+                        child: Row(
+                          children: [
+                            InkWell(
+                                child: Text.rich(
+                                  TextSpan(
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                                    text: 'Visit ',
+                                    children: <TextSpan>[
+                                      TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
+                                      TextSpan(text: ' for more information.'),
+                                    ],
+                                  ),
+                                ),
+                                onTap: () {
+                                  launch(HOMEPAGE_SCHEME + HOMEPAGE);
+                                }),
+                          ],
+                        ),
+                      ));
+
                       return AlertDialog(
                         insetPadding: EdgeInsets.zero,
                         contentPadding: EdgeInsets.all(16),

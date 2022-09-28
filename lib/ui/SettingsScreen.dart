@@ -5,6 +5,7 @@ import 'package:bdt/service/SignalService.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:settings_ui/settings_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../model/AudioScheme.dart';
@@ -26,7 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final HOMEPAGE = 'github.com';
   final HOMEPAGE_SCHEME = 'https://';
-  final HOMEPAGE_PATH = '/jenspfahl/bdt';
+  final HOMEPAGE_PATH = '/jenspfahl/BDT';
 
   final PreferenceService _preferenceService = PreferenceService();
 
@@ -123,9 +124,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final origVol = await getVolume(_preferenceService);
                       final newVol = max(20, origVol); // not too silent
                       _audioScheme = selection;
-                      SignalService.setSignalVolume(newVol);
-                      await SignalService.makeSignal(Duration(milliseconds: 200), audioSchemeId: selection);
-                      SignalService.setSignalVolume(origVol);
+                      await SignalService.setSignalVolume(newVol);
+                      await SignalService.makeSignal(Duration(milliseconds: 200),
+                          audioSchemeId: selection,
+                          noVibration: true
+                      );
+                      await SignalService.setSignalVolume(origVol);
                     }
                 );
               },
@@ -211,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           onTap: () {
-                            launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH);
+                            launch(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH);
                           }),
                       Divider(),
                       Text('© Jens Pfahl 2022', style: TextStyle(fontSize: 12)),

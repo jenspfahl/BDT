@@ -25,6 +25,7 @@ List<AudioScheme> predefinedAudioSchemes = [
   AudioScheme(2, 'Peep C', AndroidSoundIDs.TONE_DTMF_9),
   AudioScheme(3, 'Peep D', AndroidSoundIDs.TONE_DTMF_D),
   AudioScheme(4, 'Beep', AndroidSoundIDs.TONE_SUP_DIAL),
+  AudioScheme(5, 'Ring', AndroidSoundIDs.TONE_CDMA_NETWORK_USA_RINGBACK),
 
 
 

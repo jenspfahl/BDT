@@ -131,12 +131,12 @@ class SignalService {
     await pause(Duration(milliseconds: 400));
   }
 
-  static makeSignal(Duration duration, {int? audioSchemeId}) async {
+  static makeSignal(Duration duration, {int? audioSchemeId, bool noVibration = false}) async {
     debugPrint('signal $duration');
     final vibrateAllowed = await mayVibrate(PreferenceService());
     debugPrint('vibrate $vibrateAllowed');
 
-    if (vibrateAllowed) {
+    if (!noVibration && vibrateAllowed) {
       final hasVibration = await Vibration.hasVibrator() ?? false;
       if (hasVibration) {
         Vibration.vibrate(duration: duration.inMilliseconds);
@@ -146,7 +146,7 @@ class SignalService {
     final audioScheme = AudioService().getScheme(audioSchemeId ?? PreferenceService().audioSchema);
 
     await FlutterSoundBridge.playSysSound(
-        audioScheme.soundId, duration); //TONE_DTMF_C
+        audioScheme.soundId, duration);
     await pause(duration);
   }
 
