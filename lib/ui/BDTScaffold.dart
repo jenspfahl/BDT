@@ -533,7 +533,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                   ),
                                 ),
                                 onTap: () {
-                                  launch(HOMEPAGE_SCHEME + HOMEPAGE);
+                                  launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE, mode: LaunchMode.externalApplication);
                                 }),
                           ],
                         ),

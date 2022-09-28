@@ -215,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           onTap: () {
-                            launch(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH);
+                            launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH, mode: LaunchMode.externalApplication);
                           }),
                       Divider(),
                       Text('© Jens Pfahl 2022', style: TextStyle(fontSize: 12)),
