@@ -18,8 +18,8 @@ Set a timer duration by clicking on the center of the wheel. You can also set a 
 
 Instead of placing breaks by your own, you can use the built-in presets of the app. You can also save your own presets. One favourite preset can be pinned to be present after app-start.
 
-Fore more details, see [bdt.jepfa.de](https://http://bdt.jepfa.de).
+Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
 ## Download
 
-Download the latest app [here.](https://http://bdt.jepfa.de/download/)
+Download the latest app [here.](https://bdt.jepfa.de/download/)
