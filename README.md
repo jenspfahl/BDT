@@ -22,4 +22,8 @@ Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
 ## Download
 
-Download the latest app [here.](https://bdt.jepfa.de/download/)
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
+
+Or download the latest apk from [here.](https://bdt.jepfa.de/download/)
