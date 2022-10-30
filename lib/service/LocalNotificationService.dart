@@ -149,6 +149,7 @@ class LocalNotificationService {
       color: color,
       playSound: false,
       vibrationPattern: null,
+      enableVibration: false,
       usesChronometer: false,
       indeterminate: keepAsProgress && progress == null,
       showProgress: keepAsProgress,

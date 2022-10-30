@@ -318,7 +318,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
     SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
 
-    Timer.periodic(Duration(seconds: 15), (_) {
+    Timer.periodic(Duration(seconds: 5), (_) {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
@@ -1247,12 +1247,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
           final nowTime = TimeOfDay.now();
           final nowMinutes = nowTime.hour * 60 + nowTime.minute;
           final selectedMinutes = selectedTime.hour * 60 + selectedTime.minute;
+          final time = DateTime(now.year, now.month, now.day, selectedTime.hour, selectedTime.minute);
+
           if (selectedMinutes < nowMinutes) {
             // next day
-            _time = truncToDate(now).add(Duration(days: 1)).add(Duration(minutes: selectedMinutes));
+            _time = time.add(Duration(days: 1));
           }
           else {
-            _time = truncToDate(now).add(Duration(minutes: selectedMinutes));
+            _time = time;
           }
           _duration = now.difference(_time).abs();
           if (_duration.inMinutes < 1) {
