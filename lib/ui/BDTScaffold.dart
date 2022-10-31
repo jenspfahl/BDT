@@ -43,6 +43,7 @@ class BDTScaffold extends StatefulWidget {
 
 enum TimerMode {RELATIVE, ABSOLUTE}
 enum Direction {ASC, DESC}
+enum RunMode {NO_REPEAT, REPEAT_ONCE, REPEAT_FOREVER}
 
 
 final MAX_BREAKS = 20;
@@ -65,6 +66,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   TimerMode _timerMode = TimerMode.RELATIVE;
   Direction _direction = Direction.ASC;
+  RunMode _runMode = RunMode.NO_REPEAT;
+  int _repetition = 0;
 
   List<BreakDown> _loadedBreakDowns = predefinedBreakDowns;
   BreakDown? _selectedBreakDown = null;
@@ -218,6 +221,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_20);
   }
   
+  static Future<void> signalEndWithRepetition() async {
+    debugPrint('sig end and repeat');
+    await notify(100, 'Timer finished but repeating', fixed: true, showBreakInfo: true, showProgress: true);
+    await SignalService.makeSignalPattern(SIG_END);
+  }
+
   static Future<void> signalEnd() async {
     debugPrint('sig end');
     await notify(100, 'Timer finished', showBreakInfo: true, showProgress: true);
@@ -393,7 +402,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
   _startTimer() {
     _runTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_isOver()) {
-        timer.cancel();
+        if (_isRepeating()) {
+          _repetition++;
+          _startedAt = DateTime.now();
+          _time = _time.add(_duration);
+          _persistState();
+          _scheduleSliceNotifications();
+        }
+        else {
+          timer.cancel();
+        }
       }
       if (mounted) {
         _updateRunning();
@@ -454,6 +472,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _runTimer?.cancel();
     setState(() {
       _startedAt = null;
+      _repetition = 0;
       _passedIndex = -1;
     });
   }
@@ -1051,42 +1070,88 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createStartButton(BuildContext context) {
-    return FloatingActionButton.extended(
-      backgroundColor: ColorService().getCurrentScheme().button,
-      splashColor: ColorService().getCurrentScheme().foreground,
-      foregroundColor: ColorService().getCurrentScheme().accent,
-      icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-      label: Text(_isOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
-      onPressed: () {
-        if (_isRunning()) {
-          if (_isOver()) {
-            _stopRun(context);
-          }
-          else {
-            showConfirmationDialog(
-              context,
-              'Stop run',
-              'Really want to stop the run before it is finished?',
-              icon: const Icon(MdiIcons.stopCircle),
-              okPressed: () {
-                Navigator.pop(
-                    context); // dismiss dialog, should be moved in Dialogs.dart somehow
+    return Wrap(
+      children: [
+        PopupMenuButton<RunMode>(
+            constraints: BoxConstraints(),
+            icon: _getRunModeIcon(_runMode, null),
+            itemBuilder: (context) => <PopupMenuItem<RunMode>> [
+              PopupMenuItem<RunMode>(
+                  value: RunMode.REPEAT_ONCE,
+                  child: _createMenuItem(RunMode.REPEAT_ONCE, "Repeat once")),
+              PopupMenuItem<RunMode>(
+                  value: RunMode.REPEAT_FOREVER,
+                  child: _createMenuItem(RunMode.REPEAT_FOREVER, "Repeat forever")),
+              PopupMenuItem<RunMode>(
+                  value: RunMode.NO_REPEAT,
+                  child: _createMenuItem(RunMode.NO_REPEAT, "No repeat")),
+            ],
+          onSelected: (runMode) {
+            setState(() => _runMode = runMode);
+          },
+        ),
+        FloatingActionButton.extended(
+          backgroundColor: ColorService().getCurrentScheme().button,
+          splashColor: ColorService().getCurrentScheme().foreground,
+          foregroundColor: ColorService().getCurrentScheme().accent,
+          icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
+          label: Text(_isOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
+          onPressed: () {
+            if (_isRunning()) {
+              if (_isOver()) {
                 _stopRun(context);
-              },
-              cancelPressed: () =>
-                  Navigator.pop(
-                      context), // dismiss dialog, should be moved in Dialogs.dart somehow
-            );
-          }
-        }
-        else {
-          _startRun(context);
-        }
-      },
+              }
+              else {
+                showConfirmationDialog(
+                  context,
+                  'Stop run',
+                  'Really want to stop the run before it is finished?',
+                  icon: const Icon(MdiIcons.stopCircle),
+                  okPressed: () {
+                    Navigator.pop(
+                        context); // dismiss dialog, should be moved in Dialogs.dart somehow
+                    _stopRun(context);
+                  },
+                  cancelPressed: () =>
+                      Navigator.pop(
+                          context), // dismiss dialog, should be moved in Dialogs.dart somehow
+                );
+              }
+            }
+            else {
+              _startRun(context);
+            }
+          },
+        ),
+        SizedBox(width: 46),
+      ],
     );
   }
 
-  Text _createStatsLine() {
+  Widget _createMenuItem(RunMode runMode, String text) {
+    final isSelected = _runMode == runMode;
+    return ListTile(
+      leading: _getRunModeIcon(runMode, isSelected),
+      title: Text(text, style: TextStyle(color: isSelected
+          ? Colors.white
+          : ColorService().getCurrentScheme().foreground)),
+    );
+  }
+
+  Widget _getRunModeIcon(RunMode runMode, bool? isSelected) {
+    final color = isSelected != null
+        ? (isSelected
+          ? Colors.white
+          : ColorService().getCurrentScheme().foreground)
+        : ColorService().getCurrentScheme().button;
+    switch (runMode) {
+      case RunMode.NO_REPEAT: return Icon(isSelected != null ? MdiIcons.repeatOff : Icons.arrow_drop_down, color: color);
+      case RunMode.REPEAT_ONCE: return Icon(Icons.repeat_one, color: color);
+      case RunMode.REPEAT_FOREVER: return Icon(Icons.repeat, color: color);
+    }
+  }
+
+  Widget _createStatsLine() {
     if (_isOver()) {
       return Text('Timer finished');
     }
@@ -1095,10 +1160,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .where((index) => index >= _passedIndex)
           .toList()
           .length;
-      return Text('$remainingBreaks of ${_selectedSlices.length} breaks left');
+      if (_runMode == RunMode.REPEAT_ONCE) {
+        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left, repeating once (run ${_repetition+1} of 2)');
+      }
+      else if (_runMode == RunMode.REPEAT_FOREVER) {
+        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left, repeating forever (run ${_repetition+1})');
+      }
+      else {
+        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left');
+      }
     }
     else {
-      return Text('${_selectedSlices.length} breaks placed');
+      if (_runMode == RunMode.REPEAT_FOREVER) {
+        return Text('${_selectedSlices.length} breaks placed, repeat forever');
+      }
+      else if (_runMode == RunMode.REPEAT_ONCE) {
+        return Text('${_selectedSlices.length} breaks placed, repeat once');
+      }
+      else {
+        return Text('${_selectedSlices.length} breaks placed');
+      }
     }
   }
 
@@ -1407,9 +1488,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       throw Exception('_startedAt should not be null here');
     }
 
-    final stateAsJson = jsonEncode(this);
-    debugPrint('!!!!State to persist: $stateAsJson');
-    setRunState(_preferenceService, stateAsJson);
+    _persistState();
 
     if (_timerMode == TimerMode.RELATIVE) {
       setState(() => _time = startedAt.add(_duration));
@@ -1432,22 +1511,41 @@ class BDTScaffoldState extends State<BDTScaffold> {
         showStartInfo: true,
         fixed: true);
 
+    _scheduleSliceNotifications();
+
+  }
+
+  void _persistState() {
+    final stateAsJson = jsonEncode(this);
+    debugPrint('!!!!State to persist: $stateAsJson');
+    setRunState(_preferenceService, stateAsJson);
+  }
+
+  void _scheduleSliceNotifications() {
     final list = _selectedSortedSlices();
     debugPrint('$list');
     for (int i = 0; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal);
-
+    
       AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _getDelay(slice), signal, f)
           .then((value) => debugPrint('shot $signal on $slice: $value'));
     }
 
-    AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-        _duration, 1000, signalEnd)
-        .then((value) => debugPrint('shot end: $value'));
-
+    if (_isRepeating()) {
+      AndroidAlarmManager.oneShot(
+          alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+          _duration, 1000, signalEndWithRepetition)
+          .then((value) => debugPrint('shot end withrepeat: $value'));
+    }
+    else {
+      AndroidAlarmManager.oneShot(
+          alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+          _duration, 1000, signalEnd)
+          .then((value) => debugPrint('shot end: $value'));
+    }
   }
 
   bool _isTimeElapsed() => !truncToMinutes(_time).isAfter(truncToMinutes(DateTime.now()));
@@ -1482,6 +1580,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     'selectedSlices': _selectedSortedSlicesToString(),
     'selectedBreakDown': _selectedBreakDown?.id,
     'pinnedBreakDownId': _pinnedBreakDownId,
+    'runMode': _runMode.index,
+    'repetition': _repetition,
   };
   }
 
@@ -1505,6 +1605,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .first;
     }
     _pinnedBreakDownId = jsonMap['pinnedBreakDownId'];
+
+    if (jsonMap['runMode'] != null) {
+      _runMode = RunMode.values.elementAt(jsonMap['runMode']);
+    }
+    if (jsonMap['repetition'] != null) {
+      _repetition = jsonMap['repetition'];
+    }
   }
 
   String _getSignalStringForNumber(int signal) {
@@ -1562,6 +1669,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
+
+  bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
 
   String _stopRunningMessage() {
     if (_isOver()) {
