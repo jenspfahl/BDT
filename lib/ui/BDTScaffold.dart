@@ -223,7 +223,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   
   static Future<void> signalEndWithRepetition() async {
     debugPrint('sig end and repeat');
-    await notify(100, 'Timer finished but repeating', fixed: true, showBreakInfo: true, showProgress: true);
+    await notify(100, 'Timer finished but repeating', fixed: true, showBreakInfo: false, showProgress: true);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
@@ -400,8 +400,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   _startTimer() {
-    _runTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (_isOver()) {
+    _runTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+      if (_isCurrentRunOver()) {
         if (_isRepeating()) {
           _repetition++;
           _startedAt = DateTime.now();
@@ -437,7 +437,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
-  bool _isOver() {
+  bool _isAllRunsOver() {
+    if (_isRunning() && _isRepeating()) {
+      // in case of repeating and not stopped runs nothing is over
+      return false;
+    }
+    return _isCurrentRunOver();
+  }
+
+  bool _isCurrentRunOver() {
     final now = DateTime.now();
     return _startedAt?.add(_duration).isBefore(now) ?? false;
   }
@@ -961,7 +969,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _isRunning() && !_isOver()
+      floatingActionButton: _isRunning() && !_isAllRunsOver()
           ? _createSwipeToStopButton(context)
           : _createStartButton(context),
     );
@@ -1094,11 +1102,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
           backgroundColor: ColorService().getCurrentScheme().button,
           splashColor: ColorService().getCurrentScheme().foreground,
           foregroundColor: ColorService().getCurrentScheme().accent,
-          icon: Icon(_isOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-          label: Text(_isOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
+          icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
+          label: Text(_isAllRunsOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
           onPressed: () {
             if (_isRunning()) {
-              if (_isOver()) {
+              if (_isAllRunsOver()) {
                 _stopRun(context);
               }
               else {
@@ -1152,8 +1160,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createStatsLine() {
-    if (_isOver()) {
-      return Text('Timer finished');
+    if (_isAllRunsOver()) {
+      if (_runMode == RunMode.NO_REPEAT) {
+        return Text('Timer finished');
+      }
+      else {
+        return Text('Timer finished after ${_repetition+1} runs');
+      }
     }
     else if (_isRunning()) {
       final remainingBreaks = _selectedSlices
@@ -1196,7 +1209,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createCycleWidgetForRelativeMode() {
-    if (_isOver()) {
+    if (_isAllRunsOver()) {
       return Column(
         children: [
           Text('${formatDuration(_duration)}',
@@ -1243,7 +1256,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
 
   Widget _createCycleWidgetForAbsoluteMode() {
-    if (_isOver()) {
+    if (_isAllRunsOver()) {
       return Column(
         children: [
           Text(
@@ -1673,7 +1686,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
 
   String _stopRunningMessage() {
-    if (_isOver()) {
+    if (_isAllRunsOver()) {
       return 'Reset the timer first';
     }
     else {
