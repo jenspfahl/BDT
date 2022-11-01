@@ -59,7 +59,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _passedIndex = -1;
 
   Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60);
+  Duration? _originDuration;
   late DateTime _time;
+  DateTime? _originTime;
 
   final _selectedSlices = HashSet<int>();
   int? _pinnedBreakDownId;
@@ -327,7 +329,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
     SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
 
-    Timer.periodic(Duration(seconds: 5), (_) {
+    Timer.periodic(Duration(seconds: 4), (_) {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
@@ -863,7 +865,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                         _preferenceService, _pinnedBreakDownId);
                                   }
 
-                                  _selectedBreakDown = null; // this not in setState
+                                  _updateSelectedBreakDown(null); // this not in setState
                                   _selectedSlices.clear();
                                   _loadBreakDowns(false);
                                 }
@@ -906,7 +908,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
                                     final newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
                                     BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
-                                      _selectedBreakDown = savedBreakDown; // this not in setState
+                                      _updateSelectedBreakDown(savedBreakDown); // this not in setState
                                       _loadBreakDowns(false); // here setState is called
 
                                       toastInfo(context, "'$newName' saved");
@@ -937,7 +939,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         else {
                           setState(() {
                             _selectedSlices.clear();
-                            _selectedBreakDown = null;
+                            _updateSelectedBreakDown(null);
                           });
                         }
                       },
@@ -1050,12 +1052,58 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   void _updateSelectedSlices(BreakDown? value) {
     setState(() {
-      _selectedBreakDown = value;
+      _updateSelectedBreakDown(value);
       _selectedSlices.clear();
       if (value != null) {
         _selectedSlices.addAll(value.slices.toList());
       }
     });
+  }
+
+  void _updateSelectedBreakDown(BreakDown? value) {
+    _selectedBreakDown = value;
+    if (value != null) {
+      setState(() {
+        if (value.duration != null) {
+          _updateDuration(value.duration!, fromUser: false);
+          _timerMode = TimerMode.RELATIVE;
+        }
+        else {
+          _restoreDuration();
+        }
+
+        if (value.time != null) {
+            if (_originTime == null) {
+              _originTime = _time;
+            }
+            _updateAndAdjustTime(value.time!, fromUser: false);
+            _timerMode = TimerMode.ABSOLUTE;
+        }
+        else {
+          _restoreTime();
+        }
+      });
+    }
+    else {
+      setState(() {
+        _restoreDuration();
+        _restoreTime();
+      });
+    }
+  }
+
+  void _restoreDuration() {
+    if (_originDuration != null) {
+      _duration = _originDuration!;
+      _originDuration = null;
+    }
+  }
+
+  void _restoreTime() {
+    if (_originTime != null) {
+      _time = _originTime!;
+      _originTime = null;
+    }
   }
 
   Widget _createSwipeToStopButton(BuildContext context) {
@@ -1323,7 +1371,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     ).then((okPressed) {
       if (okPressed ?? false) {
         setState(() {
-          _duration = _tempSelectedDuration ?? initialDuration;
+          final duration = _tempSelectedDuration ?? initialDuration;
+          _updateDuration(duration, fromUser: true);
         });
       }
     });
@@ -1337,27 +1386,38 @@ class BDTScaffoldState extends State<BDTScaffold> {
     ).then((selectedTime) {
       if (selectedTime != null) {
         setState(() {
-          final now = DateTime.now();
-          final nowTime = TimeOfDay.now();
-          final nowMinutes = nowTime.hour * 60 + nowTime.minute;
-          final selectedMinutes = selectedTime.hour * 60 + selectedTime.minute;
-          final time = DateTime(now.year, now.month, now.day, selectedTime.hour, selectedTime.minute);
-
-          if (selectedMinutes < nowMinutes) {
-            // next day
-            _time = time.add(Duration(days: 1));
-          }
-          else {
-            _time = time;
-          }
-          _duration = now.difference(_time).abs();
-          if (_duration.inMinutes < 1) {
+          final adjusted = _updateAndAdjustTime(selectedTime, fromUser: true);
+          _originDuration = null;
+          _originTime = null;
+          if (adjusted) {
             toastInfo(context, 'Clock value should be a bit more in the future');
-            _duration = Duration(minutes: 1);
           }
         });
       }
     });
+  }
+
+  bool _updateAndAdjustTime(TimeOfDay timeOfDay, {required bool fromUser}) {
+    final now = DateTime.now();
+    final nowTime = TimeOfDay.now();
+    final nowMinutes = nowTime.hour * 60 + nowTime.minute;
+    final selectedMinutes = timeOfDay.hour * 60 + timeOfDay.minute;
+    DateTime time = DateTime(now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+
+    if (selectedMinutes < nowMinutes) {
+      // next day
+      time = time.add(Duration(days: 1));
+    }
+    _updateTime(time, fromUser: fromUser);
+
+    Duration duration = now.difference(_time).abs();
+    bool adjusted = false;
+    if (duration.inMinutes < 1) {
+      duration = Duration(minutes: 1);
+      adjusted = true;
+    }
+    _updateDuration(duration, fromUser: fromUser);
+    return adjusted;
   }
 
   List<int> _selectedSortedSlices() => _selectedSlices.toList()..sort();
@@ -1504,11 +1564,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _persistState();
 
     if (_timerMode == TimerMode.RELATIVE) {
-      setState(() => _time = startedAt.add(_duration));
+      setState(() {
+        final time = startedAt.add(_duration);
+        _updateTime(time, fromUser: false);
+      });
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
       setState(() {
-        _duration = startedAt.difference(_time).abs();
+        final duration = startedAt.difference(_time).abs();
+        _updateDuration(duration, fromUser: false);
       });
     }
     SignalService.makeSignalPattern(START,
@@ -1526,6 +1590,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     _scheduleSliceNotifications();
 
+  }
+
+  void _updateDuration(Duration duration, {required bool fromUser}) {
+    if (fromUser) {
+      _originDuration = null;
+    }
+    else if (_originDuration == null) {
+      _originDuration = _duration;
+    }
+    _duration = duration;
+  }
+
+  void _updateTime(DateTime time, {required bool fromUser}) {
+    if (fromUser) {
+      _originTime = null;
+    }
+    else if (_originTime == null) {
+      _originTime = _time;
+    }
+    _time = time;
   }
 
   void _persistState() {
@@ -1613,9 +1697,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
         .forEach((e) => _selectedSlices.add(e));
 
     if (jsonMap['selectedBreakDown'] != null) {
-      _selectedBreakDown = _loadedBreakDowns
+      final selectedBreakDown = _loadedBreakDowns
           .where((e) => e.id == jsonMap['selectedBreakDown'])
           .first;
+      _updateSelectedBreakDown(selectedBreakDown);
     }
     _pinnedBreakDownId = jsonMap['pinnedBreakDownId'];
 

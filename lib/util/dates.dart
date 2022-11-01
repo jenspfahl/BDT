@@ -83,3 +83,4 @@ String formatDuration(Duration duration, {bool withLineBreak = false, bool noSec
   return '${duration.inSeconds} sec';
 }
 
+
