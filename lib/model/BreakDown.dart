@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 
 class BreakDown implements Comparable<BreakDown> {
@@ -57,6 +58,18 @@ class BreakDown implements Comparable<BreakDown> {
   String getSlicesAsString() {
     final sorted = slices.toList()..sort();
     return sorted.join(',');
+  }
+
+  String getPresetName() {
+    if (duration != null) {
+      return "$name [for ${formatDuration(duration!)}]";
+    }
+    else if (time != null) {
+      return "$name [at ${formatTimeOfDay(time!)}]";
+    }
+    else {
+      return name;
+    }
   }
 
   bool isPredefined() => id < 0;

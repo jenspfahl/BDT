@@ -73,6 +73,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   List<BreakDown> _loadedBreakDowns = predefinedBreakDowns;
   BreakDown? _selectedBreakDown = null;
+  bool _hasDurationChangedForCurrentBreakDown = false;
+  bool _hasTimeChangedForCurrentBreakDown = false;
 
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
@@ -689,9 +691,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           child: breakDown.id == _pinnedBreakDownId
                               ? Row(children: [
                                       Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                      Text(breakDown.name)
+                                      Text(breakDown.getPresetName())
                                 ])
-                              : Text(breakDown.name),
+                              : Text(breakDown.getPresetName()),
                         );
                       }).toList(),
                     ),
@@ -825,11 +827,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               setState(() {
                                 if (_isPinnedBreakDown()) {
                                   _pinnedBreakDownId = null;
-                                  toastInfo(context, "Preset '${_selectedBreakDown?.name}' unpinned");
+                                  toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' unpinned");
                                 }
                                 else {
                                   _pinnedBreakDownId = _selectedBreakDown?.id;
-                                  toastInfo(context, "Preset '${_selectedBreakDown?.name}' pinned");
+                                  toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' pinned");
                                 }
                                 setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
                               });
@@ -842,7 +844,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     ),
                   ),
                   Visibility(
-                    visible: _hasSliceSelectionChanged() || _canDeleteUnchangedUserBreakDown(),
+                    visible: _canSaveUserPreset() || _canDeleteUserPreset(),
                     child: Positioned(
                       bottom: 20,
                       left: 20,
@@ -853,8 +855,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               toastError(context, _stopRunningMessage());
                               return;
                             }
-                            if (_canDeleteUnchangedUserBreakDown()) {
-                              final breakDownName = _selectedBreakDown?.name;
+                            if (_canDeleteUserPreset()) {
+                              final breakDownName = _selectedBreakDown?.getPresetName();
                               showConfirmationDialog(context, 'Delete saved preset', "Are you sure to delete '$breakDownName' permanently?",
                               okPressed: () {
                                 if (_selectedBreakDown != null) {
@@ -918,7 +920,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                   });
                             }
                           },
-                          icon: _canDeleteUnchangedUserBreakDown()
+                          icon: _canDeleteUserPreset()
                               ? const Icon(Icons.delete_forever)
                               : const Icon(Icons.save),
                     )),
@@ -977,12 +979,22 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
-  bool _canDeleteUnchangedUserBreakDown() => _selectedBreakDown != null && (_selectedBreakDown?.isPredefined() == false) && !_hasBreakDownChanged();
+  bool _canDeleteUserPreset() => _selectedBreakDown != null
+      && _selectedBreakDown?.isPredefined() == false
+      && !_hasBreakDownChanged() && !_hasDurationChangedForCurrentBreakDown && !_hasTimeChangedForCurrentBreakDown;
 
-  bool _hasSliceSelectionChanged() => (_selectedBreakDown?.getSlicesAsString()??'') != _selectedSortedSlicesToString();
+  bool _canSaveUserPreset() => _hasBreakDownChanged() || _hasBreakDownDurationChanged() || _hasBreakDownTimeChanged();
 
   bool _hasBreakDownChanged() {
     return _selectedBreakDown?.getSlicesAsString() != _selectedSortedSlicesToString();
+  }
+
+  bool _hasBreakDownDurationChanged() {
+    return _timerMode == TimerMode.RELATIVE && _selectedBreakDown?.duration != _duration;
+  }
+
+  bool _hasBreakDownTimeChanged() {
+    return _timerMode == TimerMode.ABSOLUTE && _selectedBreakDown?.time != _time;
   }
 
   bool _isDeviceMuted() => _ringerStatus == RingerModeStatus.silent || _ringerStatus == RingerModeStatus.vibrate;
@@ -1061,6 +1073,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   void _updateSelectedBreakDown(BreakDown? value) {
+    _hasDurationChangedForCurrentBreakDown = false;
+    _hasTimeChangedForCurrentBreakDown = false;
     _selectedBreakDown = value;
     if (value != null) {
       setState(() {
@@ -1600,6 +1614,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       _originDuration = _duration;
     }
     _duration = duration;
+    _hasDurationChangedForCurrentBreakDown = true;
   }
 
   void _updateTime(DateTime time, {required bool fromUser}) {
@@ -1610,6 +1625,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       _originTime = _time;
     }
     _time = time;
+    _hasTimeChangedForCurrentBreakDown = true;
   }
 
   void _persistState() {

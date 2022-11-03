@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 DateTime fillToWholeDate(DateTime dateTime) {
@@ -58,6 +59,9 @@ String formatDateTime(DateTime dateTime, {bool withLineBreak = false, bool withS
     return dateFormatter.format(dateTime) + betweenChar +
         timeFormatter.format(dateTime);
   }
+}
+String formatTimeOfDay(TimeOfDay timeOfDay) {
+  return "${timeOfDay.hour.toString().padLeft(1, '0')}:${timeOfDay.minute.toString().padLeft(2, '0')}";
 }
 
 String formatDuration(Duration duration, {bool withLineBreak = false, bool noSeconds = false}) {
