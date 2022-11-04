@@ -19,8 +19,15 @@ class BreakDownService {
 
   BreakDownService._internal() {}
 
-  Future<List<BreakDown>> getAllBreakDowns() async {
-    final breakDowns = List.of(predefinedBreakDowns, growable: true);
+  Future<List<BreakDown>> getAllBreakDowns({
+    bool userPresetsOnTop = false,
+    bool hidePredefinedPresets = false,
+  }) async {
+    List<BreakDown> breakDowns = (userPresetsOnTop || hidePredefinedPresets)
+        ? List.empty(growable: true)
+        : List.of(predefinedBreakDowns, growable: true);
+    debugPrint('inited breakdowns: $predefinedBreakDowns ${userPresetsOnTop || hidePredefinedPresets}');
+
     final keys = await PreferenceService().getKeys(PreferenceService.DATA_SAVED_BREAK_DOWNS_PREFIX.key);
     keys.sort();
     debugPrint('breakdown keys: $keys');
@@ -30,6 +37,9 @@ class BreakDownService {
         final savedBreakDown = BreakDown.fromJson(jsonDecode(jsonString));
         breakDowns.add(savedBreakDown);
       }
+    }
+    if (userPresetsOnTop && !hidePredefinedPresets) {
+      breakDowns.addAll(predefinedBreakDowns);
     }
     debugPrint('loaded breakdowns: $breakDowns');
     return List.of(breakDowns);

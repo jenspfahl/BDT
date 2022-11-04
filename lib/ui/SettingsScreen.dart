@@ -37,6 +37,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
+  bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
+  bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
+
 
   String _version = 'n/a';
 
@@ -77,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         await _preferenceService.refresh();
                         setState(() {
                           _colorScheme = _preferenceService.colorSchema;
-                          colorSchemeController.add(_colorScheme);
+                          prefsUpdatedNotifier.add(_colorScheme);
                         });
                       });
                     },
@@ -110,7 +113,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         await _preferenceService.refresh();
                         setState(() {
                           _audioScheme = _preferenceService.audioSchema;
-                          audioSchemeController.add(_audioScheme);
                         });
                       });
                     },
@@ -182,6 +184,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+        SettingsSection(
+         title: Text('Preset Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          tiles: [
+            SettingsTile.switchTile(
+              title: Text('Hide predefined presets'),
+              description: Text('If you don''t need it you can hide the predefined presets from the preset list. Only your own presets will be shown then.'),
+              initialValue: _hidePredefinedPresets,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_HIDE_PREDEFINED_PRESETS, value);
+                await _preferenceService.refresh();
+                setState(() {
+                  _hidePredefinedPresets = value;
+                });
+              },
+            ),
+            SettingsTile.switchTile(
+              title: Text('User presets on top'),
+              enabled: !_hidePredefinedPresets,
+              description: Text('Show user presets on top of the preset list for faster access.'),
+              initialValue: _userPresetsOnTop,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_USER_PRESETS_ON_TOP, value);
+                await _preferenceService.refresh();
+                setState(() {
+                  _userPresetsOnTop = value;
+                });
+              },
+            ),
+        ]),
         SettingsSection(
           title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
@@ -260,7 +293,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (audioScheme != null) {
       _audioScheme = audioScheme;
     }
-
+    final hidePredefinedPresets = await _preferenceService.getBool(PreferenceService.PREF_HIDE_PREDEFINED_PRESETS);
+    if (hidePredefinedPresets != null) {
+      _hidePredefinedPresets = hidePredefinedPresets;
+    }
+    final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
+    if (userPresetsOnTop != null) {
+      _userPresetsOnTop = userPresetsOnTop;
+    }
   }
 
   String _getColorSchemeName(int colorSchema) {

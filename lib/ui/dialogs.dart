@@ -1,4 +1,6 @@
+import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_settings/open_settings.dart';
 
@@ -47,13 +49,16 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   );
 }
 
-void showInputDialog(BuildContext context, String title, String message,
+void showInputWithSwitchDialog(BuildContext context, String title, String message,
     {Icon? icon,
       String? initText,
       String? hintText,
+      String? switchText,
+      required ValueNotifier<bool> isSwitched,
       String? Function(String?)? validator,
       Function(String)? okPressed,
-      Function()? cancelPressed}) {
+      Function()? cancelPressed,
+    }) {
 
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     final _textFieldController = TextEditingController(text: initText);
@@ -84,6 +89,18 @@ void showInputDialog(BuildContext context, String title, String message,
                     validator: validator,
                     autovalidateMode: AutovalidateMode.onUserInteraction
                   ),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: isSwitched,
+                    builder: (context, currentState, child) {
+                      return SwitchListTile(
+                        activeColor: ColorService().getCurrentScheme().button,
+                        value: isSwitched.value,
+                        title: Text(switchText??''),
+                        onChanged: (value) {
+                          isSwitched.value = value;
+                        },
+                      );
+                    }),
                 ],
               ),
             ),

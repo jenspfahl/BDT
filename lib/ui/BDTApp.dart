@@ -8,8 +8,7 @@ import 'package:bdt/ui/BDTScaffold.dart';
 
 import '../main.dart';
 
-StreamController<int> colorSchemeController = StreamController();
-StreamController<int> audioSchemeController = StreamController();
+StreamController<dynamic> prefsUpdatedNotifier = StreamController();
 
 class BDTApp extends StatelessWidget {
 
@@ -20,8 +19,8 @@ class BDTApp extends StatelessWidget {
 
     return LocalizationProvider(
       state: LocalizationProvider.of(context).state,
-      child: StreamBuilder<int>(
-        stream: colorSchemeController.stream,
+      child: StreamBuilder<dynamic>(
+        stream: prefsUpdatedNotifier.stream,
         builder: (context, snapshot) {
           return MaterialApp(
             title: APP_NAME_SHORT,

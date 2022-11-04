@@ -28,7 +28,7 @@ class BreakDown implements Comparable<BreakDown> {
           .map((e) => int.parse(e))
           .toSet(),
       jsonMap['duration'] != null
-        ? Duration(seconds: int.parse(jsonMap['duration']))
+        ? Duration(seconds: jsonMap['duration'])
         : null,
       jsonMap['time'] != null
           ? TimeOfDay(
@@ -100,7 +100,6 @@ List<BreakDown> predefinedBreakDowns = [
   BreakDown.data(9, 'every 5 minutes', [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], Duration(hours: 1), null),
   BreakDown.data(10, 'every 10 minutes', [10, 20, 30, 40, 50], Duration(hours: 1), null),
   BreakDown.data(11, 'every 15 minutes', [15, 30, 45], Duration(hours: 1), null),
-  BreakDown.data(12, 'countdown to noon', [40, 46, 51, 55, 58], null, TimeOfDay(hour: 12, minute: 0)),
 ];
 
 

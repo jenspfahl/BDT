@@ -20,7 +20,9 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_SIGNAL_TWICE = PrefDef('pref/run/signalTwice', false);
   static final PREF_BREAK_ORDER_DESCENDING = PrefDef('pref/run/breakOrderDescending', false);
   static final PREF_SIGNAL_VOLUME = PrefDef('pref/run/signalVolume', MAX_VOLUME);
-  
+  static final PREF_HIDE_PREDEFINED_PRESETS = PrefDef('pref/presets/hidePredefinedPresets', false);
+  static final PREF_USER_PRESETS_ON_TOP = PrefDef('pref/presets/userPresetsOnTop', false);
+
   static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef('data/savedBreakDowns_', null);
   static final DATA_PINNED_BREAK_DOWN = PrefDef('data/pinnedBreakDown', null);
   static final DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN = PrefDef('data/batteryHintShown', false);
@@ -38,6 +40,8 @@ class PreferenceService implements ITranslatePreferences {
   var languageSelection;
   int colorSchema = PREF_COLOR_SCHEME.defaultValue;
   int audioSchema = PREF_AUDIO_SCHEME.defaultValue;
+  bool userPresetsOnTop = PREF_USER_PRESETS_ON_TOP.defaultValue;
+  bool hidePredefinedPresets = PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
 
   factory PreferenceService() {
     return _service;
@@ -52,6 +56,8 @@ class PreferenceService implements ITranslatePreferences {
   refresh() async {
     colorSchema = await getInt(PREF_COLOR_SCHEME) ?? PREF_COLOR_SCHEME.defaultValue;
     audioSchema = await getInt(PREF_AUDIO_SCHEME) ?? PREF_AUDIO_SCHEME.defaultValue;
+    userPresetsOnTop = await getBool(PREF_USER_PRESETS_ON_TOP) ?? PREF_USER_PRESETS_ON_TOP.defaultValue;
+    hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   }
 
   Future<String?> getString(PrefDef def) async {

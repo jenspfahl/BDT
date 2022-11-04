@@ -71,7 +71,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   RunMode _runMode = RunMode.NO_REPEAT;
   int _repetition = 0;
 
-  List<BreakDown> _loadedBreakDowns = predefinedBreakDowns;
+  List<BreakDown> _loadedBreakDowns = List.of(predefinedBreakDowns);
   BreakDown? _selectedBreakDown = null;
   bool _hasDurationChangedForCurrentBreakDown = false;
   bool _hasTimeChangedForCurrentBreakDown = false;
@@ -372,9 +372,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   void _loadBreakDowns(bool focusPinned) {
-    BreakDownService().getAllBreakDowns()
+    BreakDownService().getAllBreakDowns(
+        userPresetsOnTop: _preferenceService.userPresetsOnTop,
+        hidePredefinedPresets:  _preferenceService.hidePredefinedPresets,
+    )
         .then((value) {
           setState(() {
+            _loadedBreakDowns.clear(); //TODO Why is this needed?
             _loadedBreakDowns = value;
             if (focusPinned) {
               getPinnedBreakDown(_preferenceService).then((pinnedId) {
@@ -639,7 +643,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
           IconButton(
               onPressed: () {
                 Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-                    .then((value) => setState(() => _updateBreakOrder()));
+                    .then((value) {
+                      _loadBreakDowns(false);
+                      setState(() => _updateBreakOrder());
+                    });
               },
               icon: const Icon(Icons.settings)),
         ],
@@ -884,9 +891,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               if (isPredefined) {
                                 newName = newName != null ? newName + ' (modified)' : null;
                               }
-                              showInputDialog(context, 'Save preset', 'Enter a name for your preset to save.',
+                              final isTimerModeDuration = _timerMode == TimerMode.RELATIVE;
+                              final isSwitched = ValueNotifier(
+                                  _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
+                              showInputWithSwitchDialog(context,
+                                  'Save preset', 'Enter a name for your preset to save.',
                                   initText: newName,
                                   hintText: 'choose a name',
+                                  switchText: isTimerModeDuration
+                                      ? "Include duration\n(${formatDuration(_duration)})"
+                                      : "Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})",
+                                  isSwitched: isSwitched,
                                   validator: (value) {
                                     if (value == null || value.trim().isEmpty) {
                                       return 'Preset name missing';
@@ -908,7 +923,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                       return;
                                     }
 
-                                    final newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
+                                    final saveCurrentDuration = isSwitched.value && isTimerModeDuration;
+                                    final saveCurrentTime = isSwitched.value && !isTimerModeDuration;
+
+                                    BreakDown newBreakDown;
+                                    if (saveCurrentDuration) {
+                                      newBreakDown = BreakDown.withDuration(id??0, newName, Set.of(_selectedSlices), _duration);
+                                    }
+                                    else if (saveCurrentTime) {
+                                      newBreakDown = BreakDown.withTime(id??0, newName, Set.of(_selectedSlices), TimeOfDay.fromDateTime(_time));
+                                    }
+                                    else {
+                                      newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
+                                    }
                                     BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
                                       _updateSelectedBreakDown(savedBreakDown); // this not in setState
                                       _loadBreakDowns(false); // here setState is called
@@ -981,7 +1008,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   bool _canDeleteUserPreset() => _selectedBreakDown != null
       && _selectedBreakDown?.isPredefined() == false
-      && !_hasBreakDownChanged() && !_hasDurationChangedForCurrentBreakDown && !_hasTimeChangedForCurrentBreakDown;
+      && !_hasBreakDownChanged()
+      && !_hasDurationChangedForCurrentBreakDown
+      && !_hasTimeChangedForCurrentBreakDown;
 
   bool _canSaveUserPreset() => _hasBreakDownChanged() || _hasBreakDownDurationChanged() || _hasBreakDownTimeChanged();
 
@@ -1609,23 +1638,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _updateDuration(Duration duration, {required bool fromUser}) {
     if (fromUser) {
       _originDuration = null;
+      _hasDurationChangedForCurrentBreakDown = true;
     }
     else if (_originDuration == null) {
       _originDuration = _duration;
     }
     _duration = duration;
-    _hasDurationChangedForCurrentBreakDown = true;
   }
 
   void _updateTime(DateTime time, {required bool fromUser}) {
     if (fromUser) {
       _originTime = null;
+      _hasTimeChangedForCurrentBreakDown = true;
     }
     else if (_originTime == null) {
       _originTime = _time;
     }
     _time = time;
-    _hasTimeChangedForCurrentBreakDown = true;
   }
 
   void _persistState() {
