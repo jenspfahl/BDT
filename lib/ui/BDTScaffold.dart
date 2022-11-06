@@ -1030,6 +1030,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  @override
+  Future<void> dispose() async {
+    debugPrint("App killed");
+    await _persistState();
+    super.dispose();
+  }
+
   bool _canDeleteUserPreset() => _selectedBreakDown != null
       && _selectedBreakDown?.isPredefined() == false
       && !_hasBreakDownChanged()
@@ -1681,10 +1688,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _time = time;
   }
 
-  void _persistState() {
+  Future<void> _persistState() async {
     final stateAsJson = jsonEncode(this);
     debugPrint('!!!!State to persist: $stateAsJson');
-    setRunState(_preferenceService, stateAsJson);
+    await setRunState(_preferenceService, stateAsJson);
   }
 
   void _scheduleSliceNotifications() {
@@ -1720,7 +1727,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     debugPrint('stopped');
     _stopTimer();
     SignalService().stopAll();
-    setRunState(_preferenceService, null);
+    _persistState();
     _notificationService.cancelAllNotifications();
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume,
