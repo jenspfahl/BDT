@@ -341,7 +341,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
 
     getRunState(_preferenceService).then((persistedState) {
-      var focusPinned = true;
       if (persistedState != null) {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
         debugPrint('!!!!!!FOUND persisted state: $stateAsJson');
@@ -357,21 +356,29 @@ class BDTScaffoldState extends State<BDTScaffold> {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
             _startTimer();
-            focusPinned = false;
+            int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
+            _loadBreakDowns(focusPinned: false, preSelectedBreakDownId: preSelectedBreakDownId);
           }
           else {
             debugPrint('State is outdated, deleting it');
             setRunState(_preferenceService, null);
           }
           int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-          _loadBreakDowns(focusPinned: focusPinned, preSelectedBreakDownId: preSelectedBreakDownId);
+          _loadBreakDowns(focusPinned: true, preSelectedBreakDownId: preSelectedBreakDownId);
         }
         else {
-          debugPrint('Recover last session');
-          _setStateFromJson(stateAsJson);
-          int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-          _loadBreakDowns(focusPinned: focusPinned, preSelectedBreakDownId: preSelectedBreakDownId);
-
+          _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP).then((startWithoutStateRecovery) {
+            if (startWithoutStateRecovery == true) {
+              _loadBreakDowns(focusPinned: true);
+            }
+            else {
+              debugPrint('Recover last session');
+              _setStateFromJson(stateAsJson);
+              int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
+              _loadBreakDowns(focusPinned: true,
+                  preSelectedBreakDownId: preSelectedBreakDownId);
+            }
+          });
         }
       }
 

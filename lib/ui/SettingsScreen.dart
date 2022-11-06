@@ -39,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
+  bool _clearStateOnStartup = PreferenceService.PREF_CLEAR_STATE_ON_STARTUP.defaultValue;
 
 
   String _version = 'n/a';
@@ -214,6 +215,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
+            CustomSettingsTile(child: Divider()),
+            SettingsTile.switchTile(
+              title: Text('Start from scratch after app startup'),
+              description: Text('Start with empty wheel and no selected preset if nothing is pinned.'),
+              initialValue: _clearStateOnStartup,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP, value);
+                setState(() => _clearStateOnStartup = value);
+              },
+            ),
         ]),
         SettingsSection(
           title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
@@ -300,6 +312,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
     if (userPresetsOnTop != null) {
       _userPresetsOnTop = userPresetsOnTop;
+    }
+    final clearStateOnStartup = await _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP);
+    if (clearStateOnStartup != null) {
+      _clearStateOnStartup = clearStateOnStartup;
     }
   }
 
