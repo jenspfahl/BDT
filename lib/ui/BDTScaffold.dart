@@ -22,6 +22,7 @@ import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -82,7 +83,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
   DateTime? _startedAt;
   int _volume = MAX_VOLUME;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
-
 
 
   static Future<void> signal1() async {
@@ -346,20 +346,34 @@ class BDTScaffoldState extends State<BDTScaffold> {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
         debugPrint('!!!!!!FOUND persisted state: $stateAsJson');
         final lastBoot = DateTime.now().subtract(SystemClock.elapsedRealtime());
-        final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(stateAsJson['startedAt']);
-        debugPrint('last boot was ${formatDateTime(lastBoot)}, persisted state is from ${formatDateTime(persistedStateFrom)}');
-        if (lastBoot.isBefore(persistedStateFrom)) {
-          debugPrint('State is from this session, using it');
-          _setStateFromJson(stateAsJson);
-          _startTimer();
-          focusPinned = false;
+        var startedAtFromJson = stateAsJson['startedAt'];
+        if (startedAtFromJson != null) {
+          final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(
+              startedAtFromJson);
+          debugPrint('last boot was ${formatDateTime(
+              lastBoot)}, persisted state is from ${formatDateTime(
+              persistedStateFrom)}');
+          if (lastBoot.isBefore(persistedStateFrom)) {
+            debugPrint('State is from this session, using it');
+            _setStateFromJson(stateAsJson);
+            _startTimer();
+            focusPinned = false;
+          }
+          else {
+            debugPrint('State is outdated, deleting it');
+            setRunState(_preferenceService, null);
+          }
+          int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
+          _loadBreakDowns(focusPinned, true, preSelectedBreakDownId: preSelectedBreakDownId);
         }
         else {
-          debugPrint('State is outdated, deleting it');
-          setRunState(_preferenceService, null);
+          debugPrint('Recover last session');
+          _setStateFromJson(stateAsJson);
+          int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
+          _loadBreakDowns(focusPinned, true, preSelectedBreakDownId: preSelectedBreakDownId);
+
         }
       }
-      _loadBreakDowns(focusPinned);
 
     });
 
@@ -371,21 +385,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
   }
 
-  void _loadBreakDowns(bool focusPinned) {
+  void _loadBreakDowns(bool focusPinned, bool updateSelectedSlices, {int? preSelectedBreakDownId = null}) {
     BreakDownService().getAllBreakDowns(
         userPresetsOnTop: _preferenceService.userPresetsOnTop,
         hidePredefinedPresets:  _preferenceService.hidePredefinedPresets,
     )
         .then((value) {
           setState(() {
-            _loadedBreakDowns.clear(); //TODO Why is this needed?
             _loadedBreakDowns = value;
+            if (preSelectedBreakDownId != null) {
+              _selectedBreakDown = value.firstWhere((b) => b.id == preSelectedBreakDownId);
+            }
             if (focusPinned) {
               getPinnedBreakDown(_preferenceService).then((pinnedId) {
                 _pinnedBreakDownId = pinnedId;
                 if (pinnedId != null) {
                   final candidates = value.where((e) => e.id == pinnedId);
-                  if (candidates.isNotEmpty) {
+                  if (updateSelectedSlices && candidates.isNotEmpty) {
                     _updateSelectedSlices(candidates.first);
                   }
                 }
@@ -495,41 +511,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(APP_NAME_SHORT),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
-                      .map((i) => GestureDetector(
-                        onTapUp: (_) {
-                          SignalService.makeSignalPattern(_getSignalForNumber(i),
-                              volume: _volume,
-                              neverSignalTwice: true,
-                              signalAlthoughCancelled: true,
-                              preferenceService: _preferenceService);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
-                              child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
-                            ),
-                            Text('Break ${_breakNumberToString(i)}: ',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                            Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
-                          ]),
-                      ))
-                            .toList();
-
-                        rows.add(GestureDetector(
+    return FGBGNotifier(
+      onEvent: (event) {
+        if (event == FGBGType.background) {
+          debugPrint("App goes background");
+          _persistState();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(APP_NAME_SHORT),
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
+                        .map((i) => GestureDetector(
                           onTapUp: (_) {
-                            SignalService.makeSignalPattern(_getSignalForNumber(100),
+                            SignalService.makeSignalPattern(_getSignalForNumber(i),
                                 volume: _volume,
                                 neverSignalTwice: true,
                                 signalAlthoughCancelled: true,
@@ -539,470 +540,493 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-                                child: const Text(''),
+                                padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                                child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                               ),
-                              const Text('Timer end: ',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
+                              Text('Break ${_breakNumberToString(i)}: ',
+                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                              Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
                             ]),
-                        )
-                      );
+                        ))
+                              .toList();
 
-                      rows.add(GestureDetector(
-                        child: Row(
-                            children: [Text("")])));
+                          rows.add(GestureDetector(
+                            onTapUp: (_) {
+                              SignalService.makeSignalPattern(_getSignalForNumber(100),
+                                  volume: _volume,
+                                  neverSignalTwice: true,
+                                  signalAlthoughCancelled: true,
+                                  preferenceService: _preferenceService);
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                                  child: const Text(''),
+                                ),
+                                const Text('Timer end: ',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
+                              ]),
+                          )
+                        );
 
-                      rows.add(GestureDetector(
-                        child: Row(
-                          children: [
-                            InkWell(
-                                child: Text.rich(
-                                  TextSpan(
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-                                    text: 'Visit ',
-                                    children: <TextSpan>[
-                                      TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
-                                      TextSpan(text: ' for more information.'),
-                                    ],
+                        rows.add(GestureDetector(
+                          child: Row(
+                              children: [Text("")])));
+
+                        rows.add(GestureDetector(
+                          child: Row(
+                            children: [
+                              InkWell(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                                      text: 'Visit ',
+                                      children: <TextSpan>[
+                                        TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
+                                        TextSpan(text: ' for more information.'),
+                                      ],
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE, mode: LaunchMode.externalApplication);
+                                  }),
+                            ],
+                          ),
+                        ));
+
+                        return AlertDialog(
+                          insetPadding: EdgeInsets.zero,
+                          contentPadding: EdgeInsets.all(16),
+                          title: Column(
+                            children: [
+                              const Text('Help'),
+                              const Text(''),
+                              const Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                              const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                            ],
+                          ),
+                          content: Builder(
+                            builder: (context) {
+                              var height = MediaQuery.of(context).size.height;
+                              var width = MediaQuery.of(context).size.width;
+
+                              return Container(
+                                height: height - 100,
+                                width: width - 4,
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: rows,
                                   ),
                                 ),
-                                onTap: () {
-                                  launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE, mode: LaunchMode.externalApplication);
-                                }),
-                          ],
-                        ),
-                      ));
-
-                      return AlertDialog(
-                        insetPadding: EdgeInsets.zero,
-                        contentPadding: EdgeInsets.all(16),
-                        title: Column(
-                          children: [
-                            const Text('Help'),
-                            const Text(''),
-                            const Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                            const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                          ],
-                        ),
-                        content: Builder(
-                          builder: (context) {
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
-
-                            return Container(
-                              height: height - 100,
-                              width: width - 4,
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: rows,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        actions: [
-                          TextButton(
-                            child: const Text('Close'),
-                            onPressed:  () {
-                              Navigator.pop(context);
+                              );
                             },
-                          )
-                        ],
-                      );
-                    }
-                );
-              },
-              icon: const Icon(Icons.help_outline)),
-          IconButton(
-              onPressed: () async {
-                _ringerStatus = await SoundMode.ringerModeStatus;
-                setState((){});
-                if (_isDeviceMuted()) {
-                  toastInfo(context, 'Device is muted. Unmute first to set volume.');
-                  return;
-                }
-
-                final volume = await showVolumeSliderDialog(context,
-                  initialSelection: _volume.toDouble(),
-                  onChangedEnd: (value) {
-                    SignalService.setSignalVolume(value.round());
-                    SignalService.makeShortSignal();
-                  }
-                );
-                if (volume != null) {
-                  _volume = volume.round();
-                  setVolume(_preferenceService, _volume);
-                  setState(() {}); // update
-                }
-                SignalService.setSignalVolume(_volume);
-              },
-              icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
-          IconButton(
-              onPressed: () {
-                Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-                    .then((value) {
-                      _loadBreakDowns(false);
-                      setState(() => _updateBreakOrder());
-                    });
-              },
-              icon: const Icon(Icons.settings)),
-        ],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                    child: IconButton(
-                      onPressed: () => _moveBreakDownSelectionToNext(),
-                      color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                      icon: const Icon(Icons.arrow_back_ios),
-                    )),
-                Expanded(
-                  flex: 9,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onHorizontalDragEnd: (details) {
-                      // Swiping in left direction.
-                      if (details.velocity.pixelsPerSecond.dx < 0) {
-                        _moveBreakDownSelectionToPrevious();
-                      }
-
-                      // Swiping in right direction.
-                      if (details.velocity.pixelsPerSecond.dx > 0) {
-                        _moveBreakDownSelectionToNext();
-                      }
-                    },
-                    child: DropdownButtonFormField<BreakDown?>(
-                      isDense: true,
-                      focusColor: ColorService().getCurrentScheme().accent,
-                      onTap: () => FocusScope.of(context).unfocus(),
-                      value: _selectedBreakDown,
-                      hint: const Text('Break downs'),
-                      iconEnabledColor: ColorService().getCurrentScheme().button,
-                      icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
-                      isExpanded: true,
-                      onChanged:  _isRunning() ? null : (value) {
-                        _updateSelectedSlices(value);
-                      },
-                      items: _loadedBreakDowns.map((BreakDown breakDown) {
-                        debugPrint('inList=$breakDown');
-                        return DropdownMenuItem(
-                          value: breakDown,
-                          child: breakDown.id == _pinnedBreakDownId
-                              ? Row(children: [
-                                      Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                      Text(breakDown.getPresetName())
-                                ])
-                              : Text(breakDown.getPresetName()),
+                          ),
+                          actions: [
+                            TextButton(
+                              child: const Text('Close'),
+                              onPressed:  () {
+                                Navigator.pop(context);
+                              },
+                            )
+                          ],
                         );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                Flexible(child: IconButton(
-                  color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                  onPressed: () => _moveBreakDownSelectionToPrevious(),
-                  icon: const Icon(Icons.arrow_forward_ios),
-                )),
-              ],
-            ),
-          ),
-          GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onHorizontalDragEnd: _switchTimerMode,
-            child: CupertinoSlidingSegmentedControl<TimerMode>(
-              backgroundColor: ColorService().getCurrentScheme().background,
-              thumbColor: ColorService().getCurrentScheme().button,
-              padding: EdgeInsets.all(8),
-              children: <TimerMode, Widget> {
-                TimerMode.RELATIVE: Icon(Icons.timer_outlined,
-                    color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                TimerMode.ABSOLUTE: Icon(Icons.alarm,
-                    color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-              },
-              onValueChanged: (value) {
-                if (value != null) {
-                  setState(() => _setTimerMode(value));
-                }
-              },
-              groupValue: _timerMode,
-            ),
-          ),
-          AspectRatio(
-            aspectRatio: 0.97,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onHorizontalDragEnd: _switchTimerMode,
-              child: Stack(
+                      }
+                  );
+                },
+                icon: const Icon(Icons.help_outline)),
+            IconButton(
+                onPressed: () async {
+                  _ringerStatus = await SoundMode.ringerModeStatus;
+                  setState((){});
+                  if (_isDeviceMuted()) {
+                    toastInfo(context, 'Device is muted. Unmute first to set volume.');
+                    return;
+                  }
+
+                  final volume = await showVolumeSliderDialog(context,
+                    initialSelection: _volume.toDouble(),
+                    onChangedEnd: (value) {
+                      SignalService.setSignalVolume(value.round());
+                      SignalService.makeShortSignal();
+                    }
+                  );
+                  if (volume != null) {
+                    _volume = volume.round();
+                    setVolume(_preferenceService, _volume);
+                    setState(() {}); // update
+                  }
+                  SignalService.setSignalVolume(_volume);
+                },
+                icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
+            IconButton(
+                onPressed: () {
+                  Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
+                      .then((value) {
+                        _loadBreakDowns(false, false);
+                        setState(() => _updateBreakOrder());
+                      });
+                },
+                icon: const Icon(Icons.settings)),
+          ],
+        ),
+        body: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  PieChart(
-                    PieChartData(
-                        pieTouchData: PieTouchData(
-                            touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                              if (_isRunning()) {
-                                return;
-                              }
-                              if (event is FlTapUpEvent
-                                  || event is FlPointerExitEvent
-                                  || event is FlLongPressEnd
-                                  || event is FlPanEndEvent
-                              ) {
-                                setState(() {
-                                  _touchedIndex = 0;
-                                });
-                              }
-                              else if (event is FlTapDownEvent) {
-                                setState(() {
-                                  if (
-                                      pieTouchResponse == null ||
-                                      pieTouchResponse.touchedSection == null) {
-                                    _touchedIndex = -1;
-                                    return;
-                                  }
-                                  _touchedIndex =
-                                      (pieTouchResponse.touchedSection!
-                                          .touchedSectionIndex + 1) % MAX_SLICE;
-                                  debugPrint('_touchedIndex=$_touchedIndex');
-                                  if (_touchedIndex != 0) {
-                                    if (_selectedSlices.contains(
-                                        _touchedIndex)) {
-                                      _selectedSlices.remove(_touchedIndex);
-                                    }
-                                    else {
-                                      if (_selectedSlices.length < MAX_BREAKS) {
-                                        _selectedSlices.add(_touchedIndex);
-                                      }
-                                      else {
-                                        toastError(context,
-                                            'max $MAX_BREAKS breaks allowed');
-                                      }
-                                    }
-                                  }
-                                  debugPrint('_selected=$_selectedSlices');
-                                });
-                              }
-                            }),
-                        borderData: FlBorderData(
-                            show: false
-                        ),
-                        sectionsSpace: 1,
-                        centerSpaceRadius: CENTER_RADIUS,
-                        sections: _createSections(),
-                        startDegreeOffset: 270 + 2.5
-                    ),
-                    swapAnimationDuration: Duration(milliseconds: 75),
-                  ),
-                  Center(
+                  Flexible(
+                      child: IconButton(
+                        onPressed: () => _moveBreakDownSelectionToNext(),
+                        color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                        icon: const Icon(Icons.arrow_back_ios),
+                      )),
+                  Expanded(
+                    flex: 9,
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      child: SizedBox(
-                        width: CENTER_RADIUS * 1.5,
-                        height: CENTER_RADIUS * 1.5,
-                        child: Center(child: _createCycleWidget())),
-                      onTap: () {
-                        if (!_isRunning()) {
-                          if (_timerMode == TimerMode.RELATIVE) {
-                            _changeDuration(context);
-                          }
-                          else if (_timerMode == TimerMode.ABSOLUTE) {
-                            _changeTime(context);
-                          }
+                      onHorizontalDragEnd: (details) {
+                        // Swiping in left direction.
+                        if (details.velocity.pixelsPerSecond.dx < 0) {
+                          _moveBreakDownSelectionToPrevious();
+                        }
+
+                        // Swiping in right direction.
+                        if (details.velocity.pixelsPerSecond.dx > 0) {
+                          _moveBreakDownSelectionToNext();
                         }
                       },
-                    ),
-                  ),
-                  Visibility(
-                    visible: _selectedBreakDown != null,
-                    child: Positioned(
-                      top: 20,
-                      left: 20,
-                      child: IconButton(
-                          color: ColorService().getCurrentScheme().button,
-                          onPressed: () {
-                            if (_isRunning()) {
-                              toastError(context, _stopRunningMessage());
-                              return;
-                            }
-                            if (_selectedBreakDown != null) {
-                              setState(() {
-                                if (_isPinnedBreakDown()) {
-                                  _pinnedBreakDownId = null;
-                                  toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' unpinned");
-                                }
-                                else {
-                                  _pinnedBreakDownId = _selectedBreakDown?.id;
-                                  toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' pinned");
-                                }
-                                setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
-                              });
-                            }
-                          },
-                          icon: _isPinnedBreakDown()
-                              ? const Icon(Icons.push_pin)
-                              : const Icon(Icons.push_pin_outlined),
+                      child: DropdownButtonFormField<BreakDown?>(
+                        isDense: true,
+                        focusColor: ColorService().getCurrentScheme().accent,
+                        onTap: () => FocusScope.of(context).unfocus(),
+                        value: _selectedBreakDown,
+                        hint: const Text('Break downs'),
+                        iconEnabledColor: ColorService().getCurrentScheme().button,
+                        icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+                        isExpanded: true,
+                        onChanged:  _isRunning() ? null : (value) {
+                          _updateSelectedSlices(value);
+                        },
+                        items: _loadedBreakDowns.map((BreakDown breakDown) {
+                          debugPrint('inList=$breakDown');
+                          return DropdownMenuItem(
+                            value: breakDown,
+                            child: breakDown.id == _pinnedBreakDownId
+                                ? Row(children: [
+                                        Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
+                                        Text(breakDown.getPresetName())
+                                  ])
+                                : Text(breakDown.getPresetName()),
+                          );
+                        }).toList(),
                       ),
                     ),
                   ),
-                  Visibility(
-                    visible: _canSaveUserPreset() || _canDeleteUserPreset(),
-                    child: Positioned(
-                      bottom: 20,
-                      left: 20,
-                      child: IconButton(
-                          color: ColorService().getCurrentScheme().button,
-                          onPressed: () {
-                            if (_isRunning()) {
-                              toastError(context, _stopRunningMessage());
-                              return;
-                            }
-                            if (_canDeleteUserPreset()) {
-                              final breakDownName = _selectedBreakDown?.getPresetName();
-                              showConfirmationDialog(context, 'Delete saved preset', "Are you sure to delete '$breakDownName' permanently?",
-                              okPressed: () {
-                                if (_selectedBreakDown != null) {
-                                  BreakDownService().deleteBreakDown(_selectedBreakDown!);
-                                  if (_isPinnedBreakDown()) {
-                                    _pinnedBreakDownId = null;
-                                    setPinnedBreakDown(
-                                        _preferenceService, _pinnedBreakDownId);
-                                  }
-
-                                  _updateSelectedBreakDown(null); // this not in setState
-                                  _selectedSlices.clear();
-                                  _loadBreakDowns(false);
-                                }
-                                Navigator.pop(context);
-                                toastInfo(context, "'$breakDownName' deleted");
-                              },
-                              cancelPressed: () {
-                                Navigator.pop(context);
-                              });
-                            }
-                            else {
-                              var newName = _selectedBreakDown?.name;
-                              var isPredefined = _selectedBreakDown?.isPredefined() == true;
-                              if (isPredefined) {
-                                newName = newName != null ? newName + ' (modified)' : null;
-                              }
-                              final isTimerModeDuration = _timerMode == TimerMode.RELATIVE;
-                              final isSwitched = ValueNotifier(
-                                  _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
-                              showInputWithSwitchDialog(context,
-                                  'Save preset', 'Enter a name for your preset to save.',
-                                  initText: newName,
-                                  hintText: 'choose a name',
-                                  switchText: isTimerModeDuration
-                                      ? "Include duration\n(${formatDuration(_duration)})"
-                                      : "Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})",
-                                  isSwitched: isSwitched,
-                                  validator: (value) {
-                                    if (value == null || value.trim().isEmpty) {
-                                      return 'Preset name missing';
-                                    }
-                                    return null;
-                                  },
-                                  cancelPressed: () => Navigator.pop(context),
-                                  okPressed: (input) async {
-
-                                    final id = isPredefined ? null : _selectedBreakDown?.id;
-                                    var newName = input.trim();
-                                    final allBreakDowns = await BreakDownService().getAllBreakDowns();
-                                    final foundWithSameName = allBreakDowns
-                                        .where((e) => e.name == newName && e.id != id)
-                                        .isNotEmpty;
-                                    if (foundWithSameName) {
-                                      Navigator.pop(context);
-                                      toastError(context, 'Preset name still used. Choose another one');
-                                      return;
-                                    }
-
-                                    final saveCurrentDuration = isSwitched.value && isTimerModeDuration;
-                                    final saveCurrentTime = isSwitched.value && !isTimerModeDuration;
-
-                                    BreakDown newBreakDown;
-                                    if (saveCurrentDuration) {
-                                      newBreakDown = BreakDown.withDuration(id??0, newName, Set.of(_selectedSlices), _duration);
-                                    }
-                                    else if (saveCurrentTime) {
-                                      newBreakDown = BreakDown.withTime(id??0, newName, Set.of(_selectedSlices), TimeOfDay.fromDateTime(_time));
-                                    }
-                                    else {
-                                      newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
-                                    }
-                                    BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
-                                      _updateSelectedBreakDown(savedBreakDown); // this not in setState
-                                      _loadBreakDowns(false); // here setState is called
-
-                                      toastInfo(context, "'$newName' saved");
-                                    });
-
-                                    Navigator.pop(context);
-                                  });
-                            }
-                          },
-                          icon: _canDeleteUserPreset()
-                              ? const Icon(Icons.delete_forever)
-                              : const Icon(Icons.save),
-                    )),
-                  ),
-                  Positioned(
-                    top: 20,
-                    right: 20,
-                    child: IconButton(
-                      color: ColorService().getCurrentScheme().button,
-                      onPressed: () {
-                        if (_isRunning()) {
-                          toastError(context, _stopRunningMessage());
-                          return;
-                        }
-                        if (_selectedSlices.isEmpty) {
-                          toastInfo(context, 'No breaks to reset');
-                        }
-                        else {
-                          setState(() {
-                            _selectedSlices.clear();
-                            _updateSelectedBreakDown(null);
-                          });
-                        }
-                      },
-                      icon: const Icon(MdiIcons.restart)),
-                  ),
-                  Positioned(
-                    bottom: 20,
-                    right: 20,
-                    child: IconButton(
-                      color: ColorService().getCurrentScheme().button,
-                      onPressed: () {
-                        if (_isRunning()) {
-                          toastError(context, _stopRunningMessage());
-                          return;
-                        }
-                        setState(() {
-                          _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
-                          toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
-                        });
-                      },
-                      icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
-                  ),
+                  Flexible(child: IconButton(
+                    color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                    onPressed: () => _moveBreakDownSelectionToPrevious(),
+                    icon: const Icon(Icons.arrow_forward_ios),
+                  )),
                 ],
               ),
             ),
-          ),
-          Center(
-            child: _createStatsLine()),
-        ],
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onHorizontalDragEnd: _switchTimerMode,
+              child: CupertinoSlidingSegmentedControl<TimerMode>(
+                backgroundColor: ColorService().getCurrentScheme().background,
+                thumbColor: ColorService().getCurrentScheme().button,
+                padding: EdgeInsets.all(8),
+                children: <TimerMode, Widget> {
+                  TimerMode.RELATIVE: Icon(Icons.timer_outlined,
+                      color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                  TimerMode.ABSOLUTE: Icon(Icons.alarm,
+                      color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                },
+                onValueChanged: (value) {
+                  if (value != null) {
+                    setState(() => _setTimerMode(value));
+                  }
+                },
+                groupValue: _timerMode,
+              ),
+            ),
+            AspectRatio(
+              aspectRatio: 0.97,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onHorizontalDragEnd: _switchTimerMode,
+                child: Stack(
+                  children: [
+                    PieChart(
+                      PieChartData(
+                          pieTouchData: PieTouchData(
+                              touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                                if (_isRunning()) {
+                                  return;
+                                }
+                                if (event is FlTapUpEvent
+                                    || event is FlPointerExitEvent
+                                    || event is FlLongPressEnd
+                                    || event is FlPanEndEvent
+                                ) {
+                                  setState(() {
+                                    _touchedIndex = 0;
+                                  });
+                                }
+                                else if (event is FlTapDownEvent) {
+                                  setState(() {
+                                    if (
+                                        pieTouchResponse == null ||
+                                        pieTouchResponse.touchedSection == null) {
+                                      _touchedIndex = -1;
+                                      return;
+                                    }
+                                    _touchedIndex =
+                                        (pieTouchResponse.touchedSection!
+                                            .touchedSectionIndex + 1) % MAX_SLICE;
+                                    debugPrint('_touchedIndex=$_touchedIndex');
+                                    if (_touchedIndex != 0) {
+                                      if (_selectedSlices.contains(
+                                          _touchedIndex)) {
+                                        _selectedSlices.remove(_touchedIndex);
+                                      }
+                                      else {
+                                        if (_selectedSlices.length < MAX_BREAKS) {
+                                          _selectedSlices.add(_touchedIndex);
+                                        }
+                                        else {
+                                          toastError(context,
+                                              'max $MAX_BREAKS breaks allowed');
+                                        }
+                                      }
+                                    }
+                                    debugPrint('_selected=$_selectedSlices');
+                                  });
+                                }
+                              }),
+                          borderData: FlBorderData(
+                              show: false
+                          ),
+                          sectionsSpace: 1,
+                          centerSpaceRadius: CENTER_RADIUS,
+                          sections: _createSections(),
+                          startDegreeOffset: 270 + 2.5
+                      ),
+                      swapAnimationDuration: Duration(milliseconds: 75),
+                    ),
+                    Center(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        child: SizedBox(
+                          width: CENTER_RADIUS * 1.5,
+                          height: CENTER_RADIUS * 1.5,
+                          child: Center(child: _createCycleWidget())),
+                        onTap: () {
+                          if (!_isRunning()) {
+                            if (_timerMode == TimerMode.RELATIVE) {
+                              _changeDuration(context);
+                            }
+                            else if (_timerMode == TimerMode.ABSOLUTE) {
+                              _changeTime(context);
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    Visibility(
+                      visible: _selectedBreakDown != null,
+                      child: Positioned(
+                        top: 20,
+                        left: 20,
+                        child: IconButton(
+                            color: ColorService().getCurrentScheme().button,
+                            onPressed: () {
+                              if (_isRunning()) {
+                                toastError(context, _stopRunningMessage());
+                                return;
+                              }
+                              if (_selectedBreakDown != null) {
+                                setState(() {
+                                  if (_isPinnedBreakDown()) {
+                                    _pinnedBreakDownId = null;
+                                    toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' unpinned");
+                                  }
+                                  else {
+                                    _pinnedBreakDownId = _selectedBreakDown?.id;
+                                    toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' pinned");
+                                  }
+                                  setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
+                                });
+                              }
+                            },
+                            icon: _isPinnedBreakDown()
+                                ? const Icon(Icons.push_pin)
+                                : const Icon(Icons.push_pin_outlined),
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: _canSaveUserPreset() || _canDeleteUserPreset(),
+                      child: Positioned(
+                        bottom: 20,
+                        left: 20,
+                        child: IconButton(
+                            color: ColorService().getCurrentScheme().button,
+                            onPressed: () {
+                              if (_isRunning()) {
+                                toastError(context, _stopRunningMessage());
+                                return;
+                              }
+                              if (_canDeleteUserPreset()) {
+                                final breakDownName = _selectedBreakDown?.getPresetName();
+                                showConfirmationDialog(context, 'Delete saved preset', "Are you sure to delete '$breakDownName' permanently?",
+                                okPressed: () {
+                                  if (_selectedBreakDown != null) {
+                                    BreakDownService().deleteBreakDown(_selectedBreakDown!);
+                                    if (_isPinnedBreakDown()) {
+                                      _pinnedBreakDownId = null;
+                                      setPinnedBreakDown(
+                                          _preferenceService, _pinnedBreakDownId);
+                                    }
+
+                                    _updateSelectedBreakDown(null); // this not in setState
+                                    _selectedSlices.clear();
+                                    _loadBreakDowns(false, true);
+                                  }
+                                  Navigator.pop(context);
+                                  toastInfo(context, "'$breakDownName' deleted");
+                                },
+                                cancelPressed: () {
+                                  Navigator.pop(context);
+                                });
+                              }
+                              else {
+                                var newName = _selectedBreakDown?.name;
+                                var isPredefined = _selectedBreakDown?.isPredefined() == true;
+                                if (isPredefined) {
+                                  newName = newName != null ? newName + ' (modified)' : null;
+                                }
+                                final isTimerModeDuration = _timerMode == TimerMode.RELATIVE;
+                                final isSwitched = ValueNotifier(
+                                    _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
+                                showInputWithSwitchDialog(context,
+                                    'Save preset', 'Enter a name for your preset to save.',
+                                    initText: newName,
+                                    hintText: 'choose a name',
+                                    switchText: isTimerModeDuration
+                                        ? "Include duration\n(${formatDuration(_duration)})"
+                                        : "Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})",
+                                    isSwitched: isSwitched,
+                                    validator: (value) {
+                                      if (value == null || value.trim().isEmpty) {
+                                        return 'Preset name missing';
+                                      }
+                                      return null;
+                                    },
+                                    cancelPressed: () => Navigator.pop(context),
+                                    okPressed: (input) async {
+
+                                      final id = isPredefined ? null : _selectedBreakDown?.id;
+                                      var newName = input.trim();
+                                      final allBreakDowns = await BreakDownService().getAllBreakDowns();
+                                      final foundWithSameName = allBreakDowns
+                                          .where((e) => e.name == newName && e.id != id)
+                                          .isNotEmpty;
+                                      if (foundWithSameName) {
+                                        Navigator.pop(context);
+                                        toastError(context, 'Preset name still used. Choose another one');
+                                        return;
+                                      }
+
+                                      final saveCurrentDuration = isSwitched.value && isTimerModeDuration;
+                                      final saveCurrentTime = isSwitched.value && !isTimerModeDuration;
+
+                                      BreakDown newBreakDown;
+                                      if (saveCurrentDuration) {
+                                        newBreakDown = BreakDown.withDuration(id??0, newName, Set.of(_selectedSlices), _duration);
+                                      }
+                                      else if (saveCurrentTime) {
+                                        newBreakDown = BreakDown.withTime(id??0, newName, Set.of(_selectedSlices), TimeOfDay.fromDateTime(_time));
+                                      }
+                                      else {
+                                        newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
+                                      }
+                                      BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
+                                        _updateSelectedBreakDown(savedBreakDown); // this not in setState
+                                        _loadBreakDowns(false, false); // here setState is called
+
+                                        toastInfo(context, "'$newName' saved");
+                                      });
+
+                                      Navigator.pop(context);
+                                    });
+                              }
+                            },
+                            icon: _canDeleteUserPreset()
+                                ? const Icon(Icons.delete_forever)
+                                : const Icon(Icons.save),
+                      )),
+                    ),
+                    Positioned(
+                      top: 20,
+                      right: 20,
+                      child: IconButton(
+                        color: ColorService().getCurrentScheme().button,
+                        onPressed: () {
+                          if (_isRunning()) {
+                            toastError(context, _stopRunningMessage());
+                            return;
+                          }
+                          if (_selectedSlices.isEmpty) {
+                            toastInfo(context, 'No breaks to reset');
+                          }
+                          else {
+                            setState(() {
+                              _selectedSlices.clear();
+                              _updateSelectedBreakDown(null);
+                            });
+                          }
+                        },
+                        icon: const Icon(MdiIcons.restart)),
+                    ),
+                    Positioned(
+                      bottom: 20,
+                      right: 20,
+                      child: IconButton(
+                        color: ColorService().getCurrentScheme().button,
+                        onPressed: () {
+                          if (_isRunning()) {
+                            toastError(context, _stopRunningMessage());
+                            return;
+                          }
+                          setState(() {
+                            _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
+                            toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
+                          });
+                        },
+                        icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Center(
+              child: _createStatsLine()),
+          ],
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: _isRunning() && !_isAllRunsOver()
+            ? _createSwipeToStopButton(context)
+            : _createStartButton(context),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _isRunning() && !_isAllRunsOver()
-          ? _createSwipeToStopButton(context)
-          : _createStartButton(context),
     );
   }
 
@@ -1716,6 +1740,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return {
     'duration' : _duration.inSeconds,
     'time': _time.millisecondsSinceEpoch,
+    'originDuration' : _originDuration?.inSeconds,
+    'originTime': _originTime?.millisecondsSinceEpoch,
+    'hasDurationChanged': _hasDurationChangedForCurrentBreakDown,
+    'hasTimeChanged': _hasTimeChangedForCurrentBreakDown,
     'timerMode': _timerMode.index,
     'direction': _direction.index,
     'startedAt': _startedAt?.millisecondsSinceEpoch,
@@ -1732,21 +1760,32 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _setStateFromJson(Map<String, dynamic> jsonMap) {
     _duration = Duration(seconds: jsonMap['duration']);
     _time = DateTime.fromMillisecondsSinceEpoch(jsonMap['time']);
+
+    if (jsonMap['originDuration'] != null) {
+      _originDuration = Duration(seconds: jsonMap['originDuration']);
+    }
+    if (jsonMap['originTime'] != null) {
+      _originTime = DateTime.fromMillisecondsSinceEpoch(jsonMap['originTime']);
+    }
+
+    if (jsonMap['hasDurationChanged'] != null) {
+      _hasDurationChangedForCurrentBreakDown = jsonMap['hasDurationChanged'];
+    }
+    if (jsonMap['hasTimeChanged'] != null) {
+      _hasTimeChangedForCurrentBreakDown = jsonMap['hasTimeChanged'];
+    }
+
     _timerMode = TimerMode.values.elementAt(jsonMap['timerMode']);
     _direction = Direction.values.elementAt(jsonMap['direction']);
-    _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
+    if (jsonMap['startedAt'] != null) {
+      _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
+    }
 
     _selectedSlices.clear();
     jsonMap['selectedSlices'].toString().split(',')
         .map((e) => int.parse(e))
         .forEach((e) => _selectedSlices.add(e));
 
-    if (jsonMap['selectedBreakDown'] != null) {
-      final selectedBreakDown = _loadedBreakDowns
-          .where((e) => e.id == jsonMap['selectedBreakDown'])
-          .first;
-      _updateSelectedBreakDown(selectedBreakDown);
-    }
     _pinnedBreakDownId = jsonMap['pinnedBreakDownId'];
 
     if (jsonMap['runMode'] != null) {
