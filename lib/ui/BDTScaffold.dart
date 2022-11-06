@@ -364,13 +364,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
             setRunState(_preferenceService, null);
           }
           int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-          _loadBreakDowns(focusPinned, true, preSelectedBreakDownId: preSelectedBreakDownId);
+          _loadBreakDowns(focusPinned: focusPinned, preSelectedBreakDownId: preSelectedBreakDownId);
         }
         else {
           debugPrint('Recover last session');
           _setStateFromJson(stateAsJson);
           int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-          _loadBreakDowns(focusPinned, true, preSelectedBreakDownId: preSelectedBreakDownId);
+          _loadBreakDowns(focusPinned: focusPinned, preSelectedBreakDownId: preSelectedBreakDownId);
 
         }
       }
@@ -385,7 +385,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
   }
 
-  void _loadBreakDowns(bool focusPinned, bool updateSelectedSlices, {int? preSelectedBreakDownId = null}) {
+  void _loadBreakDowns({required bool focusPinned, int? preSelectedBreakDownId = null}) {
     BreakDownService().getAllBreakDowns(
         userPresetsOnTop: _preferenceService.userPresetsOnTop,
         hidePredefinedPresets:  _preferenceService.hidePredefinedPresets,
@@ -401,7 +401,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 _pinnedBreakDownId = pinnedId;
                 if (pinnedId != null) {
                   final candidates = value.where((e) => e.id == pinnedId);
-                  if (updateSelectedSlices && candidates.isNotEmpty) {
+                  if (candidates.isNotEmpty) {
                     _updateSelectedSlices(candidates.first);
                   }
                 }
@@ -667,7 +667,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 onPressed: () {
                   Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
                       .then((value) {
-                        _loadBreakDowns(false, false);
+                        _loadBreakDowns(focusPinned: false);
                         setState(() => _updateBreakOrder());
                       });
                 },
@@ -899,7 +899,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
                                     _updateSelectedBreakDown(null); // this not in setState
                                     _selectedSlices.clear();
-                                    _loadBreakDowns(false, true);
+                                    _loadBreakDowns(focusPinned: true);
                                   }
                                   Navigator.pop(context);
                                   toastInfo(context, "'$breakDownName' deleted");
@@ -961,7 +961,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                       }
                                       BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
                                         _updateSelectedBreakDown(savedBreakDown); // this not in setState
-                                        _loadBreakDowns(false, false); // here setState is called
+                                        _loadBreakDowns(focusPinned: false); // here setState is called
 
                                         toastInfo(context, "'$newName' saved");
                                       });
