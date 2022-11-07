@@ -362,9 +362,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
           else {
             debugPrint('State is outdated, deleting it');
             setRunState(_preferenceService, null);
+            int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
+            _loadBreakDowns(focusPinned: true, preSelectedBreakDownId: preSelectedBreakDownId);
           }
-          int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-          _loadBreakDowns(focusPinned: true, preSelectedBreakDownId: preSelectedBreakDownId);
         }
         else {
           _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP).then((startWithoutStateRecovery) {
@@ -381,7 +381,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
           });
         }
       }
-
     });
 
     _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN)
