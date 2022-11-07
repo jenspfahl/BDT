@@ -422,16 +422,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
         });
   }
 
-  void _updateBreakOrder() {
-    _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING)
-        .then((isDescending) {
-          if (isDescending == true) {
-            _direction = Direction.DESC;
-          }
-          else {
-            _direction = Direction.ASC;
-          }
-        });
+  Future<void> _updateBreakOrder() async {
+    final isDescending = await _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING);
+
+    if (isDescending == true) {
+      _direction = Direction.DESC;
+    }
+    else {
+      _direction = Direction.ASC;
+    }
+
   }
 
   _startTimer() {
@@ -667,9 +667,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                     }
                   );
                   if (volume != null) {
-                    _volume = volume.round();
-                    setVolume(_preferenceService, _volume);
-                    setState(() {}); // update
+                    setState(() {
+                      _volume = volume.round();
+                      setVolume(_preferenceService, _volume);
+                    }); // update
                   }
                   SignalService.setSignalVolume(_volume);
                 },
@@ -808,10 +809,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                       if (_selectedSlices.contains(
                                           _touchedIndex)) {
                                         _selectedSlices.remove(_touchedIndex);
+                                        _persistState();
                                       }
                                       else {
                                         if (_selectedSlices.length < MAX_BREAKS) {
                                           _selectedSlices.add(_touchedIndex);
+                                          _persistState();
                                         }
                                         else {
                                           toastError(context,
@@ -991,12 +994,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       right: 20,
                       child: IconButton(
                         color: ColorService().getCurrentScheme().button,
-                        onPressed: () {
+                        onPressed: () async {
                           if (_isRunning()) {
                             toastError(context, _stopRunningMessage());
                             return;
                           }
                           if (_selectedSlices.isEmpty) {
+                            await _updateBreakOrder();
+                            setState(() {
+                              // reset to defaults
+                              _timerMode = TimerMode.RELATIVE;
+                              _runMode = RunMode.NO_REPEAT;
+                              _updateDuration(kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60), fromUser: true);
+                              _persistState();
+                            });
                             toastInfo(context, 'No breaks to reset');
                           }
                           else {
@@ -1021,6 +1032,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           setState(() {
                             _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
                             toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
+                            _persistState();
                           });
                         },
                         icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
@@ -1044,7 +1056,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   @override
   Future<void> dispose() async {
     debugPrint("App killed");
-    await _persistState();
+    await _persistState(); //This might not work since App is killed before persist is done
     super.dispose();
   }
 
@@ -1084,6 +1096,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   void _setTimerMode(TimerMode mode) {
     _timerMode = mode;
+    _persistState();
   }
 
   bool _isBreakDownSelectionAtStart() {
@@ -1140,6 +1153,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (value != null) {
         _selectedSlices.addAll(value.slices.toList());
       }
+      _persistState();
     });
   }
 
@@ -1167,6 +1181,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
         else {
           _restoreTime();
         }
+
+        _persistState();
       });
     }
     else {
@@ -1228,7 +1244,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   child: _createMenuItem(RunMode.NO_REPEAT, "No repeat")),
             ],
           onSelected: (runMode) {
-            setState(() => _runMode = runMode);
+            setState(() {
+              _runMode = runMode;
+              _persistState();
+            });
           },
         ),
         FloatingActionButton.extended(
@@ -1458,6 +1477,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         setState(() {
           final duration = _tempSelectedDuration ?? initialDuration;
           _updateDuration(duration, fromUser: true);
+          _persistState();
         });
       }
     });
@@ -1474,6 +1494,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           final adjusted = _updateAndAdjustTime(selectedTime, fromUser: true);
           _originDuration = null;
           _originTime = null;
+          _persistState();
           if (adjusted) {
             toastInfo(context, 'Clock value should be a bit more in the future');
           }
