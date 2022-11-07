@@ -403,6 +403,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
             if (preSelectedBreakDownId != null) {
               _selectedBreakDown = value.firstWhere((b) => b.id == preSelectedBreakDownId);
             }
+
             if (focusPinned) {
               getPinnedBreakDown(_preferenceService).then((pinnedId) {
                 _pinnedBreakDownId = pinnedId;
@@ -413,6 +414,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   }
                 }
               });
+            }
+            else if ( _preferenceService.hidePredefinedPresets && (_selectedBreakDown?.isPredefined()??false)) {
+              // currentSelection is hidden
+              _updateSelectedSlices(null);
             }
           });
         });

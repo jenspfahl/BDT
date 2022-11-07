@@ -143,7 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Run Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: Text('Notify on reached breaks'),
+              title: Text('Notify upon reached breaks'),
               description: Text('Notifies when a break is reached and a run has started or ended.'),
               initialValue: _notifyAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
@@ -153,7 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('Vibrate on reached breaks'),
+              title: Text('Vibrate upon reached breaks'),
               description: Text('Vibrates with a pattern when a break is reached and a run has started or ended.'),
               initialValue: _vibrateAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
@@ -218,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             CustomSettingsTile(child: Divider()),
             SettingsTile.switchTile(
               title: Text('Start from scratch after app startup'),
-              description: Text('Start with empty wheel and no selected preset if nothing is pinned.'),
+              description: Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
               initialValue: _clearStateOnStartup,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
