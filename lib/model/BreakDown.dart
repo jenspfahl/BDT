@@ -25,7 +25,8 @@ class BreakDown implements Comparable<BreakDown> {
       jsonMap['name'],
       jsonMap['slices'].toString()
           .split(',')
-          .map((e) => int.parse(e))
+          .map((e) => int.tryParse(e))
+          .whereType<int>()
           .toSet(),
       jsonMap['duration'] != null
         ? Duration(seconds: jsonMap['duration'])

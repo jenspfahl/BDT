@@ -718,7 +718,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         isDense: true,
                         focusColor: ColorService().getCurrentScheme().accent,
                         onTap: () => FocusScope.of(context).unfocus(),
-                        value: _selectedBreakDown,
+                        value: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
                         hint: const Text('Break downs'),
                         iconEnabledColor: ColorService().getCurrentScheme().button,
                         icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
@@ -1232,6 +1232,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         PopupMenuButton<RunMode>(
             constraints: BoxConstraints(),
             icon: _getRunModeIcon(_runMode, null),
+            initialValue: _runMode,
             itemBuilder: (context) => <PopupMenuItem<RunMode>> [
               PopupMenuItem<RunMode>(
                   value: RunMode.REPEAT_ONCE,
@@ -1822,7 +1823,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     _selectedSlices.clear();
     jsonMap['selectedSlices'].toString().split(',')
-        .map((e) => int.parse(e))
+        .map((e) => int.tryParse(e))
+        .whereType<int>()
         .forEach((e) => _selectedSlices.add(e));
 
     _pinnedBreakDownId = jsonMap['pinnedBreakDownId'];
