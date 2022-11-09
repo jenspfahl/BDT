@@ -1,0 +1,5 @@
+* ability to save timer duration or destination time in a preset
+* ability to repeat the timer (once or infinitely)
+* restore last app state after app start (unless no preset is pinned or opted-out)
+* new preferences i.a. to hide predefined presets
+* bugfixes (#2 1., #3)
