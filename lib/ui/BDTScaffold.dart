@@ -861,10 +861,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         top: 20,
                         left: 20,
                         child: IconButton(
-                            color: ColorService().getCurrentScheme().button,
+                            color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                             onPressed: () {
                               if (_isRunning()) {
-                                toastError(context, _stopRunningMessage());
+                                //toastError(context, _stopRunningMessage());
                                 return;
                               }
                               if (_selectedBreakDown != null) {
@@ -893,10 +893,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         bottom: 20,
                         left: 20,
                         child: IconButton(
-                            color: ColorService().getCurrentScheme().button,
+                            color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                             onPressed: () {
                               if (_isRunning()) {
-                                toastError(context, _stopRunningMessage());
+                                //toastError(context, _stopRunningMessage());
                                 return;
                               }
                               if (_canDeleteUserPreset()) {
@@ -993,10 +993,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       top: 20,
                       right: 20,
                       child: IconButton(
-                        color: ColorService().getCurrentScheme().button,
+                        color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                         onPressed: () async {
                           if (_isRunning()) {
-                            toastError(context, _stopRunningMessage());
+                            //toastError(context, _stopRunningMessage());
                             return;
                           }
                           if (_selectedSlices.isEmpty) {
@@ -1023,10 +1023,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       bottom: 20,
                       right: 20,
                       child: IconButton(
-                        color: ColorService().getCurrentScheme().button,
+                        color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                         onPressed: () {
                           if (_isRunning()) {
-                            toastError(context, _stopRunningMessage());
+                            //toastError(context, _stopRunningMessage());
                             return;
                           }
                           setState(() {
