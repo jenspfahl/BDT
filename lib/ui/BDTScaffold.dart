@@ -1232,6 +1232,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         PopupMenuButton<RunMode>(
             constraints: BoxConstraints(),
             icon: _getRunModeIcon(_runMode, null),
+            enabled: !_isRunning(),
             initialValue: _runMode,
             itemBuilder: (context) => <PopupMenuItem<RunMode>> [
               PopupMenuItem<RunMode>(
@@ -1300,11 +1301,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _getRunModeIcon(RunMode runMode, bool? isSelected) {
-    final color = isSelected != null
-        ? (isSelected
-          ? Colors.white
-          : ColorService().getCurrentScheme().foreground)
-        : ColorService().getCurrentScheme().button;
+    final color = _isRunning()
+        ? Colors.grey[700]
+        : (isSelected != null
+          ? (isSelected
+            ? Colors.white
+            : ColorService().getCurrentScheme().foreground)
+          : ColorService().getCurrentScheme().button);
     switch (runMode) {
       case RunMode.NO_REPEAT: return Icon(isSelected != null ? MdiIcons.repeatOff : Icons.arrow_drop_down, color: color);
       case RunMode.REPEAT_ONCE: return Icon(Icons.repeat_one, color: color);
