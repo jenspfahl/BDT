@@ -40,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool _clearStateOnStartup = PreferenceService.PREF_CLEAR_STATE_ON_STARTUP.defaultValue;
+  bool _clockModeAsDefault = PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT.defaultValue;
 
 
   String _version = 'n/a';
@@ -215,7 +216,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
-            CustomSettingsTile(child: Divider()),
+        ]),
+        SettingsSection(
+          title: Text('App Behaviour', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          tiles: [
             SettingsTile.switchTile(
               title: Text('Start from scratch after app startup'),
               description: Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
@@ -226,7 +230,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _clearStateOnStartup = value);
               },
             ),
-        ]),
+            SettingsTile.switchTile(
+              title: Text('Use Clock Mode as default'),
+              description: Text('Set Clock Mode as default instead of Timer Mode'),
+              initialValue: _clockModeAsDefault,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT, value);
+                setState(() => _clockModeAsDefault = value);
+              },
+            ),
+          ],
+        ),
         SettingsSection(
           title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
@@ -316,6 +331,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final clearStateOnStartup = await _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP);
     if (clearStateOnStartup != null) {
       _clearStateOnStartup = clearStateOnStartup;
+    }
+    final clockModeAsDefault = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
+    if (clockModeAsDefault != null) {
+      _clockModeAsDefault = clockModeAsDefault;
     }
   }
 

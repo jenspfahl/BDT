@@ -367,8 +367,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
           }
         }
         else {
-          _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP).then((startWithoutStateRecovery) {
+          _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP).then((startWithoutStateRecovery) async {
             if (startWithoutStateRecovery == true) {
+              final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
+              if (useClockMode == true) {
+                _timerMode = TimerMode.ABSOLUTE;
+              }
               _loadBreakDowns(focusPinned: true);
             }
             else {
@@ -1001,11 +1005,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           }
                           if (_selectedSlices.isEmpty) {
                             await _updateBreakOrder();
+                            final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
                             setState(() {
                               // reset to defaults
-                              _timerMode = TimerMode.RELATIVE;
+                              _timerMode = useClockMode == true ? TimerMode.ABSOLUTE : TimerMode.RELATIVE;
                               _runMode = RunMode.NO_REPEAT;
                               _updateDuration(kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60), fromUser: true);
+                              _updateTime(_deriveTime(), fromUser: true);
                               _persistState();
                             });
                             toastInfo(context, 'No breaks to reset');

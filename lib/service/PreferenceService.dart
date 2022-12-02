@@ -23,6 +23,7 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_HIDE_PREDEFINED_PRESETS = PrefDef('pref/presets/hidePredefinedPresets', false);
   static final PREF_USER_PRESETS_ON_TOP = PrefDef('pref/presets/userPresetsOnTop', false);
   static final PREF_CLEAR_STATE_ON_STARTUP = PrefDef('pref/presets/clearStateOnStartup', false);
+  static final PREF_CLOCK_MODE_AS_DEFAULT = PrefDef('pref/presets/clockModeAsDefault', false);
 
   static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef('data/savedBreakDowns_', null);
   static final DATA_PINNED_BREAK_DOWN = PrefDef('data/pinnedBreakDown', null);
