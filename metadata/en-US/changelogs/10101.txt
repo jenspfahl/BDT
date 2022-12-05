@@ -1,0 +1,3 @@
+* small UI bugfixes
+* two phase reset button 
+* preference for Clock Mode
