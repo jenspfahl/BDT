@@ -81,13 +81,24 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  TextFormField(
-                    controller: _textFieldController,
-                    decoration: InputDecoration(hintText: hintText),
-                    maxLength: 50,
-                    keyboardType: TextInputType.text,
-                    validator: validator,
-                    autovalidateMode: AutovalidateMode.onUserInteraction
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _textFieldController,
+                          decoration: InputDecoration(hintText: hintText),
+                          maxLength: 50,
+                          keyboardType: TextInputType.text,
+                          validator: validator,
+                          autovalidateMode: AutovalidateMode.onUserInteraction
+                        ),
+                      ),
+                      IconButton(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                          constraints: const BoxConstraints(),
+                          onPressed: () => _textFieldController.clear(),
+                          icon: const Icon(Icons.clear_outlined))
+                    ],
                   ),
                   ValueListenableBuilder<bool>(
                     valueListenable: isSwitched,
