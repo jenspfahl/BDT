@@ -45,6 +45,8 @@ class BDTScaffold extends StatefulWidget {
 enum TimerMode {RELATIVE, ABSOLUTE}
 enum Direction {ASC, DESC}
 enum RunMode {NO_REPEAT, REPEAT_ONCE, REPEAT_FOREVER}
+enum RelativeProgressPresentation {ALL, REMAINING, PROGRESSING, REMAINING_PRORESSING}
+enum AbsoluteProgressPresentation {ALL, START_CURRENT, CURRENT_END}
 
 
 final MAX_BREAKS = 20;
@@ -71,6 +73,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Direction _direction = Direction.ASC;
   RunMode _runMode = RunMode.NO_REPEAT;
   int _repetition = 0;
+  RelativeProgressPresentation _relativeProgressPresentation = RelativeProgressPresentation.ALL;
+  AbsoluteProgressPresentation _absoluteProgressPresentation = AbsoluteProgressPresentation.ALL;
 
   List<BreakDown> _loadedBreakDowns = List.of(predefinedBreakDowns);
   BreakDown? _selectedBreakDown = null;
@@ -848,7 +852,21 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           height: CENTER_RADIUS * 1.5,
                           child: Center(child: _createCycleWidget())),
                         onTap: () {
-                          if (!_isRunning()) {
+                          if (_isRunning()) {
+                            setState(() {
+                              if (_timerMode == TimerMode.RELATIVE) {
+                                final index = _relativeProgressPresentation.index + 1;
+                                _relativeProgressPresentation =
+                                    RelativeProgressPresentation.values.elementAt(index % RelativeProgressPresentation.values.length);
+                              }
+                              else if (_timerMode == TimerMode.ABSOLUTE) {
+                                final index = _absoluteProgressPresentation.index + 1;
+                                _absoluteProgressPresentation =
+                                    AbsoluteProgressPresentation.values.elementAt(index % AbsoluteProgressPresentation.values.length);
+                              }
+                            });
+                          }
+                          else {
                             if (_timerMode == TimerMode.RELATIVE) {
                               _changeDuration(context);
                             }
@@ -1360,56 +1378,39 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   Widget _createCycleWidget() {
     if (_timerMode == TimerMode.RELATIVE) {
-      return _createCycleWidgetForRelativeMode();
+      return _createCycleWidgetForRelativeMode(_relativeProgressPresentation);
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
-      return _createCycleWidgetForAbsoluteMode();
+      return _createCycleWidgetForAbsoluteMode(_absoluteProgressPresentation);
     }
     else {
       throw Exception('unknown timerMode ' + _timerMode.toString());
     }
   }
 
-  Widget _createCycleWidgetForRelativeMode() {
-    if (_isAllRunsOver()) {
-      return Column(
-        children: [
-          Text('${formatDuration(_duration)}',
-            style: TextStyle(fontSize: 10)),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text('${formatDuration(Duration.zero)}'),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text('${formatDuration(_duration)}',
-              style: const TextStyle(fontSize: 8)),
-        ],
-        mainAxisAlignment: MainAxisAlignment.center,
-      );
-    }
-    else if (_isRunning()) {
-      return Column(
-        children: [
-          Text('${formatDuration(_getDelta()!)}',
-            style: TextStyle(fontSize: 10)),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text('${formatDuration(_getRemaining()!)}'),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text('${formatDuration(_duration)}',
-              style: const TextStyle(fontSize: 8)),
-        ],
-        mainAxisAlignment: MainAxisAlignment.center,
-      );
+  Widget _createCycleWidgetForRelativeMode(RelativeProgressPresentation presentation) {
+    if (_isRunning() || _isAllRunsOver()) {
+      var value1 = formatDuration(_getDelta()!);
+      var value2 = formatDuration(_getRemaining()!);
+      var value3 = formatDuration(_duration);
+      if (_isAllRunsOver()) {
+        value1 = formatDuration(_duration);
+        value2 = formatDuration(Duration.zero);
+        value3 = formatDuration(_duration);
+      }
+
+      if (presentation == RelativeProgressPresentation.REMAINING) {
+        return Text(value2);
+      }
+      else if (presentation == RelativeProgressPresentation.PROGRESSING) {
+        return Text(value1);
+      }
+      else if (presentation == RelativeProgressPresentation.REMAINING_PRORESSING) {
+        return _createTwoRowsCircle(value1, value2);
+      }
+      else {
+        return _createTreeRowsCircle(value1, value2, value3);
+      }
     }
     else {
       return Text(formatDuration(_duration));
@@ -1417,62 +1418,77 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
 
-  Widget _createCycleWidgetForAbsoluteMode() {
-    if (_isAllRunsOver()) {
-      return Column(
-        children: [
-          Text(
-            formatDateTime(_startedAt!, withSeconds: true),
-            style: TextStyle(fontSize: 8),
-            textAlign: TextAlign.center
-          ),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text(formatDateTime(_time, withSeconds: true), textAlign: TextAlign.center),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text(
-            formatDateTime(_time, withSeconds: true),
-            style: const TextStyle(fontSize: 8),
-            textAlign: TextAlign.center
-          ),
-        ],
-        mainAxisAlignment: MainAxisAlignment.center,
-      );
-    }
-    else if (_isRunning()) {
-      return Column(
-        children: [
-          Text(
-            formatDateTime(_startedAt!, withSeconds: true),
-            style: TextStyle(fontSize: 8),
-            textAlign: TextAlign.center
-          ),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text(formatDateTime(DateTime.now(), withSeconds: true), textAlign: TextAlign.center),
-          SizedBox(
-              width: 80,
-              child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
-          ),
-          Text(
-            formatDateTime(_time, withSeconds: true),
-            style: const TextStyle(fontSize: 8),
-            textAlign: TextAlign.center
-          ),
-        ],
-        mainAxisAlignment: MainAxisAlignment.center,
-      );
+  Widget _createCycleWidgetForAbsoluteMode(AbsoluteProgressPresentation presentation) {
+    if (_isRunning() || _isAllRunsOver()) {
+      var value1 = formatDateTime(_startedAt!, withSeconds: true);
+      var value2 = formatDateTime(DateTime.now(), withSeconds: true);
+      var value3 = formatDateTime(_time, withSeconds: true);
+      if (_isAllRunsOver()) {
+        value1 = formatDateTime(_startedAt!, withSeconds: true);
+        value2 = formatDateTime(_time, withSeconds: true);
+        value3 = formatDateTime(_time, withSeconds: true);
+      }
+
+      if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
+        return _createTwoRowsCircle(value1, value2, smallValue1: true);
+      }
+      else if (presentation == AbsoluteProgressPresentation.CURRENT_END) {
+        return _createTwoRowsCircle(value2, value3, smallValue2: true);
+      }
+      else {
+        return _createTreeRowsCircle(value1, value2, value3);
+      }
     }
     else {
       return Text(formatDateTime(_time));
     }
+  }
+
+  Widget _createTwoRowsCircle(String value1, String value2, {bool smallValue1 = false, bool smallValue2 = false}) {
+    return Column(
+      children: [
+        Text(value1,
+          textAlign: TextAlign.center,
+          style: smallValue1 ? const TextStyle(fontSize: 10) : null,
+        ),
+        SizedBox(
+            width: 80,
+            child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
+        ),
+        Text(value2,
+            textAlign: TextAlign.center,
+            style: smallValue2 ? const TextStyle(fontSize: 10) : null,
+        ),
+      ],
+      mainAxisAlignment: MainAxisAlignment.center,
+    );
+  }
+
+  Widget _createTreeRowsCircle(String value1, String value2, String value3) {
+    return Column(
+      children: [
+        Text(
+            value1,
+            style: TextStyle(fontSize: 10),
+            textAlign: TextAlign.center
+        ),
+        SizedBox(
+            width: 80,
+            child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
+        ),
+        Text(value2, textAlign: TextAlign.center),
+        SizedBox(
+            width: 80,
+            child: Divider(thickness: 0.5, color: ColorService().getCurrentScheme().accent, height: 5)
+        ),
+        Text(
+            value3,
+            style: const TextStyle(fontSize: 10),
+            textAlign: TextAlign.center
+        ),
+      ],
+      mainAxisAlignment: MainAxisAlignment.center,
+    );
   }
 
   void _changeDuration(BuildContext context) {
@@ -1801,6 +1817,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
     'pinnedBreakDownId': _pinnedBreakDownId,
     'runMode': _runMode.index,
     'repetition': _repetition,
+    'relativeProgressPresentation': _relativeProgressPresentation.index,
+    'absoluteProgressPresentation': _absoluteProgressPresentation.index,
   };
   }
 
@@ -1822,6 +1840,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     if (jsonMap['hasTimeChanged'] != null) {
       _hasTimeChangedForCurrentBreakDown = jsonMap['hasTimeChanged'];
+    }
+
+    if (jsonMap['relativeProgressPresentation'] != null) {
+      _relativeProgressPresentation =
+          RelativeProgressPresentation.values.elementAt(jsonMap['relativeProgressPresentation']);
+    }
+    if (jsonMap['absoluteProgressPresentation'] != null) {
+      _absoluteProgressPresentation =
+          AbsoluteProgressPresentation.values.elementAt(jsonMap['absoluteProgressPresentation']);
     }
 
     _timerMode = TimerMode.values.elementAt(jsonMap['timerMode']);
