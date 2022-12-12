@@ -335,6 +335,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     });
     SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
 
+    _preferenceService.getInt(PreferenceService.PREF_TIMER_PROGRESS_PRESENTATION).then((value) {
+      if (value != null) {
+        _relativeProgressPresentation = RelativeProgressPresentation.values.elementAt(value);
+      }
+    });
+    _preferenceService.getInt(PreferenceService.PREF_CLOCK_PROGRESS_PRESENTATION).then((value) {
+      if (value != null) {
+        _absoluteProgressPresentation = AbsoluteProgressPresentation.values.elementAt(value);
+      }
+    });
+
     Timer.periodic(Duration(seconds: 4), (_) {
       if (mounted) {
         setState(() {
@@ -858,11 +869,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 final index = _relativeProgressPresentation.index + 1;
                                 _relativeProgressPresentation =
                                     RelativeProgressPresentation.values.elementAt(index % RelativeProgressPresentation.values.length);
+                                _preferenceService.setInt(PreferenceService.PREF_TIMER_PROGRESS_PRESENTATION, _relativeProgressPresentation.index);
                               }
                               else if (_timerMode == TimerMode.ABSOLUTE) {
                                 final index = _absoluteProgressPresentation.index + 1;
                                 _absoluteProgressPresentation =
                                     AbsoluteProgressPresentation.values.elementAt(index % AbsoluteProgressPresentation.values.length);
+                                _preferenceService.setInt(PreferenceService.PREF_CLOCK_PROGRESS_PRESENTATION, _absoluteProgressPresentation.index);
                               }
                             });
                           }
@@ -1817,8 +1830,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     'pinnedBreakDownId': _pinnedBreakDownId,
     'runMode': _runMode.index,
     'repetition': _repetition,
-    'relativeProgressPresentation': _relativeProgressPresentation.index,
-    'absoluteProgressPresentation': _absoluteProgressPresentation.index,
   };
   }
 
@@ -1840,15 +1851,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     if (jsonMap['hasTimeChanged'] != null) {
       _hasTimeChangedForCurrentBreakDown = jsonMap['hasTimeChanged'];
-    }
-
-    if (jsonMap['relativeProgressPresentation'] != null) {
-      _relativeProgressPresentation =
-          RelativeProgressPresentation.values.elementAt(jsonMap['relativeProgressPresentation']);
-    }
-    if (jsonMap['absoluteProgressPresentation'] != null) {
-      _absoluteProgressPresentation =
-          AbsoluteProgressPresentation.values.elementAt(jsonMap['absoluteProgressPresentation']);
     }
 
     _timerMode = TimerMode.values.elementAt(jsonMap['timerMode']);
