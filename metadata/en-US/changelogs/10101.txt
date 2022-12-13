@@ -1,3 +1,4 @@
 * small UI bugfixes
-* two phase reset button 
 * preference for Clock Mode
+* change current running values on click (in the wheel)
+* reset button with reset to time defaults after second click
