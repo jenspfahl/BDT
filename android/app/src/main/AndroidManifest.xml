@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.jepfa.bdt">
+    package="de.jepfa.bdt.adfree">
    <application
         android:label="Break.Down.Timer"
         android:name="${applicationName}"
