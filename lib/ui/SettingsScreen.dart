@@ -278,7 +278,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH, mode: LaunchMode.externalApplication);
                           }),
                       Divider(),
-                      Text('© Jens Pfahl 2022', style: TextStyle(fontSize: 12)),
+                      Text('© Jens Pfahl 2022 (Play Store variant)', style: TextStyle(fontSize: 12)),
                     ],
                     applicationIcon: SizedBox(width: 64, height: 64,
                         child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))));

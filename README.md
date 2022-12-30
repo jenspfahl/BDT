@@ -26,4 +26,8 @@ Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
 
+[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+     alt="Get it on Google Play"
+     height="80">](https://play.google.com/store/apps/details?id=de.jepfa.bdt.adfree)
+
 Or download the latest apk from [here.](https://bdt.jepfa.de/download/)
