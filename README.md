@@ -22,6 +22,8 @@ Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
 ## Download
 
+**Important note**: There is an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) from another developer called "Schnupfeld". To get my origin ad-free version, use the badge below (AppId `de.jepfa.bdt.adfree`).
+
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
