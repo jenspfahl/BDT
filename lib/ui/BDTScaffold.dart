@@ -23,6 +23,7 @@ import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
+import 'package:wakelock/wakelock.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -86,6 +87,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Timer? _runTimer;
   DateTime? _startedAt;
   int _volume = MAX_VOLUME;
+  bool _wakelockStatus = false;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
 
@@ -694,6 +696,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   SignalService.setSignalVolume(_volume);
                 },
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
+            IconButton(
+                onPressed: () async {
+                  _wakelockStatus = await Wakelock.enabled;
+                  setState(() {
+                    _wakelockStatus = !_wakelockStatus;
+                    Wakelock.toggle(enable: _wakelockStatus);
+                    toastInfo(context, _wakelockStatus ? 'Wakelock on' : 'Wakelock off');
+                  });
+                }, // TODO better as Settings
+                icon: _wakelockStatus ? const Icon(Icons.screen_lock_portrait) : const Icon(Icons.screenshot_sharp) ),
             IconButton(
                 onPressed: () {
                   Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
