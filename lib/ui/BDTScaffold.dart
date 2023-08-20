@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
@@ -89,6 +90,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
 
+  @pragma('vm:entry-point')
   static Future<void> signal1() async {
     debugPrint('sig 1');
 
@@ -96,6 +98,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_1);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal2() async {
     debugPrint('sig 2');
 
@@ -103,6 +106,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_2);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal3() async {
     debugPrint('sig 3');
 
@@ -110,6 +114,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_3);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal4() async {
     debugPrint('sig 4');
 
@@ -117,6 +122,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_4);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal5() async {
     debugPrint('sig 5');
 
@@ -124,6 +130,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_5);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal6() async {
     debugPrint('sig 6');
 
@@ -131,6 +138,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_6);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal7() async {
     debugPrint('sig 7');
 
@@ -138,6 +146,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_7);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal8() async {
     debugPrint('sig 8');
 
@@ -145,6 +154,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_8);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal9() async {
     debugPrint('sig 9');
 
@@ -152,6 +162,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_9);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal10() async {
     debugPrint('sig 10');
 
@@ -159,6 +170,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_10);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal11() async {
     debugPrint('sig 11');
 
@@ -166,6 +178,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_11);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal12() async {
     debugPrint('sig 12');
 
@@ -173,6 +186,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_12);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal13() async {
     debugPrint('sig 13');
 
@@ -180,6 +194,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_13);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal14() async {
     debugPrint('sig 14');
 
@@ -187,6 +202,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_14);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal15() async {
     debugPrint('sig 15');
 
@@ -194,6 +210,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_15);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal16() async {
     debugPrint('sig 16');
 
@@ -201,6 +218,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_16);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal17() async {
     debugPrint('sig 17');
 
@@ -208,6 +226,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_17);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal18() async {
     debugPrint('sig 18');
 
@@ -215,6 +234,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_18);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal19() async {
     debugPrint('sig 19');
 
@@ -222,19 +242,22 @@ class BDTScaffoldState extends State<BDTScaffold> {
     await SignalService.makeSignalPattern(SIG_19);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signal20() async {
     debugPrint('sig 20');
 
     await notifySignal(20);
     await SignalService.makeSignalPattern(SIG_20);
   }
-  
+
+  @pragma('vm:entry-point')
   static Future<void> signalEndWithRepetition() async {
     debugPrint('sig end and repeat');
     await notify(100, 'Timer finished but repeating', fixed: true, showBreakInfo: false, showProgress: true);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
+  @pragma('vm:entry-point')
   static Future<void> signalEnd() async {
     debugPrint('sig end');
     await notify(100, 'Timer finished', showBreakInfo: true, showProgress: true);
@@ -407,6 +430,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
           if (shown != true) {
             showBatterySavingHint(context, _preferenceService);
           }
+    });
+  }
+
+  void _askForNotification() {
+    mayNotify(_preferenceService).then((allowedToNotify) {
+      if (allowedToNotify) {
+        Permission.notification.request().then((status) {
+          debugPrint("notification permission = $status");
+          if (status != PermissionStatus.granted) {
+            toastInfo(context, "Notifications won't work as long as permission is not granted.");
+          }
+        });
+      }
     });
   }
 
@@ -1707,6 +1743,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _persistState();
+
+
+    _askForNotification();
 
     if (_timerMode == TimerMode.RELATIVE) {
       setState(() {
