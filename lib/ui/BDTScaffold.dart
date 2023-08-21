@@ -84,7 +84,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Timer? _runTimer;
   DateTime? _startedAt;
   int _volume = MAX_VOLUME;
-  bool _wakelockStatus = false;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
 
@@ -350,6 +349,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _notificationService.init();
 
     _updateBreakOrder();
+    _updateWakeLock();
 
     getVolume(_preferenceService).then((value) {
       setState(() => _volume = value);
@@ -470,6 +470,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     else {
       _direction = Direction.ASC;
+    }
+  }
+
+  Future<void> _updateWakeLock() async {
+    final hasWakeLock = await _preferenceService.getBool(PreferenceService.PREF_WAKE_LOCK);
+
+    if (hasWakeLock == true) {
+      Wakelock.enable();
+    }
+    else {
+      Wakelock.disable();
     }
 
   }
@@ -716,20 +727,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 },
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
             IconButton(
-                onPressed: () async {
-                  _wakelockStatus = await Wakelock.enabled;
-                  setState(() {
-                    _wakelockStatus = !_wakelockStatus;
-                    Wakelock.toggle(enable: _wakelockStatus);
-                    toastInfo(context, _wakelockStatus ? 'Wakelock on' : 'Wakelock off');
-                  });
-                }, // TODO better as Settings
-                icon: _wakelockStatus ? const Icon(Icons.screen_lock_portrait) : const Icon(Icons.screenshot_sharp) ),
-            IconButton(
                 onPressed: () {
                   Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
                       .then((value) {
                         _loadBreakDowns(focusPinned: false);
+                        _updateWakeLock();
                         setState(() => _updateBreakOrder());
                       });
                 },

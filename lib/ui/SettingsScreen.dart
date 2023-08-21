@@ -39,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
+  bool _enableWakeLock = PreferenceService.PREF_WAKE_LOCK.defaultValue;
   bool _clearStateOnStartup = PreferenceService.PREF_CLEAR_STATE_ON_STARTUP.defaultValue;
   bool _clockModeAsDefault = PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT.defaultValue;
 
@@ -221,6 +222,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('App Behaviour', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
+              title: Text('Enable wake lock'),
+              description: Text('Enable the screen wakelock, which prevents the screen from turning off automatically.'),
+              initialValue: _enableWakeLock,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_WAKE_LOCK, value);
+                setState(() => _enableWakeLock = value);
+              },
+            ),
+            SettingsTile.switchTile(
               title: Text('Start from scratch after app startup'),
               description: Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
               initialValue: _clearStateOnStartup,
@@ -327,6 +338,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
     if (userPresetsOnTop != null) {
       _userPresetsOnTop = userPresetsOnTop;
+    }
+    final enableWakeLock = await _preferenceService.getBool(PreferenceService.PREF_WAKE_LOCK);
+    if (enableWakeLock != null) {
+      _enableWakeLock = enableWakeLock;
     }
     final clearStateOnStartup = await _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP);
     if (clearStateOnStartup != null) {
