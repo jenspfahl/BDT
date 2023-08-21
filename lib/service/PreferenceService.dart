@@ -24,6 +24,7 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_USER_PRESETS_ON_TOP = PrefDef('pref/presets/userPresetsOnTop', false);
   static final PREF_CLEAR_STATE_ON_STARTUP = PrefDef('pref/presets/clearStateOnStartup', false);
   static final PREF_CLOCK_MODE_AS_DEFAULT = PrefDef('pref/presets/clockModeAsDefault', false);
+  static final PREF_WAKE_LOCK = PrefDef('pref/common/wakeLock', false);
   static final PREF_TIMER_PROGRESS_PRESENTATION = PrefDef('pref/timerProgressPresentation', 0);
   static final PREF_CLOCK_PROGRESS_PRESENTATION = PrefDef('pref/clockProgressPresentation', 0);
 

@@ -353,6 +353,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _notificationService.init();
 
     _updateBreakOrder();
+    _updateWakeLock();
 
     getVolume(_preferenceService).then((value) {
       setState(() => _volume = value);
@@ -492,6 +493,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
     else {
       _direction = Direction.ASC;
+    }
+  }
+
+  Future<void> _updateWakeLock() async {
+    final hasWakeLock = await _preferenceService.getBool(PreferenceService.PREF_WAKE_LOCK);
+
+    if (hasWakeLock == true) {
+      Wakelock.enable();
+    }
+    else {
+      Wakelock.disable();
     }
 
   }
@@ -742,6 +754,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
                       .then((value) {
                         _loadBreakDowns(focusPinned: false);
+                        _updateWakeLock();
                         setState(() => _updateBreakOrder());
                       });
                 },
