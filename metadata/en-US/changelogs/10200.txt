@@ -1,0 +1,3 @@
+* add settings option enable wakelock (prevent screen turning off while app is open) (#4)
+* use default dialog to exclude app from battery optimization
+* ask to enable notification settings for Android 13+
