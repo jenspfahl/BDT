@@ -30,7 +30,7 @@ class PreferenceService implements ITranslatePreferences {
 
   static final DATA_SAVED_BREAK_DOWNS_PREFIX = PrefDef('data/savedBreakDowns_', null);
   static final DATA_PINNED_BREAK_DOWN = PrefDef('data/pinnedBreakDown', null);
-  static final DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN = PrefDef('data/batteryHintShown', false);
+  static final DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED = PrefDef('data/batteryHintDismissed', false);
 
   static final STATE_RUN_STATE = PrefDef('state/runState', null);
   static final STATE_RUN_BREAKS_COUNT = PrefDef('state/runBreaksCount', null);
