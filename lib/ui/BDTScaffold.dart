@@ -10,6 +10,7 @@ import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/utils.dart';
+import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -424,11 +425,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
         }
       }
     });
+    
 
-    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN)
-        .then((shown) {
-          if (shown != true) {
-            showBatterySavingHint(context, _preferenceService);
+
+    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+        .then((dismissed) {
+          if (dismissed != true) {
+            DisableBatteryOptimization.isBatteryOptimizationDisabled.then((isDisabled) {
+              if (isDisabled != true) {
+                DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+              }
+            });
           }
     });
   }

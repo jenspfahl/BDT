@@ -235,7 +235,7 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
 
 
 showBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
-  final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. ";
+  final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '$APP_NAME'.";
   AlertDialog alert = AlertDialog(
     title: const Text(APP_NAME),
     content: Text(message),
@@ -245,14 +245,13 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
         onPressed:  () {
           Navigator.pop(context);
           OpenSettings.openIgnoreBatteryOptimizationSetting();
-          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
         },
       ),
       TextButton(
-        child: Text('Dismiss'),
+        child: Text("Don't ask again"),
         onPressed:  () {
           Navigator.pop(context);
-          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_SHOWN, true);
+          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);
         },
       ),
     ],
