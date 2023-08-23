@@ -46,23 +46,17 @@ class LocalNotificationService {
     final AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@drawable/ic_bdt_bnw');
 
-    final IOSInitializationSettings initializationSettingsIOS =
-    IOSInitializationSettings(
-      requestSoundPermission: true,
-      requestBadgePermission: false,
-      requestAlertPermission: false,
-    );
-
     final InitializationSettings initializationSettings =
     InitializationSettings(
         android: initializationSettingsAndroid,
-        iOS: initializationSettingsIOS,
+        iOS: null,
         macOS: null);
 
     tz.initializeTimeZones();
 
     await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
-        onSelectNotification: (String? payload) async {
+        onDidReceiveNotificationResponse: (NotificationResponse response) async {
+          final payload = response.payload;
           if (payload != null) {
             if (_notificationClickedHandler.isNotEmpty) {
               _handlePayload(false, payload);
@@ -105,7 +99,7 @@ class LocalNotificationService {
   void handleAppLaunchNotification() {
     _flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails()
         .then((notification) {
-          final payload = notification?.payload;
+          final payload = notification?.notificationResponse?.payload;
           if (payload != null) {
             _handlePayload(true, payload);
           }
