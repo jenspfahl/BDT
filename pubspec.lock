@@ -532,14 +532,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
-  notification_permissions:
-    dependency: "direct main"
-    description:
-      name: notification_permissions
-      sha256: e62e7fbd4b64941764778fc957224567aff10cdc8b0227046bd0a4b9db7b47a6
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.6.1"
   numberpicker:
     dependency: "direct main"
     description:
