@@ -31,7 +31,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_local_notifications: ^9.7.0
+  flutter_local_notifications: ^12.0.4
   floor: ^1.1.0
   intl: ^0.18.0
   numberpicker: ^2.1.2
