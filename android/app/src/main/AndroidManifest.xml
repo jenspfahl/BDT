@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="de.jepfa.bdt">
    <application
         android:label="Break.Down.Timer"
@@ -57,7 +58,8 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
-
+    <!--Remove internet permission which might come in through an external plugin-->
+    <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>
 
     <queries>
         <intent>

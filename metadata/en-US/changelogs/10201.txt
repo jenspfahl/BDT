@@ -1,0 +1,2 @@
+* remove not used INTERNET permission
+* allow runs without any defined breaks
