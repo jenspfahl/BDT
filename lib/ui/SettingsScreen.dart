@@ -49,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('$APP_NAME_SHORT Settings')),
+      appBar: AppBar(title: const Text('$APP_NAME_SHORT Settings')),
       body: FutureBuilder(
         future: _loadAllPrefs(),
         builder: (context, AsyncSnapshot snapshot) => _buildSettingsList(),
@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Common', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
-              title: Text('Color scheme'),
+              title: const Text('Color scheme'),
               description: Text(_getColorSchemeName(_preferenceService.colorSchema)),
               onPressed: (context) {
                 final choices = predefinedColorSchemes
@@ -100,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile(
-              title: Text('Audio signals'),
+              title: const Text('Audio signals'),
               description: Text(_getAudioSchemaName(_preferenceService.audioSchema)),
               onPressed: (context) {
                 final choices = predefinedAudioSchemes
@@ -130,7 +130,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final newVol = max(20, origVol); // not too silent
                       _audioScheme = selection;
                       await SignalService.setSignalVolume(newVol);
-                      await SignalService.makeSignal(Duration(milliseconds: 200),
+                      await SignalService.makeSignal(const Duration(milliseconds: 200),
                           audioSchemeId: selection,
                           noVibration: true
                       );
@@ -145,8 +145,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Run Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: Text('Notify upon reached breaks'),
-              description: Text('Notifies when a break is reached and a run has started or ended.'),
+              title: const Text('Notify upon reached breaks'),
+              description: const Text('Notifies when a break is reached and a run has started or ended.'),
               initialValue: _notifyAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -155,8 +155,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('Vibrate upon reached breaks'),
-              description: Text('Vibrates with a pattern when a break is reached and a run has started or ended.'),
+              title: const Text('Vibrate upon reached breaks'),
+              description: const Text('Vibrates with a pattern when a break is reached and a run has started or ended.'),
               initialValue: _vibrateAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -165,8 +165,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('Signal twice on reached breaks'),
-              description: Text('To not miss it, signal every break twice.'),
+              title: const Text('Signal twice on reached breaks'),
+              description: const Text('To not miss it, signal every break twice.'),
               initialValue: _signalTwice,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -174,10 +174,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _signalTwice = value);
               },
             ),
-            CustomSettingsTile(child: Divider()),
+            const CustomSettingsTile(child: Divider()),
             SettingsTile.switchTile(
-              title: Text('Break order descending by default'),
-              description: Text('Instead of sequencing 1,2,3 .. it sequences ..,3,2,1.'),
+              title: const Text('Break order descending by default'),
+              description: const Text('Instead of sequencing 1,2,3 .. it sequences ..,3,2,1.'),
               initialValue: _breakOrderDescending,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -191,8 +191,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
          title: Text('Preset Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: Text('Hide predefined presets'),
-              description: Text('If you don''t need it you can hide the predefined presets from the preset list. Only your own presets will be shown then.'),
+              title: const Text('Hide predefined presets'),
+              description: const Text('If you don''t need it you can hide the predefined presets from the preset list. Only your own presets will be shown then.'),
               initialValue: _hidePredefinedPresets,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) async {
@@ -204,9 +204,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('User presets on top'),
+              title: const Text('User presets on top'),
               enabled: !_hidePredefinedPresets,
-              description: Text('Show user presets on top of the preset list for faster access.'),
+              description: const Text('Show user presets on top of the preset list for faster access.'),
               initialValue: _userPresetsOnTop,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) async {
@@ -222,8 +222,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('App Behaviour', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: Text('Enable wake lock'),
-              description: Text('Enable the screen wakelock, which prevents the screen from turning off automatically.'),
+              title: const Text('Enable wake lock'),
+              description: const Text('Enable the screen wakelock, which prevents the screen from turning off automatically.'),
               initialValue: _enableWakeLock,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -232,8 +232,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('Start from scratch after app startup'),
-              description: Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
+              title: const Text('Start from scratch after app startup'),
+              description: const Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
               initialValue: _clearStateOnStartup,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -242,8 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: Text('Use Clock Mode as default'),
-              description: Text('Set Clock Mode as default instead of Timer Mode'),
+              title: const Text('Use Clock Mode as default'),
+              description: const Text('Set Clock Mode as default instead of Timer Mode'),
               initialValue: _clockModeAsDefault,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -257,41 +257,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
-              title: Text('Battery optimizations'),
+              title: const Text('Battery optimizations'),
               onPressed: (value) {
                 showBatterySavingHint(context, _preferenceService);
               }
             ),
             SettingsTile(
-              title: Text('About the app'),
+              title: const Text('About the app'),
               onPressed: (value) {
                 showAboutDialog(
                     context: context,
                     applicationVersion: _version,
                     applicationName: APP_NAME_SHORT,
                     children: [
-                      Text('alias', style: TextStyle(fontSize: 12)),
-                      Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                      Divider(),
-                      Text('A timer with in-between notifications'),
-                      Text(''),
+                      const Text('alias', style: TextStyle(fontSize: 12)),
+                      const Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                      const Divider(),
+                      const Text('A timer with in-between notifications'),
+                      const Text(''),
                       InkWell(
                           child: Text.rich(
                             TextSpan(
                               text: 'Visit ',
                               children: <TextSpan>[
-                                TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
-                                TextSpan(text: ' to view the code, report bugs and give stars!'),
+                                TextSpan(text: HOMEPAGE, style: const TextStyle(decoration: TextDecoration.underline)),
+                                const TextSpan(text: ' to view the code, report bugs and give stars!'),
                               ],
                             ),
                           ),
                           onTap: () {
                             launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH, mode: LaunchMode.externalApplication);
                           }),
-                      Divider(),
-                      Text('© Jens Pfahl 2023 (Play Store variant)', style: TextStyle(fontSize: 12)),
+                      const Divider(),
+                      const Text('© Jens Pfahl 2024 (Play Store variant)', style: TextStyle(fontSize: 12)),
                     ],
-                    applicationIcon: SizedBox(width: 64, height: 64,
+                    applicationIcon: const SizedBox(width: 64, height: 64,
                         child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))));
               },
             ),

@@ -22,12 +22,16 @@ Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
 ## Download
 
+**Important note**: There is an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) by another developer called "Schnupfeld". To get my original ad-free version, use the badges below (AppId `de.jepfa.bdt.adfree` for Google Play).
+
+Update: The add-containing fork was removed from the Play Store meanwhile but still the AppId `de.jepfa.bdt` is burned forever and cannot be reused by anybody else than the origin publisher.
+
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
      height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-     alt="Get it on Google Play"
-     height="80">](https://play.google.com/store/apps/details?id=de.jepfa.bdt.adfree)
+alt="Get it on Google Play"
+height="80">](https://play.google.com/store/apps/details?id=de.jepfa.bdt.adfree)
 
 Or download the latest apk from [here.](https://bdt.jepfa.de/download/)

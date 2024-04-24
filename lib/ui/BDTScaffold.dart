@@ -15,22 +15,18 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:wakelock/wakelock.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
-import '../service/LocalNotificationService.dart';
-import '../service/PreferenceService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
 import 'SettingsScreen.dart';
@@ -1742,10 +1738,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
       toastError(context, _stopRunningMessage());
       return;
     }
-    if (_selectedSlices.isEmpty) {
-      toastError(context, 'No breaks placed');
-      return;
-    }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
       toastError(context, 'Time already reached, set a new one');
       return;
@@ -1764,7 +1756,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _persistState();
-
 
     _askForNotification();
 
