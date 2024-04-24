@@ -1725,10 +1725,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
       toastError(context, _stopRunningMessage());
       return;
     }
-    if (_selectedSlices.isEmpty) {
-      toastError(context, 'No breaks placed');
-      return;
-    }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
       toastError(context, 'Time already reached, set a new one');
       return;
