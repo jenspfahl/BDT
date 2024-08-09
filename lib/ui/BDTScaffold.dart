@@ -593,6 +593,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(APP_NAME_SHORT),
+          elevation: 0,
           actions: [
             IconButton(
                 onPressed: () async {

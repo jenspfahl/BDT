@@ -49,7 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('$APP_NAME_SHORT Settings')),
+      appBar: AppBar(title: const Text('$APP_NAME_SHORT Settings'), elevation: 0),
       body: FutureBuilder(
         future: _loadAllPrefs(),
         builder: (context, AsyncSnapshot snapshot) => _buildSettingsList(),
