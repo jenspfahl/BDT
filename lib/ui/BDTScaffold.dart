@@ -339,7 +339,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _notificationService.showNotification('', id, APP_NAME_SHORT, message, 'bdt_signals',
-        showProgress, fixed, progress, '', ColorService().getCurrentScheme().primary);
+        showProgress, fixed, progress, '', ColorService().getCurrentScheme().button);
   }
 
   @override
