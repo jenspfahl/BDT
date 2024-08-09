@@ -50,7 +50,7 @@ dependencies:
   android_alarm_manager_plus: ^3.0.4
   vibration: ^1.7.4-nullsafety.0
   material_design_icons_flutter: ^7.0.7296
-  slider_button: ^2.0.0
+  slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
   sound_mode: ^3.0.0
   system_clock: ^2.0.0
   flutter_svg: ^2.0.10+1

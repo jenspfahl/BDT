@@ -152,11 +152,15 @@ class LocalNotificationService {
       progress: progress??0,
       maxProgress: 100,
       autoCancel: false,
-      icon: null, //TODO have TaskGroup Icons would be an option
       ongoing: ongoing,
       priority: Priority.high,
       importance: Importance.high,
     );
+  }
+
+  void requestPermissions() {
+    AndroidFlutterLocalNotificationsPlugin? nativePlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation();
+    nativePlugin?.requestExactAlarmsPermission();
   }
 }
 

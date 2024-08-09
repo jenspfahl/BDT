@@ -436,6 +436,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
             });
           }
     });
+
+    _notificationService.requestPermissions();
+
   }
 
   void _loadBreakDowns({required bool focusPinned, int? preSelectedBreakDownId = null}) {
@@ -786,7 +789,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           _updateSelectedSlices(value);
                         },
                         items: _loadedBreakDowns.map((BreakDown breakDown) {
-                          debugPrint('inList=$breakDown');
                           return DropdownMenuItem(
                             value: breakDown,
                             child: breakDown.id == _pinnedBreakDownId
@@ -1288,7 +1290,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return SliderButton(
       action: () {
         _stopRun(context);
-        return Future.value(true);
       },
       backgroundColor: ColorService().getCurrentScheme().button,
       baseColor: ColorService().getCurrentScheme().primary,
@@ -1298,7 +1299,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
-      label: Text('➡️  Swipe to Stop',
+      label: Text('\u27A0 Swipe to Stop',
           style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
       icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
     );
