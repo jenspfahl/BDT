@@ -35,6 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _signalTwice = PreferenceService.PREF_SIGNAL_TWICE.defaultValue;
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
+  bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
@@ -63,6 +64,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SettingsSection(
           title: Text('Common', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
+            SettingsTile.switchTile(
+              title: const Text('Dark theme'),
+              initialValue: _darkMode,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_DARK_MODE, value)
+                    .then((_) {
+                  setState(() {
+                    _darkMode = value;
+                    _preferenceService.darkTheme = _darkMode;
+                    debugPrint('dartheme=$_darkMode');
+                    AppBuilder.of(context)?.rebuild();
+                  });
+                });
+              },
+            ),
             SettingsTile(
               title: const Text('Color scheme'),
               description: Text(_getColorSchemeName(_preferenceService.colorSchema)),
@@ -70,7 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final choices = predefinedColorSchemes
                     .map((e) => ChoiceWidgetRow(
                         e.name,
-                        TextStyle(color:  e.foreground)))
+                        TextStyle(color: ColorService().getScheme(e.id).foreground)))
                     .toList();
                 showChoiceDialog(context, 'Select a color scheme',
                     choices,
@@ -325,7 +342,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final colorScheme = await _preferenceService.getInt(PreferenceService.PREF_COLOR_SCHEME);
     if (colorScheme != null) {
       _colorScheme = colorScheme;
-    } 
+    }
+    final darkMode = await _preferenceService.getBool(PreferenceService.PREF_DARK_MODE);
+    if (darkMode != null) {
+      _darkMode = darkMode;
+    }
     final audioScheme = await _preferenceService.getInt(PreferenceService.PREF_AUDIO_SCHEME);
     if (audioScheme != null) {
       _audioScheme = audioScheme;

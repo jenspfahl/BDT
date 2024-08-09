@@ -339,7 +339,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _notificationService.showNotification('', id, APP_NAME_SHORT, message, 'bdt_signals',
-        showProgress, fixed, progress, '');
+        showProgress, fixed, progress, '', ColorService().getCurrentScheme().primary);
   }
 
   @override
@@ -1374,7 +1374,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return ListTile(
       leading: _getRunModeIcon(runMode, isSelected),
       title: Text(text, style: TextStyle(color: isSelected
-          ? Colors.white
+          ? ColorService().getCurrentScheme().accent
           : ColorService().getCurrentScheme().foreground)),
     );
   }
@@ -1384,7 +1384,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ? Colors.grey[700]
         : (isSelected != null
           ? (isSelected
-            ? Colors.white
+            ? ColorService().getCurrentScheme().accent
             : ColorService().getCurrentScheme().foreground)
           : ColorService().getCurrentScheme().button);
     switch (runMode) {

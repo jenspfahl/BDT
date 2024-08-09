@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../service/ColorService.dart';
 
 
+bool isDarkMode(BuildContext context) => Theme.of(context).brightness == Brightness.dark;
+
 
 String truncate(String text, { required int length, omission = '...' }) {
   if (length >= text.length) {
