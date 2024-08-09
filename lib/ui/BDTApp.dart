@@ -33,10 +33,11 @@ class BDTApp extends StatelessWidget {
             locale: localizationDelegate.currentLocale,
 
             theme: ThemeData(
+                useMaterial3: false,
                 brightness: Brightness.dark,
                 primaryColor: ColorService().getCurrentScheme().primary,
                 primarySwatch: ColorService().getCurrentScheme().button,
-                backgroundColor: ColorService().getCurrentScheme().background,
+                dialogBackgroundColor: ColorService().getCurrentScheme().background,
                 scaffoldBackgroundColor: ColorService().getCurrentScheme().background,
 
                 appBarTheme: AppBarTheme(

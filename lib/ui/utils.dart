@@ -4,7 +4,7 @@ import '../service/ColorService.dart';
 
 
 
-String truncate(String text, { required int length, omission: '...' }) {
+String truncate(String text, { required int length, omission = '...' }) {
   if (length >= text.length) {
     return text;
   }
@@ -13,7 +13,7 @@ String truncate(String text, { required int length, omission: '...' }) {
 
 Widget createCheckIcon(bool checked) {
   if (!checked) {
-    return Text('');
+    return const Text('');
   }
   return Icon(
     Icons.check,

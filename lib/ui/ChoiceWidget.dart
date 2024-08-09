@@ -54,7 +54,7 @@ class _ChoiceWidgetState extends State<ChoiceWidget> {
         child: Row(
           children: [
             createCheckIcon(index == _currentSelected),
-            Spacer(),
+            const Spacer(),
             Text(choice.text, style: choice.style),
           ],
         ),

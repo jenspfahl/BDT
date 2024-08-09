@@ -64,7 +64,7 @@ class SignalService {
     }
 
     if (signalTwice && !neverSignalTwice) {
-      await pause(Duration(seconds: 2));
+      await pause(const Duration(seconds: 2));
       await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
     }
   }
@@ -73,15 +73,15 @@ class SignalService {
     final otherId = await getCurrentSignalling(preferenceService);
     if (otherId != null && otherId != id) {
       FlutterSoundBridge.stopSysSound(); // async
-      debugPrint("cancel due to other signal id $otherId than $id");
+      debugPrint('cancel due to other signal id $otherId than $id');
       return true;
     }
 
     bool cancelRequested = await shouldCancelSignalling(preferenceService);
-    debugPrint("cancelRequested=$cancelRequested");
+    debugPrint('cancelRequested=$cancelRequested');
     if (cancelRequested) {
       FlutterSoundBridge.stopSysSound(); // async
-      debugPrint("cancel due to cancelRequested");
+      debugPrint('cancel due to cancelRequested');
     }
     return cancelRequested;
   }
@@ -100,7 +100,7 @@ class SignalService {
         case '|' : await makeShortSignal(); break;
         case '-' : await makeNormalSignal(); break;
         case '_' : await makeLongSignal(); break;
-        case ' ' : await pause(Duration(milliseconds: 1000)); break;
+        case ' ' : await pause(const Duration(milliseconds: 1000)); break;
       }
     }
   }
@@ -117,18 +117,18 @@ class SignalService {
   }
 
   static makeShortSignal() async {
-    await makeSignal(Duration(milliseconds: 50));
-    await pause(Duration(milliseconds: 300));
+    await makeSignal(const Duration(milliseconds: 50));
+    await pause(const Duration(milliseconds: 300));
   }
 
   static makeNormalSignal() async {
-    await makeSignal(Duration(milliseconds: 400));
-    await pause(Duration(milliseconds: 400));
+    await makeSignal(const Duration(milliseconds: 400));
+    await pause(const Duration(milliseconds: 400));
   }
 
   static makeLongSignal() async {
-    await makeSignal(Duration(milliseconds: 1000));
-    await pause(Duration(milliseconds: 400));
+    await makeSignal(const Duration(milliseconds: 1000));
+    await pause(const Duration(milliseconds: 400));
   }
 
   static makeSignal(Duration duration, {int? audioSchemeId, bool noVibration = false}) async {

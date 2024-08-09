@@ -1,6 +1,5 @@
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:open_settings/open_settings.dart';
 
@@ -16,14 +15,14 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   List<Widget> actions = [];
   if (cancelPressed != null) {
     Widget cancelButton = TextButton(
-      child: Text('Cancel'),
+      child: const Text('Cancel'),
       onPressed:  cancelPressed,
     );
     actions.add(cancelButton);
   }
   if (okPressed != null) {
     Widget okButton = TextButton(
-      child: Text('Ok'),
+      child: const Text('Ok'),
       onPressed:  okPressed,
     );
     actions.add(okButton);
@@ -118,11 +117,11 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: cancelPressed
             ),
             TextButton(
-              child: Text('Ok'),
+              child: const Text('Ok'),
               onPressed: () {
                 if (okPressed != null && _formKey.currentState!.validate()) {
                   okPressed(_textFieldController.text);
@@ -169,16 +168,16 @@ Future<bool?> showDurationPickerDialog({
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           durationPicker,
-          SizedBox(height: 20.0,),
+          const SizedBox(height: 20.0,),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed:  () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text('Ok'),
+              child: const Text('Ok'),
               onPressed:  () => Navigator.of(context).pop(true),
             )
             ],)
@@ -203,11 +202,11 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
   required ValueChanged<int> selectionChanged
 }) {
   Widget cancelButton = TextButton(
-    child: Text('Cancel'),
+    child: const Text('Cancel'),
     onPressed:  cancelPressed,
   );
   Widget okButton = TextButton(
-    child: Text('Ok'),
+    child: const Text('Ok'),
     onPressed:  okPressed,
   );
 
@@ -241,14 +240,14 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
     content: Text(message),
     actions: [
       TextButton(
-        child: Text('Open Settings'),
+        child: const Text('Open Settings'),
         onPressed:  () {
           Navigator.pop(context);
           OpenSettings.openIgnoreBatteryOptimizationSetting();
         },
       ),
       TextButton(
-        child: Text("Don't ask again"),
+        child: const Text("Don't ask again"),
         onPressed:  () {
           Navigator.pop(context);
           preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);

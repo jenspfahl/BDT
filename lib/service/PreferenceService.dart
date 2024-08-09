@@ -143,7 +143,7 @@ class PreferenceService implements ITranslatePreferences {
 
   Locale? _getLocaleFromSelection(int languageSelection) {
     switch (languageSelection) {
-      case 1: return Locale('en');
+      case 1: return const Locale('en');
     }
     return null;
   }
