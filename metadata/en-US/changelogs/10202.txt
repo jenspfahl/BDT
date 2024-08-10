@@ -1,1 +1,2 @@
 * Upgrade to Android 14 (deps  and target)
+* add Light Theme support
