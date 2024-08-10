@@ -63,10 +63,10 @@ class BreakDown implements Comparable<BreakDown> {
 
   String getPresetName() {
     if (duration != null) {
-      return "$name [for ${formatDuration(duration!)}]";
+      return '$name [for ${formatDuration(duration!)}]';
     }
     else if (time != null) {
-      return "$name [at ${formatTimeOfDay(time!)}]";
+      return '$name [at ${formatTimeOfDay(time!)}]';
     }
     else {
       return name;
@@ -98,9 +98,9 @@ List<BreakDown> predefinedBreakDowns = [
   BreakDown.data(6, 'every 3rd slice', [3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57], null, null),
   BreakDown.data(7, '1/2   1/4   1/8', [30, 45, 53], null, null),
   BreakDown.data(8, '1/4   1/4   1/4   1/8   1/16', [15, 30, 45, 52, 56], null, null),
-  BreakDown.data(9, 'every 5 minutes', [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], Duration(hours: 1), null),
-  BreakDown.data(10, 'every 10 minutes', [10, 20, 30, 40, 50], Duration(hours: 1), null),
-  BreakDown.data(11, 'every 15 minutes', [15, 30, 45], Duration(hours: 1), null),
+  BreakDown.data(9, 'every 5 minutes', [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55], const Duration(hours: 1), null),
+  BreakDown.data(10, 'every 10 minutes', [10, 20, 30, 40, 50], const Duration(hours: 1), null),
+  BreakDown.data(11, 'every 15 minutes', [15, 30, 45], const Duration(hours: 1), null),
 ];
 
 

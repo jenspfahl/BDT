@@ -19,12 +19,47 @@ class BdtColorScheme implements Comparable<BdtColorScheme> {
     return id.compareTo(other.id);
   }
 
+  BdtColorScheme darken() {
+    if (id == 5) { // yellow on white is tricky, so we have to adjust it a bit
+      return BdtColorScheme(
+          id,
+          name,
+          Colors.yellow[800]!,
+          button,
+          _darken(accent, 180),
+          Colors.yellow[600]!,
+          _lighten(background, 250));
+    }
+    else {
+      return BdtColorScheme(
+          id,
+          name,
+          _darken(primary, 90),
+          button,
+          _darken(accent, 180),
+          _darken(foreground, 90),
+          _lighten(background, 240));
+    }
+  }
+
+  Color _darken(Color other, int delta) {
+    return Color.fromARGB(other.alpha, _adjust(other.red, delta), _adjust(other.green, delta), _adjust(other.blue, delta));
+  }
+
+  Color _lighten(Color other, int delta) {
+    return Color.fromARGB(other.alpha, _adjust(other.red, -delta), _adjust(other.green, -delta), _adjust(other.blue, -delta));
+  }
+
+  int _adjust(int channel, int delta) {
+    return (channel - delta).clamp(0, 255);
+  }
+
 }
 
 List<BdtColorScheme> predefinedColorSchemes = [
   BdtColorScheme(0, 'Ocean blue', Colors.blue[900]!, Colors.blue, Colors.blue[50]!, Colors.lightBlue, Colors.black),
   BdtColorScheme(1, 'Cool Cyan', Colors.cyan[900]!, Colors.cyan, Colors.cyan[50]!, Colors.cyanAccent, Colors.black),
-  BdtColorScheme(2, 'So teal', Colors.teal[900]!, Colors.teal, Colors.teal[50]!, Colors.tealAccent, Colors.black),
+  BdtColorScheme(2, 'Magic teal', Colors.teal[900]!, Colors.teal, Colors.teal[50]!, Colors.tealAccent, Colors.black),
   BdtColorScheme(3, 'Velvet green', Colors.green[900]!, Colors.green, Colors.green[50]!, Colors.greenAccent, Colors.black),
   BdtColorScheme(4, 'Fresh lime', Colors.lime[900]!, Colors.lime, Colors.lime[50]!, Colors.limeAccent, Colors.black),
   BdtColorScheme(5, 'Sunny yellow', Colors.yellow[900]!, Colors.yellow, Colors.white, Colors.yellowAccent, Colors.black),

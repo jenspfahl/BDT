@@ -63,13 +63,13 @@ class _DurationPickerState extends State<DurationPicker> {
       children: <Widget>[
         Column(
           children: [
-            Text('hours'),
+            const Text('hours'),
             hoursPicker
           ],
         ),
         Column(
           children: [
-            Text('minutes'),
+            const Text('minutes'),
             minutesPicker,
           ],
         ),

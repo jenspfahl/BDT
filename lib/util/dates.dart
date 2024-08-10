@@ -16,7 +16,7 @@ DateTime truncToMinutes(DateTime dateTime) {
 DateTime roundToHour(DateTime dateTime) {
   if (dateTime.minute > 0) {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour)
-        .add(Duration(hours: 1));
+        .add(const Duration(hours: 1));
   }
   else {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour);
@@ -26,7 +26,7 @@ DateTime roundToHour(DateTime dateTime) {
 DateTime roundToMinute(DateTime dateTime) {
   if (dateTime.second > 0) {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute)
-        .add(Duration(minutes: 1));
+        .add(const Duration(minutes: 1));
   }
   else {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
@@ -35,7 +35,7 @@ DateTime roundToMinute(DateTime dateTime) {
 
 bool isTomorrow(DateTime? dateTime) {
   if (dateTime == null) return false;
-  return truncToDate(dateTime) == truncToDate(DateTime.now().add(Duration(days: 1)));
+  return truncToDate(dateTime) == truncToDate(DateTime.now().add(const Duration(days: 1)));
 }
 
 bool isToday(DateTime? dateTime) {
@@ -45,7 +45,7 @@ bool isToday(DateTime? dateTime) {
 
 bool isYesterday(DateTime? dateTime) {
   if (dateTime == null) return false;
-  return truncToDate(dateTime) == truncToDate(DateTime.now().subtract(Duration(days: 1)));
+  return truncToDate(dateTime) == truncToDate(DateTime.now().subtract(const Duration(days: 1)));
 }
 
 String formatDateTime(DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {

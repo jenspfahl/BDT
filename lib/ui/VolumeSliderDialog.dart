@@ -30,7 +30,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
     final titleText = Text("Volume : ${_currentValue == 0 ? "-muted-" : _currentValue.toInt().toString() + "%" }");
     return AlertDialog(
       alignment: Alignment.centerRight,
-      shape: RoundedRectangleBorder(),
+      shape: const RoundedRectangleBorder(),
       title: Row(children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
@@ -64,7 +64,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
               activeColor: ColorService().getCurrentScheme().button,
               hoverColor: ColorService().getCurrentScheme().accent,
               value: _currentValue == 0,
-              title: Text('Mute'),
+              title: const Text('Mute'),
               onChanged: (value) {
                 setState(() {
                   if (value) {
@@ -90,7 +90,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
             // back a result to the page that opened the dialog
             Navigator.pop(context);
           },
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         TextButton(
           onPressed: () {
@@ -98,7 +98,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
             // back a result to the page that opened the dialog
             Navigator.pop(context, _currentValue);
           },
-          child: Text('Ok'),
+          child: const Text('Ok'),
         )
       ],
     );
