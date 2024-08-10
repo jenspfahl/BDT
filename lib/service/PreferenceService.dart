@@ -14,6 +14,7 @@ class PrefDef {
 class PreferenceService implements ITranslatePreferences {
 
   static final PREF_COLOR_SCHEME = PrefDef('pref/common/colorScheme', 0);
+  static final PREF_DARK_MODE = PrefDef('pref/common/darkMode', true);
   static final PREF_AUDIO_SCHEME = PrefDef('pref/common/audioScheme', DEFAULT_AUDIO_SCHEME_ID);
   static final PREF_NOTIFY_AT_BREAKS = PrefDef('pref/run/notifyAtBreaks', true);
   static final PREF_VIBRATE_AT_BREAKS = PrefDef('pref/run/vibrateAtBreaks', true);
@@ -47,6 +48,7 @@ class PreferenceService implements ITranslatePreferences {
   int audioSchema = PREF_AUDIO_SCHEME.defaultValue;
   bool userPresetsOnTop = PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool hidePredefinedPresets = PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
+  bool darkTheme = true;
 
   factory PreferenceService() {
     return _service;
@@ -60,6 +62,7 @@ class PreferenceService implements ITranslatePreferences {
 
   refresh() async {
     colorSchema = await getInt(PREF_COLOR_SCHEME) ?? PREF_COLOR_SCHEME.defaultValue;
+    darkTheme = await getBool(PREF_DARK_MODE) ?? PREF_DARK_MODE.defaultValue;
     audioSchema = await getInt(PREF_AUDIO_SCHEME) ?? PREF_AUDIO_SCHEME.defaultValue;
     userPresetsOnTop = await getBool(PREF_USER_PRESETS_ON_TOP) ?? PREF_USER_PRESETS_ON_TOP.defaultValue;
     hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
@@ -143,7 +146,7 @@ class PreferenceService implements ITranslatePreferences {
 
   Locale? _getLocaleFromSelection(int languageSelection) {
     switch (languageSelection) {
-      case 1: return Locale('en');
+      case 1: return const Locale('en');
     }
     return null;
   }

@@ -1,5 +1,7 @@
 
 
+import 'package:bdt/ui/utils.dart';
+
 import '../model/ColorScheme.dart';
 import 'PreferenceService.dart';
 
@@ -21,7 +23,11 @@ class ColorService {
   }
 
   BdtColorScheme getScheme(int id) {
-    return predefinedColorSchemes.where((element) => element.id == id).first;
+    final usesDarkTheme = PreferenceService().darkTheme;
+
+    final scheme = predefinedColorSchemes.where((element) => element.id == id).first;
+
+    return usesDarkTheme ? scheme : scheme.darken();
   }
 
 }

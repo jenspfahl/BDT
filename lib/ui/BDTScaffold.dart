@@ -60,7 +60,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _touchedIndex = -1;
   int _passedIndex = -1;
 
-  Duration _duration = kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60);
+  Duration _duration = kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60);
   Duration? _originDuration;
   late DateTime _time;
   DateTime? _originTime;
@@ -339,7 +339,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
 
     _notificationService.showNotification('', id, APP_NAME_SHORT, message, 'bdt_signals',
-        showProgress, fixed, progress, '');
+        showProgress, fixed, progress, '', ColorService().getCurrentScheme().button);
   }
 
   @override
@@ -368,7 +368,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
     });
 
-    Timer.periodic(Duration(seconds: 4), (_) {
+    Timer.periodic(const Duration(seconds: 4), (_) {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
@@ -436,6 +436,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
             });
           }
     });
+
+    _notificationService.requestPermissions();
+
   }
 
   void _askForNotification() {
@@ -506,7 +509,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   _startTimer() {
-    _runTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
+    _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
         if (_isRepeating()) {
           _repetition++;
@@ -596,13 +599,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return FGBGNotifier(
       onEvent: (event) {
         if (event == FGBGType.background) {
-          debugPrint("App goes background");
+          debugPrint('App goes background');
           _persistState();
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(APP_NAME_SHORT),
+          title: const Text(APP_NAME_SHORT),
+          elevation: 0,
           actions: [
             IconButton(
                 onPressed: () async {
@@ -627,7 +631,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               ),
                               Text('Break ${_breakNumberToString(i)}: ',
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text(_getSignalStringForNumber(i), style: TextStyle(fontSize: 10),),
+                              Text(_getSignalStringForNumber(i), style: const TextStyle(fontSize: 10),),
                             ]),
                         ))
                               .toList();
@@ -643,20 +647,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-                                  child: const Text(''),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
+                                  child: Text(''),
                                 ),
                                 const Text('Timer end: ',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                Text(_getSignalStringForNumber(100), style: TextStyle(fontSize: 10),),
+                                Text(_getSignalStringForNumber(100), style: const TextStyle(fontSize: 10),),
                               ]),
                           )
                         );
 
                         rows.add(GestureDetector(
-                          child: Row(
-                              children: [Text("")])));
+                          child: const Row(
+                              children: [Text('')])));
 
                         rows.add(GestureDetector(
                           child: Row(
@@ -667,8 +671,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
                                       text: 'Visit ',
                                       children: <TextSpan>[
-                                        TextSpan(text: HOMEPAGE, style: TextStyle(decoration: TextDecoration.underline)),
-                                        TextSpan(text: ' for more information.'),
+                                        TextSpan(text: HOMEPAGE, style: const TextStyle(decoration: TextDecoration.underline)),
+                                        const TextSpan(text: ' for more information.'),
                                       ],
                                     ),
                                   ),
@@ -681,15 +685,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
                         return AlertDialog(
                           insetPadding: EdgeInsets.zero,
-                          contentPadding: EdgeInsets.all(16),
-                          title: Column(
+                          contentPadding: const EdgeInsets.all(16),
+                          title: const Column(
                             children: [
-                              const Text('Help'),
-                              const Text(''),
-                              const Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                              const Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                              Text('Help'),
+                              Text(''),
+                              Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                              Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
                             ],
                           ),
                           content: Builder(
@@ -761,7 +765,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         body: Column(
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(5, 0, 5, 10),
+              padding: const EdgeInsets.fromLTRB(5, 0, 5, 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -799,7 +803,6 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           _updateSelectedSlices(value);
                         },
                         items: _loadedBreakDowns.map((BreakDown breakDown) {
-                          debugPrint('inList=$breakDown');
                           return DropdownMenuItem(
                             value: breakDown,
                             child: breakDown.id == _pinnedBreakDownId
@@ -827,7 +830,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               child: CupertinoSlidingSegmentedControl<TimerMode>(
                 backgroundColor: ColorService().getCurrentScheme().background,
                 thumbColor: ColorService().getCurrentScheme().button,
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 children: <TimerMode, Widget> {
                   TimerMode.RELATIVE: Icon(Icons.timer_outlined,
                       color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
@@ -906,7 +909,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           sections: _createSections(),
                           startDegreeOffset: 270 + 2.5
                       ),
-                      swapAnimationDuration: Duration(milliseconds: 75),
+                      swapAnimationDuration: const Duration(milliseconds: 75),
                     ),
                     Center(
                       child: GestureDetector(
@@ -1024,8 +1027,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                     initText: newName,
                                     hintText: 'choose a name',
                                     switchText: isTimerModeDuration
-                                        ? "Include duration\n(${formatDuration(_duration)})"
-                                        : "Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})",
+                                        ? 'Include duration\n(${formatDuration(_duration)})'
+                                        : 'Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})',
                                     isSwitched: isSwitched,
                                     validator: (value) {
                                       if (value == null || value.trim().isEmpty) {
@@ -1094,7 +1097,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               // reset to defaults
                               _timerMode = useClockMode == true ? TimerMode.ABSOLUTE : TimerMode.RELATIVE;
                               _runMode = RunMode.NO_REPEAT;
-                              _updateDuration(kReleaseMode ? Duration(minutes: 60): Duration(seconds: 60), fromUser: true);
+                              _updateDuration(kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60), fromUser: true);
                               _updateTime(_deriveTime(), fromUser: true);
                               _persistState();
                             });
@@ -1107,7 +1110,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                             });
                           }
                         },
-                        icon: const Icon(MdiIcons.restart)),
+                        icon: Icon(MdiIcons.restart)),
                     ),
                     Positioned(
                       bottom: 20,
@@ -1145,7 +1148,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   @override
   Future<void> dispose() async {
-    debugPrint("App killed");
+    debugPrint('App killed');
     await _persistState(); //This might not work since App is killed before persist is done
     super.dispose();
   }
@@ -1310,7 +1313,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
-      label: Text('➡️  Swipe to Stop',
+      label: Text('\u27A0 Swipe to Stop',
           style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
       icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
     );
@@ -1320,20 +1323,20 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return Wrap(
       children: [
         PopupMenuButton<RunMode>(
-            constraints: BoxConstraints(),
+            constraints: const BoxConstraints(),
             icon: _getRunModeIcon(_runMode, null),
             enabled: !_isRunning(),
             initialValue: _runMode,
             itemBuilder: (context) => <PopupMenuItem<RunMode>> [
               PopupMenuItem<RunMode>(
                   value: RunMode.REPEAT_ONCE,
-                  child: _createMenuItem(RunMode.REPEAT_ONCE, "Repeat once")),
+                  child: _createMenuItem(RunMode.REPEAT_ONCE, 'Repeat once')),
               PopupMenuItem<RunMode>(
                   value: RunMode.REPEAT_FOREVER,
-                  child: _createMenuItem(RunMode.REPEAT_FOREVER, "Repeat forever")),
+                  child: _createMenuItem(RunMode.REPEAT_FOREVER, 'Repeat forever')),
               PopupMenuItem<RunMode>(
                   value: RunMode.NO_REPEAT,
-                  child: _createMenuItem(RunMode.NO_REPEAT, "No repeat")),
+                  child: _createMenuItem(RunMode.NO_REPEAT, 'No repeat')),
             ],
           onSelected: (runMode) {
             setState(() {
@@ -1358,7 +1361,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   context,
                   'Stop run',
                   'Really want to stop the run before it is finished?',
-                  icon: const Icon(MdiIcons.stopCircle),
+                  icon: Icon(MdiIcons.stopCircle),
                   okPressed: () {
                     Navigator.pop(
                         context); // dismiss dialog, should be moved in Dialogs.dart somehow
@@ -1375,7 +1378,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
             }
           },
         ),
-        SizedBox(width: 46),
+        const SizedBox(width: 46),
       ],
     );
   }
@@ -1385,7 +1388,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     return ListTile(
       leading: _getRunModeIcon(runMode, isSelected),
       title: Text(text, style: TextStyle(color: isSelected
-          ? Colors.white
+          ? ColorService().getCurrentScheme().accent
           : ColorService().getCurrentScheme().foreground)),
     );
   }
@@ -1395,7 +1398,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         ? Colors.grey[700]
         : (isSelected != null
           ? (isSelected
-            ? Colors.white
+            ? ColorService().getCurrentScheme().accent
             : ColorService().getCurrentScheme().foreground)
           : ColorService().getCurrentScheme().button);
     switch (runMode) {
@@ -1408,7 +1411,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Widget _createStatsLine() {
     if (_isAllRunsOver()) {
       if (_runMode == RunMode.NO_REPEAT) {
-        return Text('Timer finished');
+        return const Text('Timer finished');
       }
       else {
         return Text('Timer finished after ${_repetition+1} runs');
@@ -1535,7 +1538,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       children: [
         Text(
             value1,
-            style: TextStyle(fontSize: 10),
+            style: const TextStyle(fontSize: 10),
             textAlign: TextAlign.center
         ),
         SizedBox(
@@ -1604,14 +1607,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     if (selectedMinutes < nowMinutes) {
       // next day
-      time = time.add(Duration(days: 1));
+      time = time.add(const Duration(days: 1));
     }
     _updateTime(time, fromUser: fromUser);
 
     Duration duration = now.difference(_time).abs();
     bool adjusted = false;
     if (duration.inMinutes < 1) {
-      duration = Duration(minutes: 1);
+      duration = const Duration(minutes: 1);
       adjusted = true;
     }
     _updateDuration(duration, fromUser: fromUser);
@@ -1662,10 +1665,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
         title: _showSliceTitle(slice, isInTransition, isFinalSlice),
         titleStyle:
           isFinalSlice
-              ? TextStyle(fontSize: 14)
+              ? const TextStyle(fontSize: 14)
               : isInTransition
-                ? TextStyle(fontSize: 8)
-                : TextStyle(fontSize: 10),
+                ? const TextStyle(fontSize: 8)
+                : const TextStyle(fontSize: 10),
         titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
       );
@@ -1702,27 +1705,27 @@ class BDTScaffoldState extends State<BDTScaffold> {
       n = count + 1 - number;
     }
     switch (n) {
-      case 0: return const Icon(MdiIcons.numeric0BoxOutline);
-      case 1: return const Icon(MdiIcons.numeric1BoxOutline);
-      case 2: return const Icon(MdiIcons.numeric2BoxOutline);
-      case 3: return const Icon(MdiIcons.numeric3BoxOutline);
-      case 4: return const Icon(MdiIcons.numeric4BoxOutline);
-      case 5: return const Icon(MdiIcons.numeric5BoxOutline);
-      case 6: return const Icon(MdiIcons.numeric6BoxOutline);
-      case 7: return const Icon(MdiIcons.numeric7BoxOutline);
-      case 8: return const Icon(MdiIcons.numeric8BoxOutline);
-      case 9: return const Icon(MdiIcons.numeric9BoxOutline);
-      case 10: return const Icon(MdiIcons.numeric10BoxOutline);
-      case 11: return const Icon(MdiIcons.numeric1BoxMultipleOutline);
-      case 12: return const Icon(MdiIcons.numeric2BoxMultipleOutline);
-      case 13: return const Icon(MdiIcons.numeric3BoxMultipleOutline);
-      case 14: return const Icon(MdiIcons.numeric4BoxMultipleOutline);
-      case 15: return const Icon(MdiIcons.numeric5BoxMultipleOutline);
-      case 16: return const Icon(MdiIcons.numeric6BoxMultipleOutline);
-      case 17: return const Icon(MdiIcons.numeric7BoxMultipleOutline);
-      case 18: return const Icon(MdiIcons.numeric8BoxMultipleOutline);
-      case 19: return const Icon(MdiIcons.numeric9BoxMultipleOutline);
-      case 20: return const Icon(MdiIcons.numeric10BoxMultipleOutline);
+      case 0: return Icon(MdiIcons.numeric0BoxOutline);
+      case 1: return Icon(MdiIcons.numeric1BoxOutline);
+      case 2: return Icon(MdiIcons.numeric2BoxOutline);
+      case 3: return Icon(MdiIcons.numeric3BoxOutline);
+      case 4: return Icon(MdiIcons.numeric4BoxOutline);
+      case 5: return Icon(MdiIcons.numeric5BoxOutline);
+      case 6: return Icon(MdiIcons.numeric6BoxOutline);
+      case 7: return Icon(MdiIcons.numeric7BoxOutline);
+      case 8: return Icon(MdiIcons.numeric8BoxOutline);
+      case 9: return Icon(MdiIcons.numeric9BoxOutline);
+      case 10: return Icon(MdiIcons.numeric10BoxOutline);
+      case 11: return Icon(MdiIcons.numeric1BoxMultipleOutline);
+      case 12: return Icon(MdiIcons.numeric2BoxMultipleOutline);
+      case 13: return Icon(MdiIcons.numeric3BoxMultipleOutline);
+      case 14: return Icon(MdiIcons.numeric4BoxMultipleOutline);
+      case 15: return Icon(MdiIcons.numeric5BoxMultipleOutline);
+      case 16: return Icon(MdiIcons.numeric6BoxMultipleOutline);
+      case 17: return Icon(MdiIcons.numeric7BoxMultipleOutline);
+      case 18: return Icon(MdiIcons.numeric8BoxMultipleOutline);
+      case 19: return Icon(MdiIcons.numeric9BoxMultipleOutline);
+      case 20: return Icon(MdiIcons.numeric10BoxMultipleOutline);
     }
     return null;
   }
@@ -1833,7 +1836,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       AndroidAlarmManager.oneShot(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
           _duration, 1000, signalEndWithRepetition)
-          .then((value) => debugPrint('shot end withrepeat: $value'));
+          .then((value) => debugPrint('shot end with repeat: $value'));
     }
     else {
       AndroidAlarmManager.oneShot(
