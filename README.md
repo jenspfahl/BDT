@@ -28,7 +28,7 @@ Update: The add-containing fork was removed from the Play Store meanwhile but st
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
+     height="80">](https://f-droid.org/packages/de.jepfa.bdt/) 
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
 alt="Get it on Google Play"
