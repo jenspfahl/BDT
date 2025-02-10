@@ -37,10 +37,6 @@ android {
         coreLibraryDesugaringEnabled true
     }
 
-/*    kotlinOptions {
-        jvmTarget = '21'
-    }*/
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
