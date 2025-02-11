@@ -330,12 +330,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH, mode: LaunchMode.externalApplication);
                           }),
                       const Divider(),
-                      const Text('© Jens Pfahl 2024 (Play Store variant)', style: TextStyle(fontSize: 12)),
+                      const Text('© Jens Pfahl 2025 (Play Store variant)', style: TextStyle(fontSize: 12)),
                     ],
                     applicationIcon: const SizedBox(width: 64, height: 64,
                         child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))));
               },
             ),
+            const CustomSettingsTile(child: SizedBox(height: 36)),
           ],
         ),
 
