@@ -19,6 +19,7 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_NOTIFY_AT_BREAKS = PrefDef('pref/run/notifyAtBreaks', true);
   static final PREF_VIBRATE_AT_BREAKS = PrefDef('pref/run/vibrateAtBreaks', true);
   static final PREF_SIGNAL_TWICE = PrefDef('pref/run/signalTwice', false);
+  static final PREF_SIGNAL_WITHOUT_NUMBER = PrefDef('pref/run/signalWithoutNumber', false);
   static final PREF_BREAK_ORDER_DESCENDING = PrefDef('pref/run/breakOrderDescending', false);
   static final PREF_SIGNAL_VOLUME = PrefDef('pref/run/signalVolume', MAX_VOLUME);
   static final PREF_HIDE_PREDEFINED_PRESETS = PrefDef('pref/presets/hidePredefinedPresets', false);
@@ -26,6 +27,7 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_CLEAR_STATE_ON_STARTUP = PrefDef('pref/presets/clearStateOnStartup', false);
   static final PREF_CLOCK_MODE_AS_DEFAULT = PrefDef('pref/presets/clockModeAsDefault', false);
   static final PREF_WAKE_LOCK = PrefDef('pref/common/wakeLock', false);
+  static final PREF_SHOW_SPINNER = PrefDef('pref/common/showSpinner', true);
   static final PREF_TIMER_PROGRESS_PRESENTATION = PrefDef('pref/timerProgressPresentation', 0);
   static final PREF_CLOCK_PROGRESS_PRESENTATION = PrefDef('pref/clockProgressPresentation', 0);
 
@@ -49,6 +51,7 @@ class PreferenceService implements ITranslatePreferences {
   bool userPresetsOnTop = PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool hidePredefinedPresets = PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool darkTheme = true;
+  bool showSpinner = PREF_SHOW_SPINNER.defaultValue;
 
   factory PreferenceService() {
     return _service;
@@ -66,6 +69,7 @@ class PreferenceService implements ITranslatePreferences {
     audioSchema = await getInt(PREF_AUDIO_SCHEME) ?? PREF_AUDIO_SCHEME.defaultValue;
     userPresetsOnTop = await getBool(PREF_USER_PRESETS_ON_TOP) ?? PREF_USER_PRESETS_ON_TOP.defaultValue;
     hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
+    showSpinner = await getBool(PREF_SHOW_SPINNER) ?? PREF_SHOW_SPINNER.defaultValue;
   }
 
   Future<String?> getString(PrefDef def) async {

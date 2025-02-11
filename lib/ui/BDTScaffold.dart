@@ -23,7 +23,7 @@ import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
@@ -52,7 +52,7 @@ final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
-class BDTScaffoldState extends State<BDTScaffold> {
+class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderStateMixin {
 
   final HOMEPAGE = 'bdt.jepfa.de';
   final HOMEPAGE_SCHEME = 'https://';
@@ -87,6 +87,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _volume = MAX_VOLUME;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
+  late AnimationController _circleAnimationController;
+  bool _circleAnimationDirection = false;
+  double _circleAnimationLastValue = 0;
 
   @pragma('vm:entry-point')
   static Future<void> signal1() async {
@@ -439,6 +442,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     _notificationService.requestPermissions();
 
+    _circleAnimationController =
+        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    Tween<double>(begin: 0, end: 1).animate(_circleAnimationController)
+      ..addListener(() {
+        setState(() {
+          final circleAnimationCurrentValue = _circleAnimationController.value;
+          if (_circleAnimationLastValue > circleAnimationCurrentValue) {
+            _circleAnimationDirection = !_circleAnimationDirection;
+          }
+          _circleAnimationLastValue = circleAnimationCurrentValue;
+        });
+      });
+
   }
 
   void _askForNotification() {
@@ -500,15 +516,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final hasWakeLock = await _preferenceService.getBool(PreferenceService.PREF_WAKE_LOCK);
 
     if (hasWakeLock == true) {
-      Wakelock.enable();
+      WakelockPlus.enable();
     }
     else {
-      Wakelock.disable();
+      WakelockPlus.disable();
     }
 
   }
 
   _startTimer() {
+    _startSpinner();
+
     _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
         if (_isRepeating()) {
@@ -915,9 +933,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         child: SizedBox(
-                          width: CENTER_RADIUS * 1.5,
-                          height: CENTER_RADIUS * 1.5,
-                          child: Center(child: _createCycleWidget())),
+                          width: CENTER_RADIUS * 1.8,
+                          height: CENTER_RADIUS * 1.8,
+                          child: Center(child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (_preferenceService.showSpinner && (_isRunning() && !_isAllRunsOver()))
+                                  Center(
+                                    child: SizedBox.expand(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1,
+                                          strokeCap: StrokeCap.round,
+                                          color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
+                                          backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
+                                          value: _circleAnimationController.value
+                                        ),
+                                    ),
+                                  ),
+                                Center(child: _createCycleWidget()),
+                              ],)
+                          )),
                         onTap: () {
                           if (_isRunning()) {
                             setState(() {
@@ -1149,6 +1184,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
   @override
   Future<void> dispose() async {
     debugPrint('App killed');
+    _circleAnimationController.dispose();
     await _persistState(); //This might not work since App is killed before persist is done
     super.dispose();
   }
@@ -1749,6 +1785,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
 
+
     _startedAt = DateTime.now();
     _startTimer();
     _updateRunning();
@@ -1789,6 +1826,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
     _scheduleSliceNotifications();
 
+  }
+
+  void _startSpinner() {
+    _circleAnimationLastValue = 0;
+    _circleAnimationController.value = 0;
+    _circleAnimationController.repeat();
+    _circleAnimationDirection = false;
   }
 
   void _updateDuration(Duration duration, {required bool fromUser}) {
@@ -1851,6 +1895,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _stopRun(BuildContext context) {
     debugPrint('stopped');
     _stopTimer();
+    _circleAnimationController.stop();
+
     SignalService().stopAll();
     _persistState();
     _notificationService.cancelAllNotifications();

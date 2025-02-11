@@ -27,6 +27,13 @@ allprojects {
                     }
                 }
             }
+            if (project.plugins.hasPlugin("com.android.application") ||
+                    project.plugins.hasPlugin("com.android.library")) {
+                project.android {
+                    compileSdkVersion 35
+                    buildToolsVersion "35.0.0"
+                }
+            }
         }
     }
 }
@@ -39,6 +46,7 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 }
+
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir

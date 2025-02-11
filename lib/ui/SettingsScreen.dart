@@ -33,10 +33,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifyAtBreaks = PreferenceService.PREF_NOTIFY_AT_BREAKS.defaultValue;
   bool _vibrateAtBreaks = PreferenceService.PREF_VIBRATE_AT_BREAKS.defaultValue;
   bool _signalTwice = PreferenceService.PREF_SIGNAL_TWICE.defaultValue;
+  bool _signalWithoutCounter = PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER.defaultValue;
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
   bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
+  bool _showSpinner = PreferenceService.PREF_SHOW_SPINNER.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool _enableWakeLock = PreferenceService.PREF_WAKE_LOCK.defaultValue;
@@ -190,7 +192,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 setState(() => _signalTwice = value);
               },
             ),
-            const CustomSettingsTile(child: Divider()),
+            SettingsTile.switchTile(
+              title: const Text('Signal without counter'),
+              description: const Text('Don''t encode the counter in the audio and vibration signal.'),
+              initialValue: _signalWithoutCounter,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER, value);
+                setState(() => _signalWithoutCounter = value);
+              },
+            ),
+           // const CustomSettingsTile(child: Divider()),
             SettingsTile.switchTile(
               title: const Text('Break order descending by default'),
               description: const Text('Instead of sequencing 1,2,3 .. it sequences ..,3,2,1.'),
@@ -199,6 +211,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onToggle: (bool value) {
                 _preferenceService.setBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING, value);
                 setState(() => _breakOrderDescending = value);
+              },
+            ),
+            SettingsTile.switchTile(
+              title: const Text('Show run spinner'),
+              description: const Text('Shows a rotating spinner inside the wheel during running.'),
+              initialValue: _showSpinner,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_SHOW_SPINNER, value);
+                await _preferenceService.refresh();
+                setState(() {
+                  _showSpinner = value;
+                });
               },
             ),
           ],
@@ -335,6 +360,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (signalTwice != null) {
       _signalTwice = signalTwice;
     }
+    final signalWithoutCounter = await _preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER);
+    if (signalWithoutCounter != null) {
+      _signalWithoutCounter = signalWithoutCounter;
+    }
     final breakOrderDescending = await _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING);
     if (breakOrderDescending != null) {
       _breakOrderDescending = breakOrderDescending;
@@ -354,6 +383,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final hidePredefinedPresets = await _preferenceService.getBool(PreferenceService.PREF_HIDE_PREDEFINED_PRESETS);
     if (hidePredefinedPresets != null) {
       _hidePredefinedPresets = hidePredefinedPresets;
+    }
+    final showSpinner = await _preferenceService.getBool(PreferenceService.PREF_SHOW_SPINNER);
+    if (showSpinner != null) {
+      _showSpinner = showSpinner;
     }
     final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
     if (userPresetsOnTop != null) {
