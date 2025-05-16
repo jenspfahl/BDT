@@ -1,3 +1,4 @@
 * Show spinner to indicate a running (can be disabled)
 * Support audio/vibration signals without encoded counter
+* A few now audio tones
 * Upgrade to Android 15
