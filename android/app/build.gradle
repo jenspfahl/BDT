@@ -27,7 +27,7 @@ apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
     compileSdkVersion 35
-    namespace 'de.jepfa.bdt.adfree'
+    namespace 'de.jepfa.bdt'
 
     ndkVersion "27.0.12077973"
 
@@ -42,7 +42,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "de.jepfa.bdt.adfree"
+        applicationId "de.jepfa.bdt"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion 21

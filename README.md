@@ -22,7 +22,7 @@ Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
 ## Download
 
-**Important note**: There is an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) by another developer called "Schnupfeld". To get my original ad-free version, use the badges below (AppId `de.jepfa.bdt.adfree` for Google Play).
+**Important note**: There ~~is~~ was an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) by another developer called "Schnupfeld". To get my original ad-free version, use the badges below (AppId `de.jepfa.bdt.adfree` for Google Play).
 
 Update: The add-containing fork was removed from the Play Store meanwhile but still the AppId `de.jepfa.bdt` is burned forever and cannot be reused by anybody else than the origin publisher.
 
