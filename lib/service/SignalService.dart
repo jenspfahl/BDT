@@ -13,6 +13,8 @@ import 'PreferenceService.dart';
 
 final START = '||';
 final CANCEL = '|';
+final SIG_UNSPEC = '||';
+final SIG_UNSPEC_END = '|||';
 final SIG_1 = '|| -';
 final SIG_2 = '|| --';
 final SIG_3 = '|| ---';
@@ -53,11 +55,12 @@ class SignalService {
     await initCurrentSignalling(prefService, id);
 
     final signalTwice = await shouldSignalTwice(PreferenceService());
+    final signalWithoutNumber = await shouldSignalWithoutEncodedNumber(PreferenceService());
 
     final vol = volume ?? await getVolume(prefService);
     SignalService.setSignalVolume(vol);
 
-    await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
+    await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
 
     if (!signalAlthoughCancelled && await _cancelSignalling(prefService, id)) {
       return;
@@ -65,7 +68,7 @@ class SignalService {
 
     if (signalTwice && !neverSignalTwice) {
       await pause(const Duration(seconds: 2));
-      await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled);
+      await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
     }
   }
 
@@ -87,8 +90,17 @@ class SignalService {
   }
 
   static _makeSignalPattern(String pattern, PreferenceService preferenceService,
-      int id, bool signalAlthoughCancelled) async {
+      int id, bool signalAlthoughCancelled, bool signalWithoutNumber) async {
     await FlutterSoundBridge.stopSysSound();
+
+    if (signalWithoutNumber) {
+      if (pattern != START && pattern != CANCEL && pattern != SIG_END) {
+        pattern = SIG_UNSPEC;
+      }
+      else if (pattern == SIG_END) {
+        pattern = SIG_UNSPEC_END;
+      }
+    }
 
     for (int i = 0; i < pattern.length; i++) {
       if (!signalAlthoughCancelled && await _cancelSignalling(preferenceService, id)) {
