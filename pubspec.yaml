@@ -47,7 +47,7 @@ dependencies:
   sqflite: ^2.0.1
   path: ^1.8.0
   flutter_translate: ^4.1.0
-  android_alarm_manager_plus: ^4.0.7
+  android_alarm_manager_plus: ^5.0.0
   vibration: ^3.1.5
   material_design_icons_flutter: ^7.0.7296
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold

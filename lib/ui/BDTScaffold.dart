@@ -375,7 +375,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-          debugPrint('refresh ui values');
+         // debugPrint('refresh ui values');
         });
       }
     });
@@ -542,7 +542,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
       if (mounted) {
         _updateRunning();
-        debugPrint('.. timer refresh #${_runTimer?.tick} ..');
+        //debugPrint('.. timer refresh #${_runTimer?.tick} ..');
       }
     });
   }
@@ -556,7 +556,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
-      debugPrint('delta=$delta, ratio = $ratio');
+      //debugPrint('delta=$delta, ratio = $ratio');
       setState(() {
         _passedIndex = (MAX_SLICE * ratio).floor() + 1;
         // update all
@@ -1678,7 +1678,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       if (isInTransition) {
         final deltaSeconds = _getDelta()?.inSeconds ?? 0;
         final transitionSeconds = deltaSeconds % sliceSeconds;
-        debugPrint('tranSec=$transitionSeconds / sliceSec=$sliceSeconds');
+        //debugPrint('transSec=$transitionSeconds / sliceSec=$sliceSeconds');
         radius = radius + (radius * (transitionSeconds / sliceSeconds * 0.1));
       }
       else if (isPassed) {
