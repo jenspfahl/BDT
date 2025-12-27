@@ -1,6 +1,7 @@
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_translate/flutter_translate.dart';
 import 'package:open_settings/open_settings.dart';
 
 import '../main.dart';
@@ -15,14 +16,14 @@ void showConfirmationDialog(BuildContext context, String title, String message,
   List<Widget> actions = [];
   if (cancelPressed != null) {
     Widget cancelButton = TextButton(
-      child: const Text('Cancel'),
+      child: Text(translate('common.cancel')),
       onPressed:  cancelPressed,
     );
     actions.add(cancelButton);
   }
   if (okPressed != null) {
     Widget okButton = TextButton(
-      child: const Text('Ok'),
+      child: Text(translate('common.ok')),
       onPressed:  okPressed,
     );
     actions.add(okButton);
@@ -117,11 +118,11 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(translate('common.cancel')),
               onPressed: cancelPressed
             ),
             TextButton(
-              child: const Text('Ok'),
+              child: Text(translate('common.ok')),
               onPressed: () {
                 if (okPressed != null && _formKey.currentState!.validate()) {
                   okPressed(_textFieldController.text);
@@ -173,11 +174,11 @@ Future<bool?> showDurationPickerDialog({
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
             TextButton(
-              child: const Text('Cancel'),
+              child: Text(translate('common.cancel')),
               onPressed:  () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: const Text('Ok'),
+              child: Text(translate('common.ok')),
               onPressed:  () => Navigator.of(context).pop(true),
             )
             ],)
@@ -202,11 +203,11 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
   required ValueChanged<int> selectionChanged
 }) {
   Widget cancelButton = TextButton(
-    child: const Text('Cancel'),
+    child: Text(translate('common.cancel')),
     onPressed:  cancelPressed,
   );
   Widget okButton = TextButton(
-    child: const Text('Ok'),
+    child: Text(translate('common.ok')),
     onPressed:  okPressed,
   );
 
@@ -234,20 +235,19 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
 
 
 showBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
-  final message = "To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '$APP_NAME'.";
   AlertDialog alert = AlertDialog(
     title: const Text(APP_NAME),
-    content: Text(message),
+    content: Text("To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '$APP_NAME'."),
     actions: [
       TextButton(
-        child: const Text('Open Settings'),
+        child: Text(translate('batterySavings.openSettings')),
         onPressed:  () {
           Navigator.pop(context);
           OpenSettings.openIgnoreBatteryOptimizationSetting();
         },
       ),
       TextButton(
-        child: const Text("Don't ask again"),
+        child: Text(translate('batterySavings.dontAskAgain')),
         onPressed:  () {
           Navigator.pop(context);
           preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);
