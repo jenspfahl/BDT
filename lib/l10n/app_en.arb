@@ -2,7 +2,57 @@
   "ok": "Ok",
   "cancel": "Cancel",
   "reset": "Reset",
-  "batterySavingsHint": "To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '{appName}'.",
+  "batterySavingsHint": "To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn't working correctly, you should do just that. Open Settings and enable the exception ('Not Optimized') for '{appName}'.",
   "openSettings": "Open Settings",
-  "dontAskAgain": "Don't ask again"
+  "dontAskAgain": "Don't ask again",
+  "volume": "Volume",
+  "mute": "Mute",
+  "muted": "muted",
+  "hours": "Hours",
+  "minutes": "Minutes",
+
+  "settings": "settings",
+  "commonSettings": "Common Settings",
+  "darkTheme": "Dark theme",
+  "colorScheme": "Color scheme",
+  "selectColorScheme": "Change a color scheme",
+  "audioSignals": "Audio signals",
+  "selectAudioScheme": "Change audio signal scheme",
+  "runSettings": "Run Settings",
+  "notifyUponReachedBreaks": "Notifies you when breaks are reached",
+  "notifyUponReachedBreaksDescription": "Notifies you when a break is reached and a run has started or ended.",
+  "vibrateUponReachedBreaks": "Vibrates when breaks are reached",
+  "vibrateUponReachedBreaksDescription": "Vibrates with a pattern when a break is reached and a run has started or ended.",
+
+  "signalTwiceUponReachedBreaks": "Two signals when breaks are reached",
+  "signalTwiceUponReachedBreaksDescription": "To ensure no break is missed, each break is signaled twice.",
+  "signalWithoutCounter": "Signal without counter information",
+  "signalWithoutCounterDescription": "Don't encode the counter in the audio and vibration signal.",
+
+  "defaultBreakOrder": "The break order descending by default",
+  "defaultBreakOrderDescription": "Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.",
+
+  "showRunSpinner": "Show run indicator",
+  "showRunSpinnerDescription": "Displays a spinning indicator in the timer wheel while the timer is running.",
+  "presetSettings": "Preset Settings",
+  "hidePredefinedPresets": "Hide predefined presets",
+
+  "hidePredefinedPresetsDescription": "If you don't need the predefined presets, you can hide them. Only your own custom presets will then be displayed.",
+  "customizedPresetsOnTop": "Show custom presets at the top",
+  "customizedPresetsOnTopDescription": "Custom presets are displayed at the top of the preset list for faster access.",
+
+  "appBehaviourSettings": "App Behaviour Settings",
+  "activateWakeLock": "Activate Wake Lock",
+  "activateWakeLockDescription": "A wake lock prevents the screen from turning off automatically.",
+  "startAppFromScratch": "Launch the app with an empty timer wheel",
+  "startAppFromScratchDescription": "When the app starts, it will launch with an empty timer wheel or your preferred preset. If this option is disabled, the last used state will be restored when the app starts.",
+  "clockModeAsDefault": "Use clock mode as default",
+  "clockModeAsDefaultDescription": "Set clock mode instead of timer mode as default",
+
+  "info": "Information",
+  "batteryOptimizations": "Battery optimizations",
+  "aboutTheApp": "About the app",
+  "appShortDescription": "A timer with intermediate notifications",
+  "visitAppHomePage": "Visit {url} to view the code, report bugs, and rate!"
+
 }

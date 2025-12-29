@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
+import '../l10n/app_localizations.dart';
+
 class DurationPicker extends StatefulWidget {
   late final int _initialHours;
   late final int _initialMinutes;
@@ -39,6 +41,9 @@ class _DurationPickerState extends State<DurationPicker> {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
     final hoursPicker = NumberPicker(
       value: _hours,
       minValue: 0,
@@ -63,13 +68,13 @@ class _DurationPickerState extends State<DurationPicker> {
       children: <Widget>[
         Column(
           children: [
-            const Text('hours'),
+            Text(l10n.hours),
             hoursPicker
           ],
         ),
         Column(
           children: [
-            const Text('minutes'),
+            Text(l10n.minutes),
             minutesPicker,
           ],
         ),
