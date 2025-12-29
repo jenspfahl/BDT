@@ -1,9 +1,9 @@
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:open_settings/open_settings.dart';
 
+import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../service/PreferenceService.dart';
 import 'ChoiceWidget.dart';
@@ -13,17 +13,19 @@ import 'DurationPicker.dart';
 void showConfirmationDialog(BuildContext context, String title, String message,
     {Icon? icon, Function()? okPressed, Function()? cancelPressed}) {
 
+  final l10n = AppLocalizations.of(context)!;
+
   List<Widget> actions = [];
   if (cancelPressed != null) {
     Widget cancelButton = TextButton(
-      child: Text(translate('common.cancel')),
+      child: Text(l10n.cancel),
       onPressed:  cancelPressed,
     );
     actions.add(cancelButton);
   }
   if (okPressed != null) {
     Widget okButton = TextButton(
-      child: Text(translate('common.ok')),
+      child: Text(l10n.ok),
       onPressed:  okPressed,
     );
     actions.add(okButton);
@@ -62,6 +64,8 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
 
     final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
     final _textFieldController = TextEditingController(text: initText);
+
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
@@ -118,11 +122,11 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(translate('common.cancel')),
+              child: Text(l10n.cancel),
               onPressed: cancelPressed
             ),
             TextButton(
-              child: Text(translate('common.ok')),
+              child: Text(l10n.ok),
               onPressed: () {
                 if (okPressed != null && _formKey.currentState!.validate()) {
                   okPressed(_textFieldController.text);
@@ -159,6 +163,8 @@ Future<bool?> showDurationPickerDialog({
       onChanged: onChanged,
   );
 
+  final l10n = AppLocalizations.of(context)!;
+
   Dialog dialog = Dialog(
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
@@ -174,11 +180,11 @@ Future<bool?> showDurationPickerDialog({
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
             TextButton(
-              child: Text(translate('common.cancel')),
+              child: Text(l10n.cancel),
               onPressed:  () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text(translate('common.ok')),
+              child: Text(l10n.ok),
               onPressed:  () => Navigator.of(context).pop(true),
             )
             ],)
@@ -202,12 +208,15 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
   int? initialSelected,
   required ValueChanged<int> selectionChanged
 }) {
+
+  final l10n = AppLocalizations.of(context)!;
+
   Widget cancelButton = TextButton(
-    child: Text(translate('common.cancel')),
+    child: Text(l10n.cancel),
     onPressed:  cancelPressed,
   );
   Widget okButton = TextButton(
-    child: Text(translate('common.ok')),
+    child: Text(l10n.ok),
     onPressed:  okPressed,
   );
 
@@ -235,19 +244,21 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
 
 
 showBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
+  final l10n = AppLocalizations.of(context)!;
+
   AlertDialog alert = AlertDialog(
     title: const Text(APP_NAME),
-    content: Text("To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '$APP_NAME'."),
+    content: Text(l10n.batterySavingsHint(APP_NAME)),
     actions: [
       TextButton(
-        child: Text(translate('batterySavings.openSettings')),
+        child: Text(l10n.openSettings),
         onPressed:  () {
           Navigator.pop(context);
           OpenSettings.openIgnoreBatteryOptimizationSetting();
         },
       ),
       TextButton(
-        child: Text(translate('batterySavings.dontAskAgain')),
+        child: Text(l10n.dontAskAgain),
         onPressed:  () {
           Navigator.pop(context);
           preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);

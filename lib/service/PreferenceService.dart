@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:bdt/ui/VolumeSliderDialog.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/AudioScheme.dart';
@@ -11,7 +10,7 @@ class PrefDef {
   dynamic defaultValue;
   PrefDef(this.key, this.defaultValue);
 }
-class PreferenceService implements ITranslatePreferences {
+class PreferenceService {
 
   static final PREF_COLOR_SCHEME = PrefDef('pref/common/colorScheme', 0);
   static final PREF_DARK_MODE = PrefDef('pref/common/darkMode', true);
@@ -127,7 +126,6 @@ class PreferenceService implements ITranslatePreferences {
   }
 
 
-  @override
   Future<Locale?> getPreferredLocale() async {
     final languageSelection = null;//await getInt(PREF_LANGUAGE_SELECTION);
 
@@ -143,10 +141,6 @@ class PreferenceService implements ITranslatePreferences {
     return Future.value(null);
   }
 
-  @override
-  Future savePreferredLocale(Locale locale) async {
-    // not needed, saved by SettingsScreen.dart
-  }
 
   Locale? _getLocaleFromSelection(int languageSelection) {
     switch (languageSelection) {

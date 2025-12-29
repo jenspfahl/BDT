@@ -16,7 +16,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slider_button/slider_button.dart';
@@ -26,6 +25,7 @@ import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../l10n/app_localizations.dart';
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
 import '../util/dates.dart';
@@ -53,6 +53,7 @@ final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
+@pragma('vm:entry-point')
 class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderStateMixin {
 
   final HOMEPAGE = 'bdt.jepfa.de';
@@ -443,6 +444,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _notificationService.requestPermissions();
 
+    Permission.scheduleExactAlarm.request();
+
     _circleAnimationController =
         AnimationController(duration: const Duration(seconds: 1), vsync: this);
     Tween<double>(begin: 0, end: 1).animate(_circleAnimationController)
@@ -615,6 +618,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return FGBGNotifier(
       onEvent: (event) {
         if (event == FGBGType.background) {
@@ -771,7 +776,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
             IconButton(
                 onPressed: () {
-                  Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
                       .then((value) {
                         _loadBreakDowns(focusPinned: false);
                         _updateWakeLock();
