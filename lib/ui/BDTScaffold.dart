@@ -52,6 +52,7 @@ final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
+@pragma('vm:entry-point')
 class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderStateMixin {
 
   final HOMEPAGE = 'bdt.jepfa.de';
@@ -441,6 +442,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     });
 
     _notificationService.requestPermissions();
+
+    Permission.scheduleExactAlarm.request();
 
     _circleAnimationController =
         AnimationController(duration: const Duration(seconds: 1), vsync: this);
