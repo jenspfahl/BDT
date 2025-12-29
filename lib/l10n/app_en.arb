@@ -1,0 +1,8 @@
+{
+  "ok": "Ok",
+  "cancel": "Cancel",
+  "reset": "Reset",
+  "batterySavingsHint": "To schedule exact alarms, this app should be exempted from any battery optimizations. Is scheduling not working properly, you should exempt it. Open the settings, and enable exemption ('not optimized') for '{appName}'.",
+  "openSettings": "Open Settings",
+  "dontAskAgain": "Don't ask again"
+}

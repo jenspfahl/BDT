@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:bdt/service/ColorService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:bdt/ui/BDTScaffold.dart';
 
+import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../service/PreferenceService.dart';
 
@@ -16,79 +16,71 @@ class BDTApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    var localizationDelegate = LocalizedApp.of(context).delegate;
     return AppBuilder(builder: (context) {
-      return LocalizationProvider(
-        state: LocalizationProvider
-            .of(context)
-            .state,
-        child: StreamBuilder<dynamic>(
-            stream: prefsUpdatedNotifier.stream,
-            builder: (context, snapshot) {
-              return MaterialApp(
-                title: APP_NAME_SHORT,
-                localizationsDelegates: [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  localizationDelegate
-                ],
-                supportedLocales: localizationDelegate.supportedLocales,
-                locale: localizationDelegate.currentLocale,
+      return StreamBuilder<dynamic>(
+          stream: prefsUpdatedNotifier.stream,
+          builder: (context, snapshot) {
+            return MaterialApp(
+              title: APP_NAME_SHORT,
+              localizationsDelegates: [
+                AppLocalizations.delegate, // use  flutter gen-l10n if you add new languages
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+              ],
+              supportedLocales: AppLocalizations.supportedLocales,
+              theme: ThemeData(
+                  useMaterial3: false,
+                  brightness: Brightness.light,
+                  primaryColor: ColorService()
+                      .getCurrentScheme()
+                      .primary,
+                  primarySwatch: ColorService()
+                      .getCurrentScheme()
+                      .button,
+                  scaffoldBackgroundColor: ColorService()
+                      .getCurrentScheme()
+                      .background,
 
-                theme: ThemeData(
-                    useMaterial3: false,
-                    brightness: Brightness.light,
-                    primaryColor: ColorService()
-                        .getCurrentScheme()
-                        .primary,
-                    primarySwatch: ColorService()
-                        .getCurrentScheme()
-                        .button,
-                    scaffoldBackgroundColor: ColorService()
+                  appBarTheme: AppBarTheme(
+                    color: ColorService()
                         .getCurrentScheme()
                         .background,
+                    foregroundColor: ColorService()
+                        .getCurrentScheme()
+                        .foreground,
+                  )
+                // accentColor: Colors.green,
+              ),
+              darkTheme: ThemeData(
+                  useMaterial3: false,
+                  brightness: Brightness.dark,
+                  primaryColor: ColorService()
+                      .getCurrentScheme()
+                      .primary,
+                  primarySwatch: ColorService()
+                      .getCurrentScheme()
+                      .button,
+                  scaffoldBackgroundColor: ColorService()
+                      .getCurrentScheme()
+                      .background,
 
-                    appBarTheme: AppBarTheme(
-                      color: ColorService()
-                          .getCurrentScheme()
-                          .background,
-                      foregroundColor: ColorService()
-                          .getCurrentScheme()
-                          .foreground,
-                    )
-                  // accentColor: Colors.green,
-                ),
-                darkTheme: ThemeData(
-                    useMaterial3: false,
-                    brightness: Brightness.dark,
-                    primaryColor: ColorService()
-                        .getCurrentScheme()
-                        .primary,
-                    primarySwatch: ColorService()
-                        .getCurrentScheme()
-                        .button,
-                    scaffoldBackgroundColor: ColorService()
+                  appBarTheme: AppBarTheme(
+                    color: ColorService()
                         .getCurrentScheme()
                         .background,
+                    foregroundColor: ColorService()
+                        .getCurrentScheme()
+                        .foreground,
+                  )
+                // accentColor: Colors.green,
+              ),
+              themeMode: PreferenceService().darkTheme
+                  ? ThemeMode.dark
+                  : ThemeMode.light,
 
-                    appBarTheme: AppBarTheme(
-                      color: ColorService()
-                          .getCurrentScheme()
-                          .background,
-                      foregroundColor: ColorService()
-                          .getCurrentScheme()
-                          .foreground,
-                    )
-                  // accentColor: Colors.green,
-                ),
-                themeMode: PreferenceService().darkTheme
-                    ? ThemeMode.dark
-                    : ThemeMode.light,
-
-                home: BDTScaffold(),
-              );
-            }
-        ),
+              home: BDTScaffold(),
+            );
+          }
       );
     });
   }

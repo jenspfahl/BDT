@@ -1,0 +1,8 @@
+{
+  "ok": "Ok",
+  "cancel": "Abbrechen",
+  "reset": "Zurücksetzen",
+  "batterySavingsHint": "Um präzise Alarme zu planen, sollte diese App von allen Akkuoptimierungen ausgenommen werden. Funktioniert die App nicht richtig, sollten Sie genau das tun. Öffnen Sie die Einstellungen und aktivieren Sie die Ausnahme ('Nicht optimiert') für '{appName}'.",
+  "openSettings": "Einstellungen öffnen",
+  "dontAskAgain": "Nicht mehr fragen"
+}
