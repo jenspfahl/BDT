@@ -67,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final l10n = AppLocalizations.of(context)!;
 
-    final visitTextParts = l10n.visitAppHomePage('<<<URL>>>').split('<<<URL>>>');
+    final visitTextParts = l10n.visitAppGithubPage('<<<URL>>>').split('<<<URL>>>');
 
     return SettingsList(
       sections: [

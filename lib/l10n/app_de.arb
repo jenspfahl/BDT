@@ -1,7 +1,9 @@
 {
   "ok": "Ok",
   "cancel": "Abbrechen",
+  "close": "Schließen",
   "reset": "Zurücksetzen",
+  "breakName": "Pause",
   "batterySavingsHint": "Um präzise Alarme zu planen, sollte diese App von allen Akkuoptimierungen ausgenommen werden. Funktioniert die App nicht richtig, sollten Sie genau das tun. Öffnen Sie die Einstellungen und aktivieren Sie die Ausnahme ('Nicht optimiert') für '{appName}'.",
   "openSettings": "Einstellungen öffnen",
   "dontAskAgain": "Nicht mehr fragen",
@@ -47,6 +49,60 @@
   "batteryOptimizations": "Akkuoptimierungen",
   "aboutTheApp": "Über die App",
   "appShortDescription": "Ein Timer mit Zwischenbenachrichtigungen",
-  "visitAppHomePage": "Besuchen Sie {url}, um den Code anzusehen, Fehler zu melden und Sterne zu vergeben!"
+  "visitAppGithubPage": "Besuchen Sie {url}, um den Code anzusehen, Fehler zu melden und Sterne zu vergeben!",
+  "visitAppHomePage": "Besuchen Sie {url} für mehr Information.",
 
+  "help": "Hilfe",
+  "appSummary": "Mit diesem Timer können Sie beliebig viele Zwichen-Benachrichtigungen ('Pausen') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.",
+  "appExplanation": "Wählen Sie eine Dauer oder einen Zeitpunkt für den Timer, indem Sie auf die Mitte des Rades klicken. Wählen Sie beliebige Pausen auf dem Timer-Rad aus, indem Sie auf einen Abschnitt klicken. Jede Pause erzeugt ein Signal (akustisch und/oder Vibration) mit folgenden eindeutigen Mustern (zum Abspielen anklicken):",
+
+  "breakReached": "Pause {breakNumber} von {breakCount} wurde erreicht",
+  "timerStarted": "Timer gestartet",
+  "timerFinished": "Timer beendet",
+  "timerFinishedButRepeating": "Timer beendet, wird aber wiederholt",
+  "afterDuration": "nach {duration}",
+  "afterXRuns": "nach {runCount} Läufen",
+  "withBreaks": "mit {breakCount} Pausen",
+
+  "breakPresets": "Voreinstellungen für Pausen",
+  "breakPresetPinned" : "Voreinstellung '{preset}' markiert",
+  "breakPresetUnpinned" : "Voreinstellung '{preset}' nicht mehr markiert",
+
+  "savePresetTitle": "Voreinstellung speichern",
+  "savePresetMessage": "Geben Sie einen Namen für diese Voreinstellung ein.",
+  "savePresetHint": "Wählen Sie einen Namen",
+  "savePresetIncludeDuration": "Dauer speichern",
+  "savePresetIncludeTime": "Zeit speichern",
+  "errorSavePresetNameMissing": "Name der Voreinstellung fehlt",
+  "errorSavePresetNameInUse": "Dieser Name wird bereits verwendet. Wählen Sie einen anderen.",
+  "savePresetDone": "'{preset}' gespeichert",
+
+  "removePresetTitle": "Gespeicherte Voreinstellung entfernen",
+  "removePresetMessage": "Möchten Sie '{preset}' endgültig löschen?",
+  "removePresetDone": "'{preset}' entfernt",
+
+  "breakOrderSwitchedToAscending": "Pausensortierung aufsteigend",
+  "breakOrderSwitchedToDescending": "Pausensortierung absteigend",
+
+  "startTimer": "Start",
+  "stopTimer": "Stop",
+  "swipeToStop": "Zum Stoppen wischen",
+  "repeatOnce": "Einmal wiederholen",
+  "repeatForever": "Immer wiederholen",
+  "noRepeat": "Keine Wiederholung",
+
+  "xBreaksPlaced": "{breakCount} gesetzte Pausen",
+  "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",
+  "xBreaksPlacedRepeatForever": "{breakCount} gesetzte Pausen, immer wiederholen",
+  "xBreaksLeft": "{remainingBreaks} von {breakCount} verbleibenden Pausen",
+  "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen (Lauf {runCount} von 2)",
+  "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen (Lauf {runCount})",
+
+  "errorNoPermissionForNotifications": "Benachrichtigungen funktionieren nicht, solange diese Berechtigung nicht erteilt wurde.",
+  "errorDeviceMuted": "Das Gerät ist stummgeschaltet. Deaktivieren Sie zuerst die Stummschaltung, um die Lautstärke einzustellen.",
+  "errorMaxBreaksReached": "Maximal {maxBreakCount} Pausen erlaubt",
+  "errorNoBreaksToReset": "Keine Unterbrechungen zum Zurücksetzen",
+  "errorClockTimeToClose": "Die Timer-Zeit muss mehr als eine Minute in der Zukunft liegen.",
+  "errorDurationIsZero": "Die Dauer darf nicht null sein.",
+  "errorTimeAlreadyElapsed": "Die Timer-Zeit ist bereits abgelaufen, setze einen neuen Timer."
 }

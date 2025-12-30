@@ -15,7 +15,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cancel => 'Abbrechen';
 
   @override
+  String get close => 'Schließen';
+
+  @override
   String get reset => 'Zurücksetzen';
+
+  @override
+  String get breakName => 'Pause';
 
   @override
   String batterySavingsHint(Object appName) {
@@ -152,7 +158,179 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appShortDescription => 'Ein Timer mit Zwischenbenachrichtigungen';
 
   @override
-  String visitAppHomePage(Object url) {
+  String visitAppGithubPage(Object url) {
     return 'Besuchen Sie $url, um den Code anzusehen, Fehler zu melden und Sterne zu vergeben!';
   }
+
+  @override
+  String visitAppHomePage(Object url) {
+    return 'Besuchen Sie $url für mehr Information.';
+  }
+
+  @override
+  String get help => 'Hilfe';
+
+  @override
+  String get appSummary => 'Mit diesem Timer können Sie beliebig viele Zwichen-Benachrichtigungen (\'Pausen\') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.';
+
+  @override
+  String get appExplanation => 'Wählen Sie eine Dauer oder einen Zeitpunkt für den Timer, indem Sie auf die Mitte des Rades klicken. Wählen Sie beliebige Pausen auf dem Timer-Rad aus, indem Sie auf einen Abschnitt klicken. Jede Pause erzeugt ein Signal (akustisch und/oder Vibration) mit folgenden eindeutigen Mustern (zum Abspielen anklicken):';
+
+  @override
+  String breakReached(Object breakCount, Object breakNumber) {
+    return 'Pause $breakNumber von $breakCount wurde erreicht';
+  }
+
+  @override
+  String get timerStarted => 'Timer gestartet';
+
+  @override
+  String get timerFinished => 'Timer beendet';
+
+  @override
+  String get timerFinishedButRepeating => 'Timer beendet, wird aber wiederholt';
+
+  @override
+  String afterDuration(Object duration) {
+    return 'nach $duration';
+  }
+
+  @override
+  String afterXRuns(Object runCount) {
+    return 'nach $runCount Läufen';
+  }
+
+  @override
+  String withBreaks(Object breakCount) {
+    return 'mit $breakCount Pausen';
+  }
+
+  @override
+  String get breakPresets => 'Voreinstellungen für Pausen';
+
+  @override
+  String breakPresetPinned(Object preset) {
+    return 'Voreinstellung \'$preset\' markiert';
+  }
+
+  @override
+  String breakPresetUnpinned(Object preset) {
+    return 'Voreinstellung \'$preset\' nicht mehr markiert';
+  }
+
+  @override
+  String get savePresetTitle => 'Voreinstellung speichern';
+
+  @override
+  String get savePresetMessage => 'Geben Sie einen Namen für diese Voreinstellung ein.';
+
+  @override
+  String get savePresetHint => 'Wählen Sie einen Namen';
+
+  @override
+  String get savePresetIncludeDuration => 'Dauer speichern';
+
+  @override
+  String get savePresetIncludeTime => 'Zeit speichern';
+
+  @override
+  String get errorSavePresetNameMissing => 'Name der Voreinstellung fehlt';
+
+  @override
+  String get errorSavePresetNameInUse => 'Dieser Name wird bereits verwendet. Wählen Sie einen anderen.';
+
+  @override
+  String savePresetDone(Object preset) {
+    return '\'$preset\' gespeichert';
+  }
+
+  @override
+  String get removePresetTitle => 'Gespeicherte Voreinstellung entfernen';
+
+  @override
+  String removePresetMessage(Object preset) {
+    return 'Möchten Sie \'$preset\' endgültig löschen?';
+  }
+
+  @override
+  String removePresetDone(Object preset) {
+    return '\'$preset\' entfernt';
+  }
+
+  @override
+  String get breakOrderSwitchedToAscending => 'Pausensortierung aufsteigend';
+
+  @override
+  String get breakOrderSwitchedToDescending => 'Pausensortierung absteigend';
+
+  @override
+  String get startTimer => 'Start';
+
+  @override
+  String get stopTimer => 'Stop';
+
+  @override
+  String get swipeToStop => 'Zum Stoppen wischen';
+
+  @override
+  String get repeatOnce => 'Einmal wiederholen';
+
+  @override
+  String get repeatForever => 'Immer wiederholen';
+
+  @override
+  String get noRepeat => 'Keine Wiederholung';
+
+  @override
+  String xBreaksPlaced(Object breakCount) {
+    return '$breakCount gesetzte Pausen';
+  }
+
+  @override
+  String xBreaksPlacedRepeatOnce(Object breakCount) {
+    return '$breakCount gesetzte Pausen, einmal wiederholen';
+  }
+
+  @override
+  String xBreaksPlacedRepeatForever(Object breakCount) {
+    return '$breakCount gesetzte Pausen, immer wiederholen';
+  }
+
+  @override
+  String xBreaksLeft(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen';
+  }
+
+  @override
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, einmal wiederholen (Lauf $runCount von 2)';
+  }
+
+  @override
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen (Lauf $runCount)';
+  }
+
+  @override
+  String get errorNoPermissionForNotifications => 'Benachrichtigungen funktionieren nicht, solange diese Berechtigung nicht erteilt wurde.';
+
+  @override
+  String get errorDeviceMuted => 'Das Gerät ist stummgeschaltet. Deaktivieren Sie zuerst die Stummschaltung, um die Lautstärke einzustellen.';
+
+  @override
+  String errorMaxBreaksReached(Object maxBreakCount) {
+    return 'Maximal $maxBreakCount Pausen erlaubt';
+  }
+
+  @override
+  String get errorNoBreaksToReset => 'Keine Unterbrechungen zum Zurücksetzen';
+
+  @override
+  String get errorClockTimeToClose => 'Die Timer-Zeit muss mehr als eine Minute in der Zukunft liegen.';
+
+  @override
+  String get errorDurationIsZero => 'Die Dauer darf nicht null sein.';
+
+  @override
+  String get errorTimeAlreadyElapsed => 'Die Timer-Zeit ist bereits abgelaufen, setze einen neuen Timer.';
 }

@@ -107,11 +107,23 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
   /// No description provided for @reset.
   ///
   /// In en, this message translates to:
   /// **'Reset'**
   String get reset;
+
+  /// No description provided for @breakName.
+  ///
+  /// In en, this message translates to:
+  /// **'break'**
+  String get breakName;
 
   /// No description provided for @batterySavingsHint.
   ///
@@ -377,11 +389,287 @@ abstract class AppLocalizations {
   /// **'A timer with intermediate notifications'**
   String get appShortDescription;
 
-  /// No description provided for @visitAppHomePage.
+  /// No description provided for @visitAppGithubPage.
   ///
   /// In en, this message translates to:
   /// **'Visit {url} to view the code, report bugs, and rate!'**
+  String visitAppGithubPage(Object url);
+
+  /// No description provided for @visitAppHomePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Visit {url} for more information.'**
   String visitAppHomePage(Object url);
+
+  /// No description provided for @help.
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get help;
+
+  /// No description provided for @appSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'This timer lets you set any number of intermediate notifications (\'breaks\') to keep you informed about the progress of the elapsed time.'**
+  String get appSummary;
+
+  /// No description provided for @appExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a duration or time for the timer by clicking the center of the wheel. Select any number of breaks on the timer wheel by clicking a segment. Each break generates a signal (audible and/or vibration) with the following unique patterns (click to play):'**
+  String get appExplanation;
+
+  /// No description provided for @breakReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Break {breakNumber} of {breakCount} reached'**
+  String breakReached(Object breakCount, Object breakNumber);
+
+  /// No description provided for @timerStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer started'**
+  String get timerStarted;
+
+  /// No description provided for @timerFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer finished'**
+  String get timerFinished;
+
+  /// No description provided for @timerFinishedButRepeating.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer finished, but will repeat'**
+  String get timerFinishedButRepeating;
+
+  /// No description provided for @afterDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'after {duration}'**
+  String afterDuration(Object duration);
+
+  /// No description provided for @afterXRuns.
+  ///
+  /// In en, this message translates to:
+  /// **'after {runCount} runs'**
+  String afterXRuns(Object runCount);
+
+  /// No description provided for @withBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'with {breakCount} breaks'**
+  String withBreaks(Object breakCount);
+
+  /// No description provided for @breakPresets.
+  ///
+  /// In en, this message translates to:
+  /// **'Break presets'**
+  String get breakPresets;
+
+  /// No description provided for @breakPresetPinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset \'{preset}\' pinned'**
+  String breakPresetPinned(Object preset);
+
+  /// No description provided for @breakPresetUnpinned.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset \'{preset}\' unpinned'**
+  String breakPresetUnpinned(Object preset);
+
+  /// No description provided for @savePresetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save preset'**
+  String get savePresetTitle;
+
+  /// No description provided for @savePresetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name for your preset to save.'**
+  String get savePresetMessage;
+
+  /// No description provided for @savePresetHint.
+  ///
+  /// In en, this message translates to:
+  /// **'choose a name'**
+  String get savePresetHint;
+
+  /// No description provided for @savePresetIncludeDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Include duration'**
+  String get savePresetIncludeDuration;
+
+  /// No description provided for @savePresetIncludeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Include time'**
+  String get savePresetIncludeTime;
+
+  /// No description provided for @errorSavePresetNameMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset name missing'**
+  String get errorSavePresetNameMissing;
+
+  /// No description provided for @errorSavePresetNameInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Preset name still used. Choose another one'**
+  String get errorSavePresetNameInUse;
+
+  /// No description provided for @savePresetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'\'{preset}\' saved'**
+  String savePresetDone(Object preset);
+
+  /// No description provided for @removePresetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove saved preset'**
+  String get removePresetTitle;
+
+  /// No description provided for @removePresetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure to delete \'{preset}\' permanently?'**
+  String removePresetMessage(Object preset);
+
+  /// No description provided for @removePresetDone.
+  ///
+  /// In en, this message translates to:
+  /// **'\'{preset}\' removed'**
+  String removePresetDone(Object preset);
+
+  /// No description provided for @breakOrderSwitchedToAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Break order changed to ascending'**
+  String get breakOrderSwitchedToAscending;
+
+  /// No description provided for @breakOrderSwitchedToDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Break order changed to descending'**
+  String get breakOrderSwitchedToDescending;
+
+  /// No description provided for @startTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get startTimer;
+
+  /// No description provided for @stopTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stopTimer;
+
+  /// No description provided for @swipeToStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Swipe to Stop'**
+  String get swipeToStop;
+
+  /// No description provided for @repeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat once'**
+  String get repeatOnce;
+
+  /// No description provided for @repeatForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat forever'**
+  String get repeatForever;
+
+  /// No description provided for @noRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'No repeat'**
+  String get noRepeat;
+
+  /// No description provided for @xBreaksPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'{breakCount} breaks placed'**
+  String xBreaksPlaced(Object breakCount);
+
+  /// No description provided for @xBreaksPlacedRepeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'{breakCount} breaks placed, repeat once'**
+  String xBreaksPlacedRepeatOnce(Object breakCount);
+
+  /// No description provided for @xBreaksPlacedRepeatForever.
+  ///
+  /// In en, this message translates to:
+  /// **'{breakCount} breaks placed, repeat forever'**
+  String xBreaksPlacedRepeatForever(Object breakCount);
+
+  /// No description provided for @xBreaksLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{remainingBreaks} of {breakCount} breaks left'**
+  String xBreaksLeft(Object breakCount, Object remainingBreaks);
+
+  /// No description provided for @xBreaksLeftRepeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)'**
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount);
+
+  /// No description provided for @xBreaksLeftRepeatForever.
+  ///
+  /// In en, this message translates to:
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})'**
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount);
+
+  /// No description provided for @errorNoPermissionForNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications won\'t work as long as this permission is not granted.'**
+  String get errorNoPermissionForNotifications;
+
+  /// No description provided for @errorDeviceMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Device is muted. Unmute first to set volume.'**
+  String get errorDeviceMuted;
+
+  /// No description provided for @errorMaxBreaksReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Maximum {maxBreakCount} breaks allowed'**
+  String errorMaxBreaksReached(Object maxBreakCount);
+
+  /// No description provided for @errorNoBreaksToReset.
+  ///
+  /// In en, this message translates to:
+  /// **'No breaks to reset'**
+  String get errorNoBreaksToReset;
+
+  /// No description provided for @errorClockTimeToClose.
+  ///
+  /// In en, this message translates to:
+  /// **'The timer-time must be more than one minute in the future.'**
+  String get errorClockTimeToClose;
+
+  /// No description provided for @errorDurationIsZero.
+  ///
+  /// In en, this message translates to:
+  /// **'The duration cannot be zero.'**
+  String get errorDurationIsZero;
+
+  /// No description provided for @errorTimeAlreadyElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'The timer-time has already expired; set a new timer.'**
+  String get errorTimeAlreadyElapsed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

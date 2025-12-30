@@ -1,7 +1,9 @@
 {
   "ok": "Ok",
   "cancel": "Cancel",
+  "close": "Close",
   "reset": "Reset",
+  "breakName": "break",
   "batterySavingsHint": "To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn't working correctly, you should do just that. Open Settings and enable the exception ('Not Optimized') for '{appName}'.",
   "openSettings": "Open Settings",
   "dontAskAgain": "Don't ask again",
@@ -53,6 +55,61 @@
   "batteryOptimizations": "Battery optimizations",
   "aboutTheApp": "About the app",
   "appShortDescription": "A timer with intermediate notifications",
-  "visitAppHomePage": "Visit {url} to view the code, report bugs, and rate!"
+  "visitAppGithubPage": "Visit {url} to view the code, report bugs, and rate!",
+  "visitAppHomePage": "Visit {url} for more information.",
 
+  "help": "Help",
+  "appSummary": "This timer lets you set any number of intermediate notifications ('breaks') to keep you informed about the progress of the elapsed time.",
+  "appExplanation": "Select a duration or time for the timer by clicking the center of the wheel. Select any number of breaks on the timer wheel by clicking a segment. Each break generates a signal (audible and/or vibration) with the following unique patterns (click to play):",
+
+  "breakReached": "Break {breakNumber} of {breakCount} reached",
+  "timerStarted": "Timer started",
+  "timerFinished": "Timer finished",
+  "timerFinishedButRepeating": "Timer finished, but will repeat",
+  "afterDuration": "after {duration}",
+  "afterXRuns": "after {runCount} runs",
+  "withBreaks": "with {breakCount} breaks",
+
+  "breakPresets": "Break presets",
+  "breakPresetPinned" : "Preset '{preset}' pinned",
+  "breakPresetUnpinned" : "Preset '{preset}' unpinned",
+
+  "savePresetTitle": "Save preset",
+  "savePresetMessage": "Enter a name for your preset to save.",
+  "savePresetHint": "choose a name",
+  "savePresetIncludeDuration": "Include duration",
+  "savePresetIncludeTime": "Include time",
+  "errorSavePresetNameMissing": "Preset name missing",
+  "errorSavePresetNameInUse": "Preset name still used. Choose another one",
+  "savePresetDone": "'{preset}' saved",
+
+  "removePresetTitle": "Remove saved preset",
+  "removePresetMessage": "Are you sure to delete '{preset}' permanently?",
+  "removePresetDone": "'{preset}' removed",
+
+  "breakOrderSwitchedToAscending": "Break order changed to ascending",
+  "breakOrderSwitchedToDescending": "Break order changed to descending",
+
+  "startTimer": "Start",
+  "stopTimer": "Stop",
+  "swipeToStop": "Swipe to Stop",
+  "repeatOnce": "Repeat once",
+  "repeatForever": "Repeat forever",
+  "noRepeat": "No repeat",
+
+  "xBreaksPlaced": "{breakCount} breaks placed",
+  "xBreaksPlacedRepeatOnce": "{breakCount} breaks placed, repeat once",
+  "xBreaksPlacedRepeatForever": "{breakCount} breaks placed, repeat forever",
+
+  "xBreaksLeft": "{remainingBreaks} of {breakCount} breaks left",
+  "xBreaksLeftRepeatOnce": "{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)",
+  "xBreaksLeftRepeatForever": "{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})",
+
+  "errorNoPermissionForNotifications": "Notifications won't work as long as this permission is not granted.",
+  "errorDeviceMuted": "Device is muted. Unmute first to set volume.",
+  "errorMaxBreaksReached": "Maximum {maxBreakCount} breaks allowed",
+  "errorNoBreaksToReset": "No breaks to reset",
+  "errorClockTimeToClose": "The timer-time must be more than one minute in the future.",
+  "errorDurationIsZero": "The duration cannot be zero.",
+  "errorTimeAlreadyElapsed": "The timer-time has already expired; set a new timer."
 }

@@ -44,7 +44,6 @@ class PreferenceService {
 
   static final PreferenceService _service = PreferenceService._internal();
 
-  var languageSelection;
   int colorSchema = PREF_COLOR_SCHEME.defaultValue;
   int audioSchema = PREF_AUDIO_SCHEME.defaultValue;
   bool userPresetsOnTop = PREF_USER_PRESETS_ON_TOP.defaultValue;
@@ -125,29 +124,6 @@ class PreferenceService {
     await refresh();
   }
 
-
-  Future<Locale?> getPreferredLocale() async {
-    final languageSelection = null;//await getInt(PREF_LANGUAGE_SELECTION);
-
-    this.languageSelection = languageSelection??0;
-
-    if (languageSelection != null) {
-      final locale = _getLocaleFromSelection(languageSelection);
-
-      if (locale != null) {
-        return Future.value(locale);
-      }
-    }
-    return Future.value(null);
-  }
-
-
-  Locale? _getLocaleFromSelection(int languageSelection) {
-    switch (languageSelection) {
-      case 1: return const Locale('en');
-    }
-    return null;
-  }
 
 }
 

@@ -15,7 +15,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
+  String get close => 'Close';
+
+  @override
   String get reset => 'Reset';
+
+  @override
+  String get breakName => 'break';
 
   @override
   String batterySavingsHint(Object appName) {
@@ -152,7 +158,179 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appShortDescription => 'A timer with intermediate notifications';
 
   @override
-  String visitAppHomePage(Object url) {
+  String visitAppGithubPage(Object url) {
     return 'Visit $url to view the code, report bugs, and rate!';
   }
+
+  @override
+  String visitAppHomePage(Object url) {
+    return 'Visit $url for more information.';
+  }
+
+  @override
+  String get help => 'Help';
+
+  @override
+  String get appSummary => 'This timer lets you set any number of intermediate notifications (\'breaks\') to keep you informed about the progress of the elapsed time.';
+
+  @override
+  String get appExplanation => 'Select a duration or time for the timer by clicking the center of the wheel. Select any number of breaks on the timer wheel by clicking a segment. Each break generates a signal (audible and/or vibration) with the following unique patterns (click to play):';
+
+  @override
+  String breakReached(Object breakCount, Object breakNumber) {
+    return 'Break $breakNumber of $breakCount reached';
+  }
+
+  @override
+  String get timerStarted => 'Timer started';
+
+  @override
+  String get timerFinished => 'Timer finished';
+
+  @override
+  String get timerFinishedButRepeating => 'Timer finished, but will repeat';
+
+  @override
+  String afterDuration(Object duration) {
+    return 'after $duration';
+  }
+
+  @override
+  String afterXRuns(Object runCount) {
+    return 'after $runCount runs';
+  }
+
+  @override
+  String withBreaks(Object breakCount) {
+    return 'with $breakCount breaks';
+  }
+
+  @override
+  String get breakPresets => 'Break presets';
+
+  @override
+  String breakPresetPinned(Object preset) {
+    return 'Preset \'$preset\' pinned';
+  }
+
+  @override
+  String breakPresetUnpinned(Object preset) {
+    return 'Preset \'$preset\' unpinned';
+  }
+
+  @override
+  String get savePresetTitle => 'Save preset';
+
+  @override
+  String get savePresetMessage => 'Enter a name for your preset to save.';
+
+  @override
+  String get savePresetHint => 'choose a name';
+
+  @override
+  String get savePresetIncludeDuration => 'Include duration';
+
+  @override
+  String get savePresetIncludeTime => 'Include time';
+
+  @override
+  String get errorSavePresetNameMissing => 'Preset name missing';
+
+  @override
+  String get errorSavePresetNameInUse => 'Preset name still used. Choose another one';
+
+  @override
+  String savePresetDone(Object preset) {
+    return '\'$preset\' saved';
+  }
+
+  @override
+  String get removePresetTitle => 'Remove saved preset';
+
+  @override
+  String removePresetMessage(Object preset) {
+    return 'Are you sure to delete \'$preset\' permanently?';
+  }
+
+  @override
+  String removePresetDone(Object preset) {
+    return '\'$preset\' removed';
+  }
+
+  @override
+  String get breakOrderSwitchedToAscending => 'Break order changed to ascending';
+
+  @override
+  String get breakOrderSwitchedToDescending => 'Break order changed to descending';
+
+  @override
+  String get startTimer => 'Start';
+
+  @override
+  String get stopTimer => 'Stop';
+
+  @override
+  String get swipeToStop => 'Swipe to Stop';
+
+  @override
+  String get repeatOnce => 'Repeat once';
+
+  @override
+  String get repeatForever => 'Repeat forever';
+
+  @override
+  String get noRepeat => 'No repeat';
+
+  @override
+  String xBreaksPlaced(Object breakCount) {
+    return '$breakCount breaks placed';
+  }
+
+  @override
+  String xBreaksPlacedRepeatOnce(Object breakCount) {
+    return '$breakCount breaks placed, repeat once';
+  }
+
+  @override
+  String xBreaksPlacedRepeatForever(Object breakCount) {
+    return '$breakCount breaks placed, repeat forever';
+  }
+
+  @override
+  String xBreaksLeft(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks of $breakCount breaks left';
+  }
+
+  @override
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
+    return '$remainingBreaks of $breakCount breaks left, repeating once (run $runCount of 2)';
+  }
+
+  @override
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
+    return '$remainingBreaks of $breakCount breaks left, repeating forever (run $runCount)';
+  }
+
+  @override
+  String get errorNoPermissionForNotifications => 'Notifications won\'t work as long as this permission is not granted.';
+
+  @override
+  String get errorDeviceMuted => 'Device is muted. Unmute first to set volume.';
+
+  @override
+  String errorMaxBreaksReached(Object maxBreakCount) {
+    return 'Maximum $maxBreakCount breaks allowed';
+  }
+
+  @override
+  String get errorNoBreaksToReset => 'No breaks to reset';
+
+  @override
+  String get errorClockTimeToClose => 'The timer-time must be more than one minute in the future.';
+
+  @override
+  String get errorDurationIsZero => 'The duration cannot be zero.';
+
+  @override
+  String get errorTimeAlreadyElapsed => 'The timer-time has already expired; set a new timer.';
 }
