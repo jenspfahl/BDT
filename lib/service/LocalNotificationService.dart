@@ -158,9 +158,5 @@ class LocalNotificationService {
     );
   }
 
-  void requestPermissions() {
-    AndroidFlutterLocalNotificationsPlugin? nativePlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation();
-    nativePlugin?.requestExactAlarmsPermission();
-  }
 }
 

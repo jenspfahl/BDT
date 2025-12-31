@@ -459,8 +459,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           }
     });
 
-    _notificationService.requestPermissions();
-
     Permission.scheduleExactAlarm.request();
 
     _circleAnimationController =
