@@ -141,7 +141,7 @@ class LocalNotificationService {
     return AndroidNotificationDetails(
       channelId,
       APP_NAME,
-      channelDescription: 'Timer points',
+      channelDescription: 'Timer break downs',
       color: color,
       playSound: false,
       vibrationPattern: null,
@@ -158,9 +158,5 @@ class LocalNotificationService {
     );
   }
 
-  void requestPermissions() {
-    AndroidFlutterLocalNotificationsPlugin? nativePlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation();
-    nativePlugin?.requestExactAlarmsPermission();
-  }
 }
 

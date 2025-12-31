@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:bdt/ui/VolumeSliderDialog.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/AudioScheme.dart';
@@ -11,7 +10,7 @@ class PrefDef {
   dynamic defaultValue;
   PrefDef(this.key, this.defaultValue);
 }
-class PreferenceService implements ITranslatePreferences {
+class PreferenceService {
 
   static final PREF_COLOR_SCHEME = PrefDef('pref/common/colorScheme', 0);
   static final PREF_DARK_MODE = PrefDef('pref/common/darkMode', true);
@@ -28,6 +27,7 @@ class PreferenceService implements ITranslatePreferences {
   static final PREF_CLOCK_MODE_AS_DEFAULT = PrefDef('pref/presets/clockModeAsDefault', false);
   static final PREF_WAKE_LOCK = PrefDef('pref/common/wakeLock', false);
   static final PREF_SHOW_SPINNER = PrefDef('pref/common/showSpinner', true);
+  static final PREF_SHOW_ARROWS = PrefDef('pref/common/showArrowsOnTimeValues', true);
   static final PREF_TIMER_PROGRESS_PRESENTATION = PrefDef('pref/timerProgressPresentation', 0);
   static final PREF_CLOCK_PROGRESS_PRESENTATION = PrefDef('pref/clockProgressPresentation', 0);
 
@@ -45,13 +45,13 @@ class PreferenceService implements ITranslatePreferences {
 
   static final PreferenceService _service = PreferenceService._internal();
 
-  var languageSelection;
   int colorSchema = PREF_COLOR_SCHEME.defaultValue;
   int audioSchema = PREF_AUDIO_SCHEME.defaultValue;
   bool userPresetsOnTop = PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool hidePredefinedPresets = PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool darkTheme = true;
   bool showSpinner = PREF_SHOW_SPINNER.defaultValue;
+  bool showArrows = PREF_SHOW_ARROWS.defaultValue;
 
   factory PreferenceService() {
     return _service;
@@ -70,6 +70,7 @@ class PreferenceService implements ITranslatePreferences {
     userPresetsOnTop = await getBool(PREF_USER_PRESETS_ON_TOP) ?? PREF_USER_PRESETS_ON_TOP.defaultValue;
     hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
     showSpinner = await getBool(PREF_SHOW_SPINNER) ?? PREF_SHOW_SPINNER.defaultValue;
+    showArrows = await getBool(PREF_SHOW_ARROWS) ?? PREF_SHOW_ARROWS.defaultValue;
   }
 
   Future<String?> getString(PrefDef def) async {
@@ -126,34 +127,6 @@ class PreferenceService implements ITranslatePreferences {
     await refresh();
   }
 
-
-  @override
-  Future<Locale?> getPreferredLocale() async {
-    final languageSelection = null;//await getInt(PREF_LANGUAGE_SELECTION);
-
-    this.languageSelection = languageSelection??0;
-
-    if (languageSelection != null) {
-      final locale = _getLocaleFromSelection(languageSelection);
-
-      if (locale != null) {
-        return Future.value(locale);
-      }
-    }
-    return Future.value(null);
-  }
-
-  @override
-  Future savePreferredLocale(Locale locale) async {
-    // not needed, saved by SettingsScreen.dart
-  }
-
-  Locale? _getLocaleFromSelection(int languageSelection) {
-    switch (languageSelection) {
-      case 1: return const Locale('en');
-    }
-    return null;
-  }
 
 }
 

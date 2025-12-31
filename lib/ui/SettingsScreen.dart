@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../l10n/app_localizations.dart';
 import '../model/AudioScheme.dart';
 import '../model/ColorScheme.dart';
 import '../service/AudioService.dart';
@@ -39,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _showSpinner = PreferenceService.PREF_SHOW_SPINNER.defaultValue;
+  bool _showArrows = PreferenceService.PREF_SHOW_ARROWS.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool _enableWakeLock = PreferenceService.PREF_WAKE_LOCK.defaultValue;
@@ -50,8 +52,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('$APP_NAME_SHORT Settings'), elevation: 0),
+      appBar: AppBar(title: Text('$APP_NAME_SHORT ${l10n.settings}'), elevation: 0),
       body: FutureBuilder(
         future: _loadAllPrefs(),
         builder: (context, AsyncSnapshot snapshot) => _buildSettingsList(),
@@ -61,13 +66,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSettingsList()  {
 
+    final l10n = AppLocalizations.of(context)!;
+
+    final visitTextParts = l10n.visitAppGithubPage('<<<URL>>>').split('<<<URL>>>');
+
     return SettingsList(
       sections: [
         SettingsSection(
-          title: Text('Common', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text(l10n.commonSettings, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: const Text('Dark theme'),
+              title: Text(l10n.darkTheme),
               initialValue: _darkMode,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -76,14 +85,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   setState(() {
                     _darkMode = value;
                     _preferenceService.darkTheme = _darkMode;
-                    debugPrint('dartheme=$_darkMode');
                     AppBuilder.of(context)?.rebuild();
                   });
                 });
               },
             ),
             SettingsTile(
-              title: const Text('Color scheme'),
+              title: Text(l10n.colorScheme),
               description: Text(_getColorSchemeName(_preferenceService.colorSchema)),
               onPressed: (context) {
                 final choices = predefinedColorSchemes
@@ -91,7 +99,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         e.name,
                         TextStyle(color: ColorService().getScheme(e.id).foreground)))
                     .toList();
-                showChoiceDialog(context, 'Select a color scheme',
+                showChoiceDialog(context, l10n.selectColorScheme,
                     choices,
                     initialSelected: _colorScheme,
                     okPressed: () {
@@ -118,13 +126,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile(
-              title: const Text('Audio signals'),
+              title: Text(l10n.audioSignals),
               description: Text(_getAudioSchemaName(_preferenceService.audioSchema)),
               onPressed: (context) {
                 final choices = predefinedAudioSchemes
                     .map((e) => ChoiceWidgetRow(e.name, null))
                     .toList();
-                showChoiceDialog(context, 'Select an audio scheme',
+                showChoiceDialog(context, l10n.selectAudioScheme,
                     choices,
                     initialSelected: _audioScheme,
                     okPressed: () {
@@ -160,11 +168,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
         SettingsSection(
-          title: Text('Run Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text(l10n.runSettings, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: const Text('Notify upon reached breaks'),
-              description: const Text('Notifies when a break is reached and a run has started or ended.'),
+              title: Text(l10n.notifyUponReachedBreaks),
+              description: Text(l10n.notifyUponReachedBreaksDescription),
               initialValue: _notifyAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -173,8 +181,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Vibrate upon reached breaks'),
-              description: const Text('Vibrates with a pattern when a break is reached and a run has started or ended.'),
+              title: Text(l10n.vibrateUponReachedBreaks),
+              description: Text(l10n.vibrateUponReachedBreaksDescription),
               initialValue: _vibrateAtBreaks,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -183,8 +191,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Signal twice on reached breaks'),
-              description: const Text('To not miss it, signal every break twice.'),
+              title: Text(l10n.signalTwiceUponReachedBreaks),
+              description: Text(l10n.signalTwiceUponReachedBreaksDescription),
               initialValue: _signalTwice,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -193,8 +201,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Signal without counter'),
-              description: const Text('Don''t encode the counter in the audio and vibration signal.'),
+              title: Text(l10n.signalWithoutCounter),
+              description: Text(l10n.signalWithoutCounterDescription),
               initialValue: _signalWithoutCounter,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -204,8 +212,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
            // const CustomSettingsTile(child: Divider()),
             SettingsTile.switchTile(
-              title: const Text('Break order descending by default'),
-              description: const Text('Instead of sequencing 1,2,3 .. it sequences ..,3,2,1.'),
+              title: Text(l10n.defaultBreakOrder),
+              description: Text(l10n.defaultBreakOrderDescription),
               initialValue: _breakOrderDescending,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -214,8 +222,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Show run spinner'),
-              description: const Text('Shows a rotating spinner inside the wheel during running.'),
+              title: Text(l10n.showRunSpinner),
+              description: Text(l10n.showRunSpinnerDescription),
               initialValue: _showSpinner,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) async {
@@ -226,14 +234,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
+            SettingsTile.switchTile(
+              title: Text(l10n.showArrowsOnTimeValues),
+              description: Text(l10n.showArrowsOnTimeValuesDescription),
+              initialValue: _showArrows,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_SHOW_ARROWS, value);
+                await _preferenceService.refresh();
+                setState(() {
+                  _showArrows = value;
+                });
+              },
+            ),
           ],
         ),
         SettingsSection(
-         title: Text('Preset Settings', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+         title: Text(l10n.presetSettings, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: const Text('Hide predefined presets'),
-              description: const Text('If you don''t need it you can hide the predefined presets from the preset list. Only your own presets will be shown then.'),
+              title: Text(l10n.hidePredefinedPresets),
+              description: Text(l10n.hidePredefinedPresetsDescription),
               initialValue: _hidePredefinedPresets,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) async {
@@ -245,9 +266,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('User presets on top'),
+              title: Text(l10n.customizedPresetsOnTop),
               enabled: !_hidePredefinedPresets,
-              description: const Text('Show user presets on top of the preset list for faster access.'),
+              description: Text(l10n.customizedPresetsOnTopDescription),
               initialValue: _userPresetsOnTop,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) async {
@@ -260,11 +281,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
         ]),
         SettingsSection(
-          title: Text('App Behaviour', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text(l10n.appBehaviourSettings, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile.switchTile(
-              title: const Text('Enable wake lock'),
-              description: const Text('Enable the screen wakelock, which prevents the screen from turning off automatically.'),
+              title: Text(l10n.activateWakeLock),
+              description: Text(l10n.activateWakeLockDescription),
               initialValue: _enableWakeLock,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -273,8 +294,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Start from scratch after app startup'),
-              description: const Text('Start with empty wheel and no selected preset if nothing is pinned. If disabled, the recent state is restored upon app startup.'),
+              title: Text(l10n.startAppFromScratch),
+              description: Text(l10n.startAppFromScratchDescription),
               initialValue: _clearStateOnStartup,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -283,8 +304,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             SettingsTile.switchTile(
-              title: const Text('Use Clock Mode as default'),
-              description: const Text('Set Clock Mode as default instead of Timer Mode'),
+              title: Text(l10n.clockModeAsDefault),
+              description: Text(l10n.clockModeAsDefaultDescription),
               initialValue: _clockModeAsDefault,
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
@@ -295,16 +316,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ],
         ),
         SettingsSection(
-          title: Text('Info', style: TextStyle(color: ColorService().getCurrentScheme().accent)),
+          title: Text(l10n.info, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
             SettingsTile(
-              title: const Text('Battery optimizations'),
+              title: Text(l10n.batteryOptimizations),
               onPressed: (value) {
                 showBatterySavingHint(context, _preferenceService);
               }
             ),
             SettingsTile(
-              title: const Text('About the app'),
+              title: Text(l10n.aboutTheApp),
               onPressed: (value) {
                 showAboutDialog(
                     context: context,
@@ -314,15 +335,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const Text('alias', style: TextStyle(fontSize: 12)),
                       const Text(APP_NAME, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       const Divider(),
-                      const Text('A timer with in-between notifications'),
+                      Text(l10n.appShortDescription),
                       const Text(''),
                       InkWell(
                           child: Text.rich(
                             TextSpan(
-                              text: 'Visit ',
+                              text: '${visitTextParts.firstOrNull} ',
                               children: <TextSpan>[
                                 TextSpan(text: HOMEPAGE, style: const TextStyle(decoration: TextDecoration.underline)),
-                                const TextSpan(text: ' to view the code, report bugs and give stars!'),
+                                TextSpan(text: ' ${visitTextParts.lastOrNull}'),
                               ],
                             ),
                           ),
@@ -330,7 +351,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             launchUrlString(HOMEPAGE_SCHEME + HOMEPAGE + HOMEPAGE_PATH, mode: LaunchMode.externalApplication);
                           }),
                       const Divider(),
-                      const Text('© Jens Pfahl 2025', style: TextStyle(fontSize: 12)),
+                      const Text('© Jens Pfahl 2022-26', style: TextStyle(fontSize: 12)),
                     ],
                     applicationIcon: const SizedBox(width: 64, height: 64,
                         child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))));
@@ -388,6 +409,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final showSpinner = await _preferenceService.getBool(PreferenceService.PREF_SHOW_SPINNER);
     if (showSpinner != null) {
       _showSpinner = showSpinner;
+    }
+    final showArrows = await _preferenceService.getBool(PreferenceService.PREF_SHOW_ARROWS);
+    if (showArrows != null) {
+      _showArrows = showArrows;
     }
     final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
     if (userPresetsOnTop != null) {

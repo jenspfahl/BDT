@@ -36,6 +36,7 @@ dependencies:
   flutter_timezone: ^5.0.1
   floor: ^1.1.0
   intl: any
+  intl_utils: any
   numberpicker: ^2.1.2
   jiffy: ^6.3.1
   shared_preferences: ^2.3.1
@@ -46,9 +47,8 @@ dependencies:
   permission_handler: ^11.3.1
   sqflite: ^2.0.1
   path: ^1.8.0
-  flutter_translate: ^4.1.0
-  android_alarm_manager_plus: ^5.0.0
-  vibration: ^3.1.5
+  android_alarm_manager_plus: ^4.0.7
+  vibration: 3.1.5
   material_design_icons_flutter: ^7.0.7296
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
   sound_mode: ^3.0.0
@@ -66,11 +66,15 @@ dependencies:
   wakelock_plus: ^1.2.10
   timezone: any
 
+  timezone: any
+
 
 dependency_overrides:
   intl: ^0.20.2
   win32: 5.10.1
+  intl: 0.20.2
   vibration: 3.1.5
+
 
 
 dev_dependencies:
@@ -101,6 +105,8 @@ flutter_icons:
 # The following section is specific to Flutter packages.
 flutter:
 
+  generate: true
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -112,5 +118,4 @@ flutter:
   #   - images/a_dot_ham.jpeg
 
   assets:
-    - assets/i18n/en.json
     - assets/launcher_bdt_adaptive_fore.png

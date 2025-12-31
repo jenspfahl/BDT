@@ -61,12 +61,12 @@ class BreakDown implements Comparable<BreakDown> {
     return sorted.join(',');
   }
 
-  String getPresetName() {
+  String getPresetName(BuildContext context) {
     if (duration != null) {
-      return '$name [for ${formatDuration(duration!)}]';
+      return '$name [${formatDuration(duration!)}]';
     }
     else if (time != null) {
-      return '$name [at ${formatTimeOfDay(time!)}]';
+      return '$name [${formatTimeOfDay(context, time!)}]';
     }
     else {
       return name;

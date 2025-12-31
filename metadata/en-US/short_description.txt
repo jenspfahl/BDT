@@ -1,1 +1,1 @@
-A timer with in-between notifications
+A timer with intermediate notifications
