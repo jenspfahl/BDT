@@ -414,9 +414,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         if (startedAtFromJson != null) {
           final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(
               startedAtFromJson);
-          debugPrint('last boot was ${formatDateTime(
-              lastBoot)}, persisted state is from ${formatDateTime(
-              persistedStateFrom)}');
+          debugPrint('last boot was $lastBoot, persisted state is from $persistedStateFrom');
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
@@ -859,9 +857,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                             child: breakDown.id == _pinnedBreakDownId
                                 ? Row(children: [
                                         Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                        Text(breakDown.getPresetName())
+                                        Text(breakDown.getPresetName(context))
                                   ])
-                                : Text(breakDown.getPresetName()),
+                                : Text(breakDown.getPresetName(context)),
                           );
                         }).toList(),
                       ),
@@ -1030,11 +1028,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 setState(() {
                                   if (_isPinnedBreakDown()) {
                                     _pinnedBreakDownId = null;
-                                    toastInfo(context, l10n.breakPresetUnpinned(_selectedBreakDown?.getPresetName()??'?'));
+                                    toastInfo(context, l10n.breakPresetUnpinned(_selectedBreakDown?.getPresetName(context)??'?'));
                                   }
                                   else {
                                     _pinnedBreakDownId = _selectedBreakDown?.id;
-                                    toastInfo(context, l10n.breakPresetPinned(_selectedBreakDown?.getPresetName()??'?'));
+                                    toastInfo(context, l10n.breakPresetPinned(_selectedBreakDown?.getPresetName(context)??'?'));
                                   }
                                   setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
                                 });
@@ -1059,7 +1057,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 return;
                               }
                               if (_canDeleteUserPreset()) {
-                                final breakDownName = _selectedBreakDown?.getPresetName()??'?';
+                                final breakDownName = _selectedBreakDown?.getPresetName(context)??'?';
                                 showConfirmationDialog(context, l10n.removePresetTitle, l10n.removePresetMessage(breakDownName),
                                 okPressed: () {
                                   if (_selectedBreakDown != null) {
@@ -1096,7 +1094,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                     hintText: l10n.savePresetHint,
                                     switchText: isTimerModeDuration
                                         ? '${l10n.savePresetIncludeDuration}\n(${formatDuration(_duration)})'
-                                        : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})',
+                                        : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(context, TimeOfDay.fromDateTime(_time))})',
                                     isSwitched: isSwitched,
                                     validator: (value) {
                                       if (value == null || value.trim().isEmpty) {
@@ -1570,14 +1568,16 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
 
   Widget _createCycleWidgetForAbsoluteMode(AbsoluteProgressPresentation presentation) {
+    final langCode = _getCurrentLangCode();
+    
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      var value1 = formatDateTime(_startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
-      var value2 = formatDateTime(DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
-      var value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(_time, withSeconds: true);
+      var value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      var value2 = formatDateTime(langCode, DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
+      var value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
       if (_isAllRunsOver()) {
-        value2 = formatDateTime(_time, withSeconds: true);
+        value2 = formatDateTime(langCode, _time, withSeconds: true);
       }
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
@@ -1591,9 +1591,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     }
     else {
-      return Text(formatDateTime(_time));
+      return Text(formatDateTime(langCode, _time));
     }
   }
+
+  String _getCurrentLangCode() => AppLocalizations.of(context)!.localeName;
 
   Widget _createTwoRowsCircle(String value1, String value2, {bool smallValue1 = false, bool smallValue2 = false}) {
     return Column(
@@ -1760,6 +1762,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   String _showSliceTitle(int slice, bool showCurrent, bool isFinalSlice) {
+    final langCode = _getCurrentLangCode();
+
     if (_timerMode == TimerMode.RELATIVE) {
       final sliceDuration = isFinalSlice ? _duration : _getDelay(slice);
       return formatDuration(
@@ -1774,6 +1778,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
+          langCode,
           showCurrent ? DateTime.now() : sliceTime,
           withLineBreak: true,
           withSeconds: delta.inMinutes < 10);

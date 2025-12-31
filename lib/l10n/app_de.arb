@@ -62,7 +62,7 @@
   "appSummary": "Mit diesem Timer können Sie beliebig viele Zwischen-Benachrichtigungen ('Pausen') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.",
   "appExplanation": "Wählen Sie eine Dauer oder einen Zeitpunkt für den Timer, indem Sie auf die Mitte des Rades klicken. Wählen Sie beliebige Pausen auf dem Timer-Rad aus, indem Sie auf einen Abschnitt klicken. Jede Pause erzeugt ein Signal (akustisch und/oder Vibration) mit folgenden eindeutigen Mustern (zum Abspielen anklicken):",
 
-  "breakReached": "Pause {breakNumber} von {breakCount} wurde erreicht",
+  "breakReached": "Pause {breakNumber} von {breakCount} erreicht",
   "timerStarted": "Timer gestartet",
   "timerFinished": "Timer beendet",
   "timerFinishedButRepeating": "Timer beendet, wird aber wiederholt",
