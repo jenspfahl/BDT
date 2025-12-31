@@ -54,6 +54,12 @@ final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
+final String rightArrow = '\u279C';
+final String upArrow = '\u21D3';
+final String downArrow = '\u21D1';
+
+
+
 @pragma('vm:entry-point')
 class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderStateMixin {
 
@@ -1531,15 +1537,17 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     }
   }
 
+
   Widget _createCycleWidgetForRelativeMode(RelativeProgressPresentation presentation) {
     if (_isRunning() || _isAllRunsOver()) {
-      var value1 = formatDuration(_getDelta()!);
-      var value2 = formatDuration(_getRemaining()!);
-      var value3 = formatDuration(_duration);
+      final showArrows = PreferenceService().showArrows;
+
+      var value1 = formatDuration(_getDelta()!) + (showArrows ? ' $downArrow' : '');
+      var value2 = formatDuration(_getRemaining()!) + (showArrows ? ' $upArrow' : "");
+      var value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
       if (_isAllRunsOver()) {
         value1 = formatDuration(_duration);
         value2 = formatDuration(Duration.zero);
-        value3 = formatDuration(_duration);
       }
 
       if (presentation == RelativeProgressPresentation.REMAINING) {
@@ -1563,13 +1571,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   Widget _createCycleWidgetForAbsoluteMode(AbsoluteProgressPresentation presentation) {
     if (_isRunning() || _isAllRunsOver()) {
-      var value1 = formatDateTime(_startedAt!, withSeconds: true);
-      var value2 = formatDateTime(DateTime.now(), withSeconds: true);
-      var value3 = formatDateTime(_time, withSeconds: true);
+      final showArrows = PreferenceService().showArrows;
+
+      var value1 = formatDateTime(_startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      var value2 = formatDateTime(DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
+      var value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(_time, withSeconds: true);
       if (_isAllRunsOver()) {
-        value1 = formatDateTime(_startedAt!, withSeconds: true);
         value2 = formatDateTime(_time, withSeconds: true);
-        value3 = formatDateTime(_time, withSeconds: true);
       }
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {

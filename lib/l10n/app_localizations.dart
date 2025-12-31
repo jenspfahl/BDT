@@ -293,6 +293,18 @@ abstract class AppLocalizations {
   /// **'Displays a spinning indicator in the timer wheel while the timer is running.'**
   String get showRunSpinnerDescription;
 
+  /// No description provided for @showArrowsOnTimeValues.
+  ///
+  /// In en, this message translates to:
+  /// **'Displays arrows at time values'**
+  String get showArrowsOnTimeValues;
+
+  /// No description provided for @showArrowsOnTimeValuesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Displays arrows at values during a timer run to indicate their direction of travel.'**
+  String get showArrowsOnTimeValuesDescription;
+
   /// No description provided for @presetSettings.
   ///
   /// In en, this message translates to:

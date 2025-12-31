@@ -33,6 +33,10 @@
   "defaultBreakOrderDescription": "Anstatt 1, 2, 3 ... wird die Reihenfolge ..., 3, 2, 1 verwendet.",
   "showRunSpinner": "Lauf-Indikator anzeigen",
   "showRunSpinnerDescription": "Zeigt während der Timer läuft einen rotierenden Indikator im Timer-Rad an.",
+
+  "showArrowsOnTimeValues": "Zeigt Pfeile an Zeitwerten an",
+  "showArrowsOnTimeValuesDescription": "Zeigt während eines Timer-Laufs Pfeile an Werten an, um deren Laufrichtung zu verdeutlichen.",
+
   "presetSettings": "Voreinstellungen",
   "hidePredefinedPresets": "Vordefinierte Voreinstellungen ausblenden",
   "hidePredefinedPresetsDescription": "Wenn Sie die vordefinierten Voreinstellungen nicht benötigen, können Sie diese ausblenden. Es werden dann nur Ihre eigenen erstellten Voreinstellungen angezeigt.",
@@ -41,8 +45,10 @@
   "appBehaviourSettings": "App-Verhaltenseinstellungen",
   "activateWakeLock": "Aktiviert den Wake-Lock",
   "activateWakeLockDescription": "Ein Wake-Lock verhindert, dass sich der Bildschirm automatisch ausschaltet.",
+
   "startAppFromScratch": "App mit leerem Timer-Rad starten",
   "startAppFromScratchDescription": "Wenn die App startet, wird mit leerem Timer-Rad oder mit der präferierten Voreinstellung gestartet. Wenn diese Option deaktiviert ist, wird der zuletzt verwendete Zustand beim Start der App wiederhergestellt.",
+
   "clockModeAsDefault": "Uhrzeit-Modus als Standard verwenden",
   "clockModeAsDefaultDescription": "Uhrzeit-Modus anstelle des Timer-Modus als Standard festlegen",
   "info": "Informationen",
@@ -53,7 +59,7 @@
   "visitAppHomePage": "Besuchen Sie {url} für mehr Information.",
 
   "help": "Hilfe",
-  "appSummary": "Mit diesem Timer können Sie beliebig viele Zwichen-Benachrichtigungen ('Pausen') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.",
+  "appSummary": "Mit diesem Timer können Sie beliebig viele Zwischen-Benachrichtigungen ('Pausen') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.",
   "appExplanation": "Wählen Sie eine Dauer oder einen Zeitpunkt für den Timer, indem Sie auf die Mitte des Rades klicken. Wählen Sie beliebige Pausen auf dem Timer-Rad aus, indem Sie auf einen Abschnitt klicken. Jede Pause erzeugt ein Signal (akustisch und/oder Vibration) mit folgenden eindeutigen Mustern (zum Abspielen anklicken):",
 
   "breakReached": "Pause {breakNumber} von {breakCount} wurde erreicht",

@@ -110,6 +110,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get showRunSpinnerDescription => 'Zeigt während der Timer läuft einen rotierenden Indikator im Timer-Rad an.';
 
   @override
+  String get showArrowsOnTimeValues => 'Zeigt Pfeile an Zeitwerten an';
+
+  @override
+  String get showArrowsOnTimeValuesDescription => 'Zeigt während eines Timer-Laufs Pfeile an Werten an, um deren Laufrichtung zu verdeutlichen.';
+
+  @override
   String get presetSettings => 'Voreinstellungen';
 
   @override
@@ -171,7 +177,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get help => 'Hilfe';
 
   @override
-  String get appSummary => 'Mit diesem Timer können Sie beliebig viele Zwichen-Benachrichtigungen (\'Pausen\') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.';
+  String get appSummary => 'Mit diesem Timer können Sie beliebig viele Zwischen-Benachrichtigungen (\'Pausen\') einstellen, um über den Fortschritt der verstrichenen Zeit informiert zu werden.';
 
   @override
   String get appExplanation => 'Wählen Sie eine Dauer oder einen Zeitpunkt für den Timer, indem Sie auf die Mitte des Rades klicken. Wählen Sie beliebige Pausen auf dem Timer-Rad aus, indem Sie auf einen Abschnitt klicken. Jede Pause erzeugt ein Signal (akustisch und/oder Vibration) mit folgenden eindeutigen Mustern (zum Abspielen anklicken):';

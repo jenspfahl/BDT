@@ -40,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _showSpinner = PreferenceService.PREF_SHOW_SPINNER.defaultValue;
+  bool _showArrows = PreferenceService.PREF_SHOW_ARROWS.defaultValue;
   bool _hidePredefinedPresets = PreferenceService.PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool _userPresetsOnTop = PreferenceService.PREF_USER_PRESETS_ON_TOP.defaultValue;
   bool _enableWakeLock = PreferenceService.PREF_WAKE_LOCK.defaultValue;
@@ -233,6 +234,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
+            SettingsTile.switchTile(
+              title: Text(l10n.showArrowsOnTimeValues),
+              description: Text(l10n.showArrowsOnTimeValuesDescription),
+              initialValue: _showArrows,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_SHOW_ARROWS, value);
+                await _preferenceService.refresh();
+                setState(() {
+                  _showArrows = value;
+                });
+              },
+            ),
           ],
         ),
         SettingsSection(
@@ -395,6 +409,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final showSpinner = await _preferenceService.getBool(PreferenceService.PREF_SHOW_SPINNER);
     if (showSpinner != null) {
       _showSpinner = showSpinner;
+    }
+    final showArrows = await _preferenceService.getBool(PreferenceService.PREF_SHOW_ARROWS);
+    if (showArrows != null) {
+      _showArrows = showArrows;
     }
     final userPresetsOnTop = await _preferenceService.getBool(PreferenceService.PREF_USER_PRESETS_ON_TOP);
     if (userPresetsOnTop != null) {

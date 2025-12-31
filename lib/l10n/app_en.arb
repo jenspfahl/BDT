@@ -36,6 +36,10 @@
 
   "showRunSpinner": "Show run indicator",
   "showRunSpinnerDescription": "Displays a spinning indicator in the timer wheel while the timer is running.",
+
+  "showArrowsOnTimeValues": "Displays arrows at time values",
+  "showArrowsOnTimeValuesDescription": "Displays arrows at values during a timer run to indicate their direction of travel.",
+
   "presetSettings": "Preset Settings",
   "hidePredefinedPresets": "Hide predefined presets",
 

@@ -63,10 +63,10 @@ class BreakDown implements Comparable<BreakDown> {
 
   String getPresetName() {
     if (duration != null) {
-      return '$name [for ${formatDuration(duration!)}]';
+      return '$name [${formatDuration(duration!)}]';
     }
     else if (time != null) {
-      return '$name [at ${formatTimeOfDay(time!)}]';
+      return '$name [${formatTimeOfDay(time!)}]';
     }
     else {
       return name;

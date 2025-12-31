@@ -27,6 +27,7 @@ class PreferenceService {
   static final PREF_CLOCK_MODE_AS_DEFAULT = PrefDef('pref/presets/clockModeAsDefault', false);
   static final PREF_WAKE_LOCK = PrefDef('pref/common/wakeLock', false);
   static final PREF_SHOW_SPINNER = PrefDef('pref/common/showSpinner', true);
+  static final PREF_SHOW_ARROWS = PrefDef('pref/common/showArrowsOnTimeValues', true);
   static final PREF_TIMER_PROGRESS_PRESENTATION = PrefDef('pref/timerProgressPresentation', 0);
   static final PREF_CLOCK_PROGRESS_PRESENTATION = PrefDef('pref/clockProgressPresentation', 0);
 
@@ -50,6 +51,7 @@ class PreferenceService {
   bool hidePredefinedPresets = PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
   bool darkTheme = true;
   bool showSpinner = PREF_SHOW_SPINNER.defaultValue;
+  bool showArrows = PREF_SHOW_ARROWS.defaultValue;
 
   factory PreferenceService() {
     return _service;
@@ -68,6 +70,7 @@ class PreferenceService {
     userPresetsOnTop = await getBool(PREF_USER_PRESETS_ON_TOP) ?? PREF_USER_PRESETS_ON_TOP.defaultValue;
     hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
     showSpinner = await getBool(PREF_SHOW_SPINNER) ?? PREF_SHOW_SPINNER.defaultValue;
+    showArrows = await getBool(PREF_SHOW_ARROWS) ?? PREF_SHOW_ARROWS.defaultValue;
   }
 
   Future<String?> getString(PrefDef def) async {

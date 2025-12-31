@@ -110,6 +110,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showRunSpinnerDescription => 'Displays a spinning indicator in the timer wheel while the timer is running.';
 
   @override
+  String get showArrowsOnTimeValues => 'Displays arrows at time values';
+
+  @override
+  String get showArrowsOnTimeValuesDescription => 'Displays arrows at values during a timer run to indicate their direction of travel.';
+
+  @override
   String get presetSettings => 'Preset Settings';
 
   @override
