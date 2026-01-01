@@ -19,7 +19,7 @@ version: 1.4.0+10400
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=3.32.0 <=3.38.0" # ensure only Flutter versions are used that have been tested and work with AlarmManagerPlus
+  flutter: ">=3.32.0 <3.38.0" # ensure only Flutter versions are used that have been tested and work with AlarmManagerPlus
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -47,7 +47,7 @@ dependencies:
   permission_handler: ^11.3.1
   sqflite: ^2.0.1
   path: ^1.8.0
-  android_alarm_manager_plus: ^4.0.7
+  android_alarm_manager_plus: ^5.0.0
   vibration: 3.1.5
   material_design_icons_flutter: ^7.0.7296
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
@@ -66,12 +66,9 @@ dependencies:
   wakelock_plus: ^1.2.10
   timezone: any
 
-  timezone: any
-
 
 dependency_overrides:
-  intl: ^0.20.2
-  win32: 5.10.1
+  win32: 5.15.0
   intl: 0.20.2
   vibration: 3.1.5
 
