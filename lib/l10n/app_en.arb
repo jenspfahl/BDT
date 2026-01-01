@@ -12,6 +12,7 @@
   "muted": "muted",
   "hours": "Hours",
   "minutes": "Minutes",
+  "seconds": "Seconds",
 
   "settings": "settings",
   "commonSettings": "Common Settings",
