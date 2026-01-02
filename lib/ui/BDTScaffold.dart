@@ -442,7 +442,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               debugPrint('Recover last session');
               _setStateFromJson(stateAsJson);
               int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-              _loadBreakDowns(focusPinned: true,
+              _loadBreakDowns(focusPinned: false,
                   preSelectedBreakDownId: preSelectedBreakDownId);
             }
           });
@@ -1777,7 +1777,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
-      debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
+      //debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
           langCode,
