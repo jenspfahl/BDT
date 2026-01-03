@@ -65,6 +65,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   final HOMEPAGE = 'bdt.jepfa.de';
   final HOMEPAGE_SCHEME = 'https://';
+  
+  final _BUILD_BREAKDOWN_ITEM = 'build_breakdown_item';
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
@@ -73,6 +75,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   Duration? _originDuration;
   late DateTime _time;
   DateTime? _originTime;
+
+  int _breakDownCount = 3;
 
   final _selectedSlices = HashSet<int>();
   int? _pinnedBreakDownId;
@@ -841,30 +845,32 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           _moveBreakDownSelectionToNext();
                         }
                       },
-                      child: DropdownButtonFormField<BreakDown?>(
+                      child: DropdownButtonFormField<Object?>(
                         isDense: true,
                         focusColor: ColorService().getCurrentScheme().accent,
                         onTap: () => FocusScope.of(context).unfocus(),
-                        value: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
+                        initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
                         hint: Text(l10n.breakPresets),
                         iconEnabledColor: ColorService().getCurrentScheme().button,
-                        icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+                        icon: GestureDetector(
+                            onTap: () {
+                              _showBreakDownDialog(context);
+                            },
+                            child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
                         isExpanded: true,
                         onChanged:  _isRunning() ? null : (value) {
-                          _updateSelectedSlices(value);
+                          if (value is BreakDown) {
+                            _updateSelectedSlices(value);
+                          }
+                          else if (value == _BUILD_BREAKDOWN_ITEM) {
+                            debugPrint('_BUILD_BREAKDOWN_ITEM selected');
+                            setState(() {
+                              _selectedBreakDown = null; //TODO doesnt work
+                            });
+                            _showBreakDownDialog(context);
+                          }
                         },
-                        items: _loadedBreakDowns.map((BreakDown breakDown) {
-                          return DropdownMenuItem(
-                            value: breakDown,
-                            child: breakDown.id == _pinnedBreakDownId
-                                ? Row(children: [
-                                        Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                        Text(breakDown.getPresetName(context))
-                                  ])
-                                : Text(breakDown.getPresetName(context)),
-                          );
-                        }).toList(),
-                      ),
+                        items: _getBreakDownItems()),
                     ),
                   ),
                   Flexible(child: IconButton(
@@ -1217,6 +1223,22 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             : _createStartButton(context),
       ),
     );
+  }
+
+  void _showBreakDownDialog(BuildContext context) {
+    showBreakDownDialog(
+        context: context,
+        initialValue: _breakDownCount,
+        duration: _duration
+      ).then((value) {
+        if (value != null) {
+          setState(() {
+            _breakDownCount = value;
+            _selectedSlices.clear();
+            _selectedSlices.addAll(_calculateDistributedSlices(value));
+          });
+        }
+    });
   }
 
   @override
@@ -2091,6 +2113,41 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
 
   bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
+
+  Iterable<int> _calculateDistributedSlices(int value) {
+    value++;
+    double perSlice = MAX_SLICE / value;
+    double slice = perSlice;
+    final breaks = HashSet<int>();
+    for (int i = 1; i <= value; i++) {
+      final fSlice = slice.round();
+      if (fSlice > 0 && fSlice < MAX_SLICE) breaks.add(fSlice);
+      slice += perSlice;
+    }
+    return breaks;
+  }
+
+  List<DropdownMenuItem<Object?>> _getBreakDownItems() {
+    final l10n = AppLocalizations.of(context)!;
+
+    final breakDownItems =  _loadedBreakDowns.map((BreakDown breakDown) {
+      return DropdownMenuItem(
+        value: breakDown,
+        child: breakDown.id == _pinnedBreakDownId
+            ? Row(children: [
+          Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
+          Text(breakDown.getPresetName(context))
+        ])
+            : Text(breakDown.getPresetName(context)),
+      );
+    }).cast<DropdownMenuItem<Object?>>().toList();
+
+    breakDownItems.insert(0, DropdownMenuItem<Object?>(
+          value: _BUILD_BREAKDOWN_ITEM,
+          child: Text(l10n.splitBreaks + " ...")));
+
+    return breakDownItems;
+  }
 
 
 }

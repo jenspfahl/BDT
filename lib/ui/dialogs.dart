@@ -1,6 +1,9 @@
 import 'package:bdt/service/ColorService.dart';
+import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
+import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
 import 'package:open_settings/open_settings.dart';
 
 import '../l10n/app_localizations.dart';
@@ -200,6 +203,93 @@ Future<bool?> showDurationPickerDialog({
     },
   );
 }
+
+
+Future<int?> showBreakDownDialog({
+  required int initialValue,
+  required Duration duration,
+  required BuildContext context,
+}) {
+
+  int _breakCount = initialValue;
+
+  final l10n = AppLocalizations.of(context)!;
+
+  Dialog dialog = Dialog(
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
+    child: Container(
+      height: 360.0,
+      width: 300.0,
+
+      child: StatefulBuilder(
+        builder: (context, setState) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
+                          child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+                        ),
+                        const Text('   '),
+                        Text(l10n.splitBreaks, style: const TextStyle(fontSize: 18))
+                      ]),
+                ),
+                Text(l10n.splitBreaksDescription(formatDuration(duration))),
+                const Text(''),
+                Text(l10n.durationBetweenBreaks(_breakCount, formatDuration(_calculateDistance(_breakCount, duration)))),
+                Center(
+                  child: NumberPicker(
+                    value: _breakCount,
+                    minValue: 1,
+                    maxValue: MAX_BREAKS,
+                    onChanged: (value) => setState(() {
+                      _breakCount = value;
+                    }),
+                  ),
+                ),
+
+                const SizedBox(height: 20.0,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                  TextButton(
+                    child: Text(l10n.cancel),
+                    onPressed:  () => Navigator.of(context).pop(null),
+                  ),
+                  TextButton(
+                    child: Text(l10n.ok),
+                    onPressed:  () => Navigator.of(context).pop(_breakCount),
+                  )
+                  ],)
+              ],
+            ),
+          );
+        }
+      ),
+    ),
+  );
+
+  return showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return dialog;
+    },
+  );
+}
+
+Duration _calculateDistance(int breakCount, Duration duration) {
+  double perSlice = MAX_SLICE / (breakCount + 1);
+  return Duration(seconds: ((duration.inSeconds / MAX_SLICE) * perSlice).round());
+}
+
 
 
 Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWidgetRow> choices, {

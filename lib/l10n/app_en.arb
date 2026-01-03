@@ -109,6 +109,10 @@
   "xBreaksLeftRepeatOnce": "{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)",
   "xBreaksLeftRepeatForever": "{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})",
 
+  "splitBreaks": "Split breaks",
+  "splitBreaksDescription": "Select the number of breaks needed for {duration}.",
+  "durationBetweenBreaks": "Duration between {breakCount} breaks: {duration}",
+
   "errorNoPermissionForNotifications": "Notifications won't work as long as this permission is not granted.",
   "errorDeviceMuted": "Device is muted. Unmute first to set volume.",
   "errorMaxBreaksReached": "Maximum {maxBreakCount} breaks allowed",

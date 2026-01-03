@@ -184,7 +184,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String breakReached(Object breakCount, Object breakNumber) {
-    return 'Pause $breakNumber von $breakCount wurde erreicht';
+    return 'Pause $breakNumber von $breakCount erreicht';
   }
 
   @override
@@ -315,6 +315,19 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
     return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen (Lauf $runCount)';
+  }
+
+  @override
+  String get splitBreaks => 'Pausen aufteilen';
+
+  @override
+  String splitBreaksDescription(Object duration) {
+    return 'Wählen Sie die Anzahl der benötigten Pausen für $duration aus.';
+  }
+
+  @override
+  String durationBetweenBreaks(Object breakCount, Object duration) {
+    return 'Dauer zwischen $breakCount Pausen: $duration';
   }
 
   @override

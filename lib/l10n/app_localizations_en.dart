@@ -318,6 +318,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get splitBreaks => 'Split breaks';
+
+  @override
+  String splitBreaksDescription(Object duration) {
+    return 'Select the number of breaks needed for $duration.';
+  }
+
+  @override
+  String durationBetweenBreaks(Object breakCount, Object duration) {
+    return 'Duration between $breakCount breaks: $duration';
+  }
+
+  @override
   String get errorNoPermissionForNotifications => 'Notifications won\'t work as long as this permission is not granted.';
 
   @override

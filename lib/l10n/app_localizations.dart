@@ -641,6 +641,24 @@ abstract class AppLocalizations {
   /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})'**
   String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount);
 
+  /// No description provided for @splitBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Split breaks'**
+  String get splitBreaks;
+
+  /// No description provided for @splitBreaksDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the number of breaks needed for {duration}.'**
+  String splitBreaksDescription(Object duration);
+
+  /// No description provided for @durationBetweenBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration between {breakCount} breaks: {duration}'**
+  String durationBetweenBreaks(Object breakCount, Object duration);
+
   /// No description provided for @errorNoPermissionForNotifications.
   ///
   /// In en, this message translates to:
