@@ -10,7 +10,6 @@ class DurationPicker extends StatefulWidget {
   late final int _initialMinutes;
   late final int _initialSeconds;
   final ValueChanged<Duration> onChanged;
-  bool? _showSeconds;
 
   DurationPicker({
     Duration? initialDuration,
@@ -20,7 +19,6 @@ class DurationPicker extends StatefulWidget {
     this._initialHours = initialDuration?.inHours ?? 0;
     this._initialMinutes = (initialDuration?.inMinutes ?? 0) % 60;
     this._initialSeconds = (initialDuration?.inSeconds ?? 0) % 60;
-    this._showSeconds = showSeconds;
   }
   
   @override
@@ -39,7 +37,7 @@ class _DurationPickerState extends State<DurationPicker> {
   int _minutes = 0;
   int _seconds = 0;
 
-  bool? _showSeconds;
+  bool _showSeconds = false;
 
   @override
   void initState() {
@@ -48,7 +46,7 @@ class _DurationPickerState extends State<DurationPicker> {
     _minutes = min(widget._initialMinutes.abs(), MAX_MINUTES);
     _seconds = min(widget._initialSeconds.abs(), MAX_SECONDS);
 
-    this._showSeconds = widget._showSeconds ?? widget._initialSeconds > 0 && widget._initialHours < 1;
+    _showSeconds = widget._initialSeconds > 0;
 
   }
 
@@ -103,7 +101,7 @@ class _DurationPickerState extends State<DurationPicker> {
                 minutesPicker,
               ],
             ),
-            if (_showSeconds == true) Column(
+            if (_showSeconds) Column(
               children: [
                 Text(l10n.seconds),
                 secondsPicker,
@@ -112,7 +110,7 @@ class _DurationPickerState extends State<DurationPicker> {
 
           ],
         ),
-        if (_showSeconds != true) TextButton(
+        if (!_showSeconds) TextButton(
           child: Text('${l10n.changeSeconds} >>>'),
           onPressed:  () {
             setState(() {
