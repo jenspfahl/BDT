@@ -169,16 +169,17 @@ Future<bool?> showDurationPickerDialog({
   final l10n = AppLocalizations.of(context)!;
 
   Dialog dialog = Dialog(
+    insetPadding: EdgeInsets.all(24),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 300.0,
-      width: 300.0,
+      height: 320.0,
+      width: 360.0,
 
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           durationPicker,
-          const SizedBox(height: 20.0,),
+          const SizedBox(height: 20.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

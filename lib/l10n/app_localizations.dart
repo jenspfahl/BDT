@@ -173,6 +173,18 @@ abstract class AppLocalizations {
   /// **'Minutes'**
   String get minutes;
 
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get seconds;
+
+  /// No description provided for @changeSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Change seconds'**
+  String get changeSeconds;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:

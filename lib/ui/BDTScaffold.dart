@@ -852,11 +852,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                         initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
                         hint: Text(l10n.breakPresets),
                         iconEnabledColor: ColorService().getCurrentScheme().button,
-                        icon: GestureDetector(
-                            onTap: () {
-                              _showBreakDownDialog(context);
-                            },
-                            child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
+                        icon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: GestureDetector(
+                              onTap: () {
+                                _showBreakDownDialog(context);
+                              },
+                              child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
+                        ),
                         isExpanded: true,
                         onChanged:  _isRunning() ? null : (value) {
                           if (value is BreakDown) {

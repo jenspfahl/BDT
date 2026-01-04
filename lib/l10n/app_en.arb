@@ -13,6 +13,7 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "seconds": "Seconds",
+  "changeSeconds": "Change seconds",
 
   "settings": "settings",
   "commonSettings": "Common Settings",

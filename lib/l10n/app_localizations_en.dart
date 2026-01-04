@@ -50,6 +50,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minutes => 'Minutes';
 
   @override
+  String get seconds => 'Seconds';
+
+  @override
+  String get changeSeconds => 'Change seconds';
+
+  @override
   String get settings => 'settings';
 
   @override
