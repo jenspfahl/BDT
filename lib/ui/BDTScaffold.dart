@@ -1730,6 +1730,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       duration = const Duration(minutes: 1);
       adjusted = true;
     }
+    if (duration.inHours >= 1) { // remove seconds
+      duration = Duration(minutes: duration.inMinutes);
+      // adjusted = true;
+    }
     _updateDuration(duration, fromUser: fromUser);
     return adjusted;
   }

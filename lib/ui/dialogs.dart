@@ -74,6 +74,7 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
       context: context,
       builder: (context) {
         return AlertDialog(
+          insetPadding: const EdgeInsets.all(18),
           title: icon != null
               ? Row(children: [
             Padding(
@@ -169,7 +170,7 @@ Future<bool?> showDurationPickerDialog({
   final l10n = AppLocalizations.of(context)!;
 
   Dialog dialog = Dialog(
-    insetPadding: EdgeInsets.all(24),
+    insetPadding: const EdgeInsets.all(24),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
       height: 320.0,
