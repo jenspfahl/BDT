@@ -19,6 +19,7 @@
   "settings": "Einstellungen",
   "commonSettings": "Allgemeine Einstellungen",
   "darkTheme": "Dunkles Design",
+  "useSystemColors": "Verwende dynamische Farben vom System",
   "colorScheme": "Farbschema",
   "selectColorScheme": "Farbschema ändern",
   "audioSignals": "Audiosignale",

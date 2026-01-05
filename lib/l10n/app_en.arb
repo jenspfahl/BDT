@@ -18,6 +18,7 @@
   "settings": "settings",
   "commonSettings": "Common Settings",
   "darkTheme": "Dark theme",
+  "useSystemColors": "Use dynamic system colors",
   "colorScheme": "Color scheme",
   "selectColorScheme": "Change a color scheme",
   "audioSignals": "Audio signals",

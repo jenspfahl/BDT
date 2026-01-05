@@ -57,6 +57,7 @@ dependencies:
   open_settings: ^2.0.2
   flutter_fgbg: ^0.7.0
   disable_battery_optimization: ^1.1.2
+  dynamic_color: ^1.8.1
   flutter_sound_bridge:
     path: ./flutter_sound_bridge
 

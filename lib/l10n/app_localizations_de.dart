@@ -65,6 +65,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get darkTheme => 'Dunkles Design';
 
   @override
+  String get useSystemColors => 'Verwende dynamische Farben vom System';
+
+  @override
   String get colorScheme => 'Farbschema';
 
   @override

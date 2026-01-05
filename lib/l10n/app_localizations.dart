@@ -203,6 +203,12 @@ abstract class AppLocalizations {
   /// **'Dark theme'**
   String get darkTheme;
 
+  /// No description provided for @useSystemColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Use dynamic system colors'**
+  String get useSystemColors;
+
   /// No description provided for @colorScheme.
   ///
   /// In en, this message translates to:

@@ -808,10 +808,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             IconButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-                      .then((value) {
+                      .then((value) async {
                         _loadBreakDowns(focusPinned: false);
                         _updateWakeLock();
-                        setState(() => _updateBreakOrder());
+                        await _updateBreakOrder();
+                        setState(() {});
                       });
                 },
                 icon: const Icon(Icons.settings)),
@@ -1409,6 +1410,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       backgroundColor: ColorService().getCurrentScheme().button,
       baseColor: ColorService().getCurrentScheme().primary,
       highlightedColor: ColorService().getCurrentScheme().accent,
+      buttonColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
       height: 48,
       width: 250,
       buttonSize: 48,

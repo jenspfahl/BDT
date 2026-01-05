@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+import '../ui/utils.dart';
+
 
 class BdtColorScheme implements Comparable<BdtColorScheme> {
 
@@ -26,32 +28,20 @@ class BdtColorScheme implements Comparable<BdtColorScheme> {
           name,
           Colors.yellow[800]!,
           button,
-          _darken(accent, 180),
+          darker(accent, 180),
           Colors.yellow[600]!,
-          _lighten(background, 250));
+          lighter(background, 250));
     }
     else {
       return BdtColorScheme(
           id,
           name,
-          _darken(primary, 90),
+          darker(primary, 90),
           button,
-          _darken(accent, 180),
-          _darken(foreground, 90),
-          _lighten(background, 240));
+          darker(accent, 180),
+          darker(foreground, 90),
+          lighter(background, 240));
     }
-  }
-
-  Color _darken(Color other, int delta) {
-    return Color.fromARGB(other.alpha, _adjust(other.red, delta), _adjust(other.green, delta), _adjust(other.blue, delta));
-  }
-
-  Color _lighten(Color other, int delta) {
-    return Color.fromARGB(other.alpha, _adjust(other.red, -delta), _adjust(other.green, -delta), _adjust(other.blue, -delta));
-  }
-
-  int _adjust(int channel, int delta) {
-    return (channel - delta).clamp(0, 255);
   }
 
 }
