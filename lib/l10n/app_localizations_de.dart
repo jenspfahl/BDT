@@ -234,6 +234,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get every3rdSlice => 'Jedes dritte Segment';
+
+  @override
+  String get every5thSlice => 'Jedes fünfte Segment';
+
+  @override
+  String everyXMinutes(Object count) {
+    return 'Alle $count Minuten';
+  }
+
+  @override
   String get savePresetTitle => 'Voreinstellung speichern';
 
   @override

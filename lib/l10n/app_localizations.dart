@@ -509,6 +509,24 @@ abstract class AppLocalizations {
   /// **'Preset \'{preset}\' unpinned'**
   String breakPresetUnpinned(Object preset);
 
+  /// No description provided for @every3rdSlice.
+  ///
+  /// In en, this message translates to:
+  /// **'every 3rd slice'**
+  String get every3rdSlice;
+
+  /// No description provided for @every5thSlice.
+  ///
+  /// In en, this message translates to:
+  /// **'every 5th slice'**
+  String get every5thSlice;
+
+  /// No description provided for @everyXMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'every {count} minutes'**
+  String everyXMinutes(Object count);
+
   /// No description provided for @savePresetTitle.
   ///
   /// In en, this message translates to:

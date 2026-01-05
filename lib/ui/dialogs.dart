@@ -176,7 +176,7 @@ Future<bool?> showDurationPickerDialog({
     insetPadding: const EdgeInsets.all(24),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 320.0,
+      height: 360.0,
       width: 360.0,
 
       child: Column(

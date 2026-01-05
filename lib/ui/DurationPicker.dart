@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -101,30 +102,38 @@ class _DurationPickerState extends State<DurationPicker> {
     //scaffold the full homepage
     return Column(
       children: [
-        Row(
-          //mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            Column(
-              children: [
-                Text(l10n.hours),
-                hoursPicker
-              ],
-            ),
-            Column(
-              children: [
-                Text(l10n.minutes),
-                minutesPicker,
-              ],
-            ),
-            if (_showSeconds) Column(
-              children: [
-                Text(l10n.seconds),
-                secondsPicker,
-              ],
-            ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Column(
+                children: [
+                  Text(l10n.hours, style: const TextStyle(fontSize: 18)),
+                  const Text(ABBREV_HOURS),
+                  const Text(''),
+                  hoursPicker
+                ],
+              ),
+              Column(
+                children: [
+                  Text(l10n.minutes, style: const TextStyle(fontSize: 18)),
+                  const Text(ABBREV_MINUTES),
+                  const Text(''),
+                  minutesPicker,
+                ],
+              ),
+              if (_showSeconds) Column(
+                children: [
+                  Text(l10n.seconds, style: const TextStyle(fontSize: 18)),
+                  const Text(ABBREV_SECONDS),
+                  const Text(''),
+                  secondsPicker,
+                ],
+              ),
 
-          ],
+            ],
+          ),
         ),
         if (!_showSeconds) TextButton(
           child: Text('${l10n.changeSeconds} >>>'),

@@ -81,6 +81,10 @@
   "breakPresetPinned" : "Preset '{preset}' pinned",
   "breakPresetUnpinned" : "Preset '{preset}' unpinned",
 
+  "every3rdSlice": "every 3rd slice",
+  "every5thSlice": "every 5th slice",
+  "everyXMinutes": "every {count} minutes",
+
   "savePresetTitle": "Save preset",
   "savePresetMessage": "Enter a name for your preset to save.",
   "savePresetHint": "choose a name",

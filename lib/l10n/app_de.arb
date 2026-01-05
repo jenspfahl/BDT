@@ -78,6 +78,11 @@
   "breakPresetPinned" : "Voreinstellung '{preset}' markiert",
   "breakPresetUnpinned" : "Voreinstellung '{preset}' nicht mehr markiert",
 
+
+  "every3rdSlice": "Jedes dritte Segment",
+  "every5thSlice": "Jedes fünfte Segment",
+  "everyXMinutes": "Alle {count} Minuten",
+
   "savePresetTitle": "Voreinstellung speichern",
   "savePresetMessage": "Geben Sie einen Namen für diese Voreinstellung ein.",
   "savePresetHint": "Wählen Sie einen Namen",

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+const ABBREV_HOURS = 'hrs';
+const ABBREV_MINUTES = 'min';
+const ABBREV_SECONDS = 'sec';
 
 DateTime truncToDate(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day);
@@ -51,20 +54,20 @@ String formatDuration(Duration duration, {bool withLineBreak = false, bool noSec
   if (duration.inMinutes >= 60) {
     var remainingMinutes = duration.inMinutes % 60;
     if (remainingMinutes != 0) {
-      return '${duration.inHours} hrs$betweenChar$remainingMinutes min';
+      return '${duration.inHours} $ABBREV_HOURS$betweenChar$remainingMinutes $ABBREV_MINUTES';
     }
     else {
-      return '${duration.inHours} hrs';
+      return '${duration.inHours} $ABBREV_HOURS';
     }
   }
   if (duration.inSeconds >= 60) {
     var remainingSeconds = duration.inSeconds % 60;
     if (!noSeconds && remainingSeconds != 0) {
-      return '${duration.inMinutes} min$betweenChar$remainingSeconds sec';
+      return '${duration.inMinutes} min$betweenChar$remainingSeconds $ABBREV_SECONDS';
     }
     else {
-      return '${duration.inMinutes} min';
+      return '${duration.inMinutes} $ABBREV_MINUTES';
     }
   }
-  return '${duration.inSeconds} sec';
+  return '${duration.inSeconds} $ABBREV_SECONDS';
 }

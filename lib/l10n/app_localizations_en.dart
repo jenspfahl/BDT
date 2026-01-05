@@ -234,6 +234,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get every3rdSlice => 'every 3rd slice';
+
+  @override
+  String get every5thSlice => 'every 5th slice';
+
+  @override
+  String everyXMinutes(Object count) {
+    return 'every $count minutes';
+  }
+
+  @override
   String get savePresetTitle => 'Save preset';
 
   @override
