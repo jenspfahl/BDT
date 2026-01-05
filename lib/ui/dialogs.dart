@@ -74,7 +74,7 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
       context: context,
       builder: (context) {
         return AlertDialog(
-          insetPadding: const EdgeInsets.all(18),
+          insetPadding: const EdgeInsets.all(12),
           title: icon != null
               ? Row(children: [
             Padding(
@@ -84,43 +84,46 @@ void showInputWithSwitchDialog(BuildContext context, String title, String messag
             Text(title)
           ],)
               : Text(title),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _textFieldController,
-                          decoration: InputDecoration(hintText: hintText),
-                          maxLength: 50,
-                          keyboardType: TextInputType.text,
-                          validator: validator,
-                          autovalidateMode: AutovalidateMode.onUserInteraction
+          content: Container(
+            width: 330,
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _textFieldController,
+                            decoration: InputDecoration(hintText: hintText),
+                            maxLength: 50,
+                            keyboardType: TextInputType.text,
+                            validator: validator,
+                            autovalidateMode: AutovalidateMode.onUserInteraction
+                          ),
                         ),
-                      ),
-                      IconButton(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-                          constraints: const BoxConstraints(),
-                          onPressed: () => _textFieldController.clear(),
-                          icon: const Icon(Icons.clear_outlined))
-                    ],
-                  ),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: isSwitched,
-                    builder: (context, currentState, child) {
-                      return SwitchListTile(
-                        activeColor: ColorService().getCurrentScheme().button,
-                        value: isSwitched.value,
-                        title: Text(switchText??''),
-                        onChanged: (value) {
-                          isSwitched.value = value;
-                        },
-                      );
-                    }),
-                ],
+                        IconButton(
+                            padding: const EdgeInsets.fromLTRB(12, 0, 0, 0),
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _textFieldController.clear(),
+                            icon: const Icon(Icons.clear_outlined))
+                      ],
+                    ),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: isSwitched,
+                      builder: (context, currentState, child) {
+                        return SwitchListTile(
+                          activeColor: ColorService().getCurrentScheme().button,
+                          value: isSwitched.value,
+                          title: Text(switchText??''),
+                          onChanged: (value) {
+                            isSwitched.value = value;
+                          },
+                        );
+                      }),
+                  ],
+                ),
               ),
             ),
           ),
@@ -218,10 +221,11 @@ Future<int?> showBreakDownDialog({
   final l10n = AppLocalizations.of(context)!;
 
   Dialog dialog = Dialog(
+    insetPadding: const EdgeInsets.all(16),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 360.0,
-      width: 300.0,
+      height: 380.0,
+      width: 330.0,
 
       child: StatefulBuilder(
         builder: (context, setState) {
@@ -232,7 +236,7 @@ Future<int?> showBreakDownDialog({
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(16.0),
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -241,17 +245,24 @@ Future<int?> showBreakDownDialog({
                           child: ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
                         ),
                         const Text('   '),
-                        Text(l10n.splitBreaks, style: const TextStyle(fontSize: 18))
+                        Text(l10n.splitBreaks, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       ]),
                 ),
+                const Text(''),
                 Text(l10n.splitBreaksDescription(formatDuration(duration))),
                 const Text(''),
-                Text(l10n.durationBetweenBreaks(_breakCount, formatDuration(_calculateDistance(_breakCount, duration)))),
+                Text(l10n.durationBetweenBreaks(_breakCount, formatDuration(_calculateDistance(_breakCount, duration))),
+                  style: const TextStyle(fontSize: 16)),
                 Center(
                   child: NumberPicker(
                     value: _breakCount,
                     minValue: 1,
                     maxValue: MAX_BREAKS,
+                    selectedTextStyle: TextStyle(
+                        fontSize: 24,
+                        color: ColorService()
+                            .getCurrentScheme()
+                            .button),
                     onChanged: (value) => setState(() {
                       _breakCount = value;
                     }),

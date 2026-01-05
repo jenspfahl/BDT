@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 import '../l10n/app_localizations.dart';
+import '../service/ColorService.dart';
 
 class DurationPicker extends StatefulWidget {
   late final int _initialHours;
@@ -59,7 +60,12 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _hours,
       minValue: 0,
       maxValue: MAX_HOURS,
-      onChanged: (value) => setState(() { 
+      selectedTextStyle: TextStyle(
+          fontSize: 24,
+          color: ColorService()
+            .getCurrentScheme()
+            .button),
+      onChanged: (value) => setState(() {
         _hours = value;
         widget.onChanged(_getSelectedDuration());
       }),
@@ -68,6 +74,11 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _minutes,
       minValue: 0,
       maxValue: MAX_MINUTES,
+      selectedTextStyle: TextStyle(
+          fontSize: 24,
+          color: ColorService()
+              .getCurrentScheme()
+              .button),
       onChanged: (value) => setState(() { 
         _minutes = value;
         widget.onChanged(_getSelectedDuration());
@@ -77,6 +88,11 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _seconds,
       minValue: 0,
       maxValue: MAX_SECONDS,
+      selectedTextStyle: TextStyle(
+          fontSize: 24,
+          color: ColorService()
+              .getCurrentScheme()
+              .button),
       onChanged: (value) => setState(() {
         _seconds = value;
         widget.onChanged(_getSelectedDuration());
