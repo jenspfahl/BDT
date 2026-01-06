@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
@@ -23,8 +24,9 @@ import 'package:sound_mode/sound_mode.dart';
 import 'package:sound_mode/utils/ringer_mode_statuses.dart';
 import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:wakelock/wakelock.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../l10n/app_localizations.dart';
 import '../model/BreakDown.dart';
 import '../service/ColorService.dart';
 import '../util/dates.dart';
@@ -52,10 +54,19 @@ final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
 final CENTER_RADIUS = 60.0;
 
-class BDTScaffoldState extends State<BDTScaffold> {
+final String rightArrow = '\u279C';
+final String upArrow = '\u21D3';
+final String downArrow = '\u21D1';
+
+
+
+@pragma('vm:entry-point')
+class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderStateMixin {
 
   final HOMEPAGE = 'bdt.jepfa.de';
   final HOMEPAGE_SCHEME = 'https://';
+  
+  final _BUILD_BREAKDOWN_ITEM = 'build_breakdown_item';
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
@@ -64,6 +75,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   Duration? _originDuration;
   late DateTime _time;
   DateTime? _originTime;
+
+  int _breakDownCount = 3;
 
   final _selectedSlices = HashSet<int>();
   int? _pinnedBreakDownId;
@@ -87,6 +100,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
   int _volume = MAX_VOLUME;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
+  late AnimationController _circleAnimationController;
+  bool _circleAnimationDirection = false;
+  double _circleAnimationLastValue = 0;
 
   @pragma('vm:entry-point')
   static Future<void> signal1() async {
@@ -251,14 +267,19 @@ class BDTScaffoldState extends State<BDTScaffold> {
   @pragma('vm:entry-point')
   static Future<void> signalEndWithRepetition() async {
     debugPrint('sig end and repeat');
-    await notify(100, 'Timer finished but repeating', fixed: true, showBreakInfo: false, showProgress: true);
+    final l10n = await _loadLocalizations();
+    await notify(100, l10n.timerFinishedButRepeating,
+        fixed: true, showBreakInfo: false, showProgress: true, l10n: l10n);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
   @pragma('vm:entry-point')
   static Future<void> signalEnd() async {
     debugPrint('sig end');
-    await notify(100, 'Timer finished', showBreakInfo: true, showProgress: true);
+    final l10n = await _loadLocalizations();
+
+    await notify(100, l10n.timerFinished,
+        showBreakInfo: true, showProgress: true, l10n: l10n);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
@@ -296,13 +317,23 @@ class BDTScaffoldState extends State<BDTScaffold> {
   static Future<void> notifySignal(int signal) async {
     final prefService = PreferenceService();
     final breaksCount = await getBreaksCount(prefService);
+    final l10n = await _loadLocalizations();
 
     final signalAsString = _breakNumberToString(signal);
-    await notify(signal, 'Break $signalAsString of $breaksCount reached',
-        showProgress: true, showBreakInfo: true, fixed: true);
+    await notify(signal, l10n.breakReached(breaksCount?.toString() ?? '?', signalAsString),
+        showProgress: true, showBreakInfo: true, fixed: true, l10n: l10n);
   }
 
   static String _breakNumberToString(int signal) => signal <= 10 ? signal.toString() : '10+${signal-10} ($signal)';
+
+  static Future<AppLocalizations> _loadLocalizations() async {
+    final localeParts = Platform.localeName.split('_');
+    final locale = Locale(localeParts.first);
+    if (AppLocalizations.delegate.isSupported(locale)) {
+      return AppLocalizations.delegate.load(locale);
+    }
+    return AppLocalizations.delegate.load(const Locale('en'));
+  }
 
   static Future<void> notify(int id, String msg, {
     PreferenceService? preferenceService, 
@@ -311,6 +342,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     bool showBreakInfo = false, 
     bool showStartInfo = false,
     bool fixed = false,
+    required AppLocalizations l10n
   }) async {
     final prefService = preferenceService ?? PreferenceService();
     if (await mayNotify(prefService) != true) {
@@ -330,12 +362,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
         final duration = startedAt.difference(now).abs();
-        message = '$msg after ${formatDuration(duration)}';
+        message = '$msg ' + l10n.afterDuration(formatDuration(duration));
       }
     }
     else if (showStartInfo) {
       final breaksCount = await getBreaksCount(prefService);
-      message = '$msg with $breaksCount breaks';
+      message = '$msg ' + l10n.withBreaks(breaksCount?.toString() ?? '?');
     }
 
     _notificationService.showNotification('', id, APP_NAME_SHORT, message, 'bdt_signals',
@@ -372,7 +404,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-          debugPrint('refresh ui values');
+         // debugPrint('refresh ui values');
         });
       }
     });
@@ -386,9 +418,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
         if (startedAtFromJson != null) {
           final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(
               startedAtFromJson);
-          debugPrint('last boot was ${formatDateTime(
-              lastBoot)}, persisted state is from ${formatDateTime(
-              persistedStateFrom)}');
+          debugPrint('last boot was $lastBoot, persisted state is from $persistedStateFrom');
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
@@ -416,7 +446,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
               debugPrint('Recover last session');
               _setStateFromJson(stateAsJson);
               int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-              _loadBreakDowns(focusPinned: true,
+              _loadBreakDowns(focusPinned: false,
                   preSelectedBreakDownId: preSelectedBreakDownId);
             }
           });
@@ -437,17 +467,34 @@ class BDTScaffoldState extends State<BDTScaffold> {
           }
     });
 
-    _notificationService.requestPermissions();
+    Permission.scheduleExactAlarm.request();
+
+    Permission.scheduleExactAlarm.request();
+
+    _circleAnimationController =
+        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    Tween<double>(begin: 0, end: 1).animate(_circleAnimationController)
+      ..addListener(() {
+        setState(() {
+          final circleAnimationCurrentValue = _circleAnimationController.value;
+          if (_circleAnimationLastValue > circleAnimationCurrentValue) {
+            _circleAnimationDirection = !_circleAnimationDirection;
+          }
+          _circleAnimationLastValue = circleAnimationCurrentValue;
+        });
+      });
 
   }
 
   void _askForNotification() {
+    final l10n = AppLocalizations.of(context)!;
+
     mayNotify(_preferenceService).then((allowedToNotify) {
       if (allowedToNotify) {
         Permission.notification.request().then((status) {
           debugPrint("notification permission = $status");
           if (status != PermissionStatus.granted) {
-            toastInfo(context, "Notifications won't work as long as permission is not granted.");
+            toastInfo(context, l10n.errorNoPermissionForNotifications);
           }
         });
       }
@@ -500,15 +547,17 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final hasWakeLock = await _preferenceService.getBool(PreferenceService.PREF_WAKE_LOCK);
 
     if (hasWakeLock == true) {
-      Wakelock.enable();
+      WakelockPlus.enable();
     }
     else {
-      Wakelock.disable();
+      WakelockPlus.disable();
     }
 
   }
 
   _startTimer() {
+    _startSpinner();
+
     _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
         if (_isRepeating()) {
@@ -524,7 +573,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
       if (mounted) {
         _updateRunning();
-        debugPrint('.. timer refresh #${_runTimer?.tick} ..');
+        //debugPrint('.. timer refresh #${_runTimer?.tick} ..');
       }
     });
   }
@@ -538,7 +587,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
-      debugPrint('delta=$delta, ratio = $ratio');
+      //debugPrint('delta=$delta, ratio = $ratio');
       setState(() {
         _passedIndex = (MAX_SLICE * ratio).floor() + 1;
         // update all
@@ -596,6 +645,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    final visitTextParts = l10n.visitAppHomePage('<<<URL>>>').split('<<<URL>>>');
+
+
     return FGBGNotifier(
       onEvent: (event) {
         if (event == FGBGType.background) {
@@ -629,7 +683,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
                                 child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
                               ),
-                              Text('Break ${_breakNumberToString(i)}: ',
+                              Text('${l10n.breakName} ${_breakNumberToString(i)}: ',
                                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                               Text(_getSignalStringForNumber(i), style: const TextStyle(fontSize: 10),),
                             ]),
@@ -651,7 +705,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                   padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
                                   child: Text(''),
                                 ),
-                                const Text('Timer end: ',
+                                Text('${l10n.timerFinished}: ',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                                 Text(_getSignalStringForNumber(100), style: const TextStyle(fontSize: 10),),
                               ]),
@@ -669,10 +723,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                   child: Text.rich(
                                     TextSpan(
                                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-                                      text: 'Visit ',
+                                      text: '${visitTextParts.firstOrNull} ',
                                       children: <TextSpan>[
                                         TextSpan(text: HOMEPAGE, style: const TextStyle(decoration: TextDecoration.underline)),
-                                        const TextSpan(text: ' for more information.'),
+                                        TextSpan(text: ' ${visitTextParts.lastOrNull}'),
                                       ],
                                     ),
                                   ),
@@ -686,14 +740,15 @@ class BDTScaffoldState extends State<BDTScaffold> {
                         return AlertDialog(
                           insetPadding: EdgeInsets.zero,
                           contentPadding: const EdgeInsets.all(16),
-                          title: const Column(
+                          title: Column(
                             children: [
-                              Text('Help'),
-                              Text(''),
-                              Text('With this timer you can define relative in-between notifications to get informed about the progress of the passed timer time.',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
-                              Text('Choose a duration or a timer time by clicking on the center of the wheel and select breaks on the wheel by clicking on a slice. A break is just an acoustic signal and/or vibration with a unique pattern like follows (click on it to play):',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                              Text(l10n.help),
+                              const Text(''),
+                              Text(l10n.appSummary,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
+                              const Text(''),
+                              Text(l10n.appExplanation,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal)),
                             ],
                           ),
                           content: Builder(
@@ -714,7 +769,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           ),
                           actions: [
                             TextButton(
-                              child: const Text('Close'),
+                              child: Text(l10n.close),
                               onPressed:  () {
                                 Navigator.pop(context);
                               },
@@ -730,7 +785,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                   _ringerStatus = await SoundMode.ringerModeStatus;
                   setState((){});
                   if (_isDeviceMuted()) {
-                    toastInfo(context, 'Device is muted. Unmute first to set volume.');
+                    toastInfo(context, l10n.errorDeviceMuted);
                     return;
                   }
 
@@ -752,11 +807,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
             IconButton(
                 onPressed: () {
-                  Navigator.push(super.context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-                      .then((value) {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
+                      .then((value) async {
                         _loadBreakDowns(focusPinned: false);
                         _updateWakeLock();
-                        setState(() => _updateBreakOrder());
+                        await _updateBreakOrder();
+                        setState(() {});
                       });
                 },
                 icon: const Icon(Icons.settings)),
@@ -790,30 +846,35 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           _moveBreakDownSelectionToNext();
                         }
                       },
-                      child: DropdownButtonFormField<BreakDown?>(
+                      child: DropdownButtonFormField<Object?>(
                         isDense: true,
                         focusColor: ColorService().getCurrentScheme().accent,
                         onTap: () => FocusScope.of(context).unfocus(),
-                        value: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
-                        hint: const Text('Break downs'),
+                        initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
+                        hint: Text(l10n.breakPresets),
                         iconEnabledColor: ColorService().getCurrentScheme().button,
-                        icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+                        icon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: GestureDetector(
+                              onTap: () {
+                                _showBreakDownDialog(context);
+                              },
+                              child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
+                        ),
                         isExpanded: true,
                         onChanged:  _isRunning() ? null : (value) {
-                          _updateSelectedSlices(value);
+                          if (value is BreakDown) {
+                            _updateSelectedSlices(value);
+                          }
+                          else if (value == _BUILD_BREAKDOWN_ITEM) {
+                            debugPrint('_BUILD_BREAKDOWN_ITEM selected');
+                            setState(() {
+                              _selectedBreakDown = null; //TODO doesnt work
+                            });
+                            _showBreakDownDialog(context);
+                          }
                         },
-                        items: _loadedBreakDowns.map((BreakDown breakDown) {
-                          return DropdownMenuItem(
-                            value: breakDown,
-                            child: breakDown.id == _pinnedBreakDownId
-                                ? Row(children: [
-                                        Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                        Text(breakDown.getPresetName())
-                                  ])
-                                : Text(breakDown.getPresetName()),
-                          );
-                        }).toList(),
-                      ),
+                        items: _getBreakDownItems()),
                     ),
                   ),
                   Flexible(child: IconButton(
@@ -893,7 +954,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                         }
                                         else {
                                           toastError(context,
-                                              'max $MAX_BREAKS breaks allowed');
+                                              l10n.errorMaxBreaksReached(MAX_BREAKS));
                                         }
                                       }
                                     }
@@ -915,9 +976,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         child: SizedBox(
-                          width: CENTER_RADIUS * 1.5,
-                          height: CENTER_RADIUS * 1.5,
-                          child: Center(child: _createCycleWidget())),
+                          width: CENTER_RADIUS * 1.8,
+                          height: CENTER_RADIUS * 1.8,
+                          child: Center(child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                if (_preferenceService.showSpinner && (_isRunning() && !_isAllRunsOver()))
+                                  Center(
+                                    child: SizedBox.expand(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1,
+                                          strokeCap: StrokeCap.round,
+                                          color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
+                                          backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
+                                          value: _circleAnimationController.value
+                                        ),
+                                    ),
+                                  ),
+                                Center(child: _createCycleWidget()),
+                              ],)
+                          )),
                         onTap: () {
                           if (_isRunning()) {
                             setState(() {
@@ -962,11 +1040,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 setState(() {
                                   if (_isPinnedBreakDown()) {
                                     _pinnedBreakDownId = null;
-                                    toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' unpinned");
+                                    toastInfo(context, l10n.breakPresetUnpinned(_selectedBreakDown?.getPresetName(context)??'?'));
                                   }
                                   else {
                                     _pinnedBreakDownId = _selectedBreakDown?.id;
-                                    toastInfo(context, "Preset '${_selectedBreakDown?.getPresetName()}' pinned");
+                                    toastInfo(context, l10n.breakPresetPinned(_selectedBreakDown?.getPresetName(context)??'?'));
                                   }
                                   setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
                                 });
@@ -991,8 +1069,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 return;
                               }
                               if (_canDeleteUserPreset()) {
-                                final breakDownName = _selectedBreakDown?.getPresetName();
-                                showConfirmationDialog(context, 'Delete saved preset', "Are you sure to delete '$breakDownName' permanently?",
+                                final breakDownName = _selectedBreakDown?.getPresetName(context)??'?';
+                                showConfirmationDialog(context, l10n.removePresetTitle, l10n.removePresetMessage(breakDownName),
                                 okPressed: () {
                                   if (_selectedBreakDown != null) {
                                     BreakDownService().deleteBreakDown(_selectedBreakDown!);
@@ -1007,7 +1085,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                     _loadBreakDowns(focusPinned: true);
                                   }
                                   Navigator.pop(context);
-                                  toastInfo(context, "'$breakDownName' deleted");
+                                  toastInfo(context, l10n.removePresetDone(breakDownName));
                                 },
                                 cancelPressed: () {
                                   Navigator.pop(context);
@@ -1023,16 +1101,16 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                 final isSwitched = ValueNotifier(
                                     _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
                                 showInputWithSwitchDialog(context,
-                                    'Save preset', 'Enter a name for your preset to save.',
+                                    l10n.savePresetTitle, l10n.savePresetMessage,
                                     initText: newName,
-                                    hintText: 'choose a name',
+                                    hintText: l10n.savePresetHint,
                                     switchText: isTimerModeDuration
-                                        ? 'Include duration\n(${formatDuration(_duration)})'
-                                        : 'Include time\n(${formatTimeOfDay(TimeOfDay.fromDateTime(_time))})',
+                                        ? '${l10n.savePresetIncludeDuration}\n(${formatDuration(_duration)})'
+                                        : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(context, TimeOfDay.fromDateTime(_time))})',
                                     isSwitched: isSwitched,
                                     validator: (value) {
                                       if (value == null || value.trim().isEmpty) {
-                                        return 'Preset name missing';
+                                        return l10n.errorSavePresetNameMissing;
                                       }
                                       return null;
                                     },
@@ -1047,7 +1125,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                           .isNotEmpty;
                                       if (foundWithSameName) {
                                         Navigator.pop(context);
-                                        toastError(context, 'Preset name still used. Choose another one');
+                                        toastError(context, l10n.errorSavePresetNameInUse);
                                         return;
                                       }
 
@@ -1068,7 +1146,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                                         _updateSelectedBreakDown(savedBreakDown); // this not in setState
                                         _loadBreakDowns(focusPinned: false); // here setState is called
 
-                                        toastInfo(context, "'$newName' saved");
+                                        toastInfo(context, l10n.savePresetDone(newName));
                                       });
 
                                       Navigator.pop(context);
@@ -1101,7 +1179,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                               _updateTime(_deriveTime(), fromUser: true);
                               _persistState();
                             });
-                            toastInfo(context, 'No breaks to reset');
+                            toastInfo(context, l10n.errorNoBreaksToReset);
                           }
                           else {
                             setState(() {
@@ -1124,7 +1202,9 @@ class BDTScaffoldState extends State<BDTScaffold> {
                           }
                           setState(() {
                             _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
-                            toastInfo(context, "Break order switched to ${_direction == Direction.ASC ? "ascending" : "descending"}");
+                            toastInfo(context, _direction == Direction.ASC
+                                ? l10n.breakOrderSwitchedToAscending
+                                : l10n.breakOrderSwitchedToDescending);
                             _persistState();
                           });
                         },
@@ -1135,7 +1215,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
               ),
             ),
             Center(
-              child: _createStatsLine()),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: _createStatsLine(),
+              )),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -1146,9 +1229,26 @@ class BDTScaffoldState extends State<BDTScaffold> {
     );
   }
 
+  void _showBreakDownDialog(BuildContext context) {
+    showBreakDownDialog(
+        context: context,
+        initialValue: _breakDownCount,
+        duration: _duration
+      ).then((value) {
+        if (value != null) {
+          setState(() {
+            _breakDownCount = value;
+            _selectedSlices.clear();
+            _selectedSlices.addAll(_calculateDistributedSlices(value));
+          });
+        }
+    });
+  }
+
   @override
   Future<void> dispose() async {
     debugPrint('App killed');
+    _circleAnimationController.dispose();
     await _persistState(); //This might not work since App is killed before persist is done
     super.dispose();
   }
@@ -1301,6 +1401,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createSwipeToStopButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SliderButton(
       action: () {
         _stopRun(context);
@@ -1308,18 +1410,21 @@ class BDTScaffoldState extends State<BDTScaffold> {
       backgroundColor: ColorService().getCurrentScheme().button,
       baseColor: ColorService().getCurrentScheme().primary,
       highlightedColor: ColorService().getCurrentScheme().accent,
+      buttonColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
       height: 48,
-      width: 200,
+      width: 250,
       buttonSize: 48,
       shimmer: false,
       dismissThresholds: 0.99,
-      label: Text('\u27A0 Swipe to Stop',
+      label: Text('\u27A0 ${l10n.swipeToStop}',
           style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
       icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
     );
   }
 
   Widget _createStartButton(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Wrap(
       children: [
         PopupMenuButton<RunMode>(
@@ -1330,13 +1435,13 @@ class BDTScaffoldState extends State<BDTScaffold> {
             itemBuilder: (context) => <PopupMenuItem<RunMode>> [
               PopupMenuItem<RunMode>(
                   value: RunMode.REPEAT_ONCE,
-                  child: _createMenuItem(RunMode.REPEAT_ONCE, 'Repeat once')),
+                  child: _createMenuItem(RunMode.REPEAT_ONCE, l10n.repeatOnce)),
               PopupMenuItem<RunMode>(
                   value: RunMode.REPEAT_FOREVER,
-                  child: _createMenuItem(RunMode.REPEAT_FOREVER, 'Repeat forever')),
+                  child: _createMenuItem(RunMode.REPEAT_FOREVER, l10n.repeatForever)),
               PopupMenuItem<RunMode>(
                   value: RunMode.NO_REPEAT,
-                  child: _createMenuItem(RunMode.NO_REPEAT, 'No repeat')),
+                  child: _createMenuItem(RunMode.NO_REPEAT, l10n.noRepeat)),
             ],
           onSelected: (runMode) {
             setState(() {
@@ -1350,12 +1455,12 @@ class BDTScaffoldState extends State<BDTScaffold> {
           splashColor: ColorService().getCurrentScheme().foreground,
           foregroundColor: ColorService().getCurrentScheme().accent,
           icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-          label: Text(_isAllRunsOver() ? 'Reset' : _isRunning() ? 'Stop' : 'Start'),
+          label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer),
           onPressed: () {
             if (_isRunning()) {
-              if (_isAllRunsOver()) {
+             // if (_isAllRunsOver()) {
                 _stopRun(context);
-              }
+            /*  } //TODO no need for this branch, or?
               else {
                 showConfirmationDialog(
                   context,
@@ -1371,7 +1476,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
                       Navigator.pop(
                           context), // dismiss dialog, should be moved in Dialogs.dart somehow
                 );
-              }
+              }*/
             }
             else {
               _startRun(context);
@@ -1409,12 +1514,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   Widget _createStatsLine() {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_isAllRunsOver()) {
       if (_runMode == RunMode.NO_REPEAT) {
-        return const Text('Timer finished');
+        return Text(l10n.timerFinished);
       }
       else {
-        return Text('Timer finished after ${_repetition+1} runs');
+        return Text('${l10n.timerFinished} ${l10n.afterXRuns(_repetition+1)}');
       }
     }
     else if (_isRunning()) {
@@ -1423,24 +1530,24 @@ class BDTScaffoldState extends State<BDTScaffold> {
           .toList()
           .length;
       if (_runMode == RunMode.REPEAT_ONCE) {
-        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left, repeating once (run ${_repetition+1} of 2)');
+        return Text(l10n.xBreaksLeftRepeatOnce(_selectedSlices.length, remainingBreaks, _repetition+1));
       }
       else if (_runMode == RunMode.REPEAT_FOREVER) {
-        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left, repeating forever (run ${_repetition+1})');
+        return Text(l10n.xBreaksLeftRepeatForever(_selectedSlices.length, remainingBreaks, _repetition+1));
       }
       else {
-        return Text('$remainingBreaks of ${_selectedSlices.length} breaks left');
+        return Text(l10n.xBreaksLeft(_selectedSlices.length, remainingBreaks));
       }
     }
     else {
       if (_runMode == RunMode.REPEAT_FOREVER) {
-        return Text('${_selectedSlices.length} breaks placed, repeat forever');
+        return Text(l10n.xBreaksPlacedRepeatForever(_selectedSlices.length));
       }
       else if (_runMode == RunMode.REPEAT_ONCE) {
-        return Text('${_selectedSlices.length} breaks placed, repeat once');
+        return Text(l10n.xBreaksPlacedRepeatOnce(_selectedSlices.length));
       }
       else {
-        return Text('${_selectedSlices.length} breaks placed');
+        return Text(l10n.xBreaksPlaced(_selectedSlices.length));
       }
     }
   }
@@ -1457,16 +1564,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
     }
   }
 
+
   Widget _createCycleWidgetForRelativeMode(RelativeProgressPresentation presentation) {
     if (_isRunning() || _isAllRunsOver()) {
-      var value1 = formatDuration(_getDelta()!);
-      var value2 = formatDuration(_getRemaining()!);
-      var value3 = formatDuration(_duration);
-      if (_isAllRunsOver()) {
-        value1 = formatDuration(_duration);
-        value2 = formatDuration(Duration.zero);
-        value3 = formatDuration(_duration);
-      }
+      final showArrows = PreferenceService().showArrows;
+
+      final value1 = formatDuration(_isAllRunsOver() ? _duration : _getDelta()!) + (showArrows ? ' $downArrow' : '');
+      final value2 = formatDuration(_isAllRunsOver() ? Duration.zero : _getRemaining()!) + (showArrows ? ' $upArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
 
       if (presentation == RelativeProgressPresentation.REMAINING) {
         return Text(value2);
@@ -1488,15 +1593,14 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
 
   Widget _createCycleWidgetForAbsoluteMode(AbsoluteProgressPresentation presentation) {
+    final langCode = _getCurrentLangCode();
+    
     if (_isRunning() || _isAllRunsOver()) {
-      var value1 = formatDateTime(_startedAt!, withSeconds: true);
-      var value2 = formatDateTime(DateTime.now(), withSeconds: true);
-      var value3 = formatDateTime(_time, withSeconds: true);
-      if (_isAllRunsOver()) {
-        value1 = formatDateTime(_startedAt!, withSeconds: true);
-        value2 = formatDateTime(_time, withSeconds: true);
-        value3 = formatDateTime(_time, withSeconds: true);
-      }
+      final showArrows = PreferenceService().showArrows;
+
+      final value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
         return _createTwoRowsCircle(value1, value2, smallValue1: true);
@@ -1509,9 +1613,11 @@ class BDTScaffoldState extends State<BDTScaffold> {
       }
     }
     else {
-      return Text(formatDateTime(_time));
+      return Text(formatDateTime(langCode, _time));
     }
   }
+
+  String _getCurrentLangCode() => AppLocalizations.of(context)!.localeName;
 
   Widget _createTwoRowsCircle(String value1, String value2, {bool smallValue1 = false, bool smallValue2 = false}) {
     return Column(
@@ -1579,6 +1685,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   void _changeTime(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final initialTime = TimeOfDay.fromDateTime(_deriveTime());
     showTimePicker(
       initialTime: initialTime,
@@ -1591,7 +1699,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
           _originTime = null;
           _persistState();
           if (adjusted) {
-            toastInfo(context, 'Clock value should be a bit more in the future');
+            toastInfo(context, l10n.errorClockTimeToClose);
           }
         });
       }
@@ -1616,6 +1724,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
     if (duration.inMinutes < 1) {
       duration = const Duration(minutes: 1);
       adjusted = true;
+    }
+    if (duration.inHours >= 1) { // remove seconds
+      duration = Duration(minutes: duration.inMinutes);
+      // adjusted = true;
     }
     _updateDuration(duration, fromUser: fromUser);
     return adjusted;
@@ -1642,7 +1754,7 @@ class BDTScaffoldState extends State<BDTScaffold> {
       if (isInTransition) {
         final deltaSeconds = _getDelta()?.inSeconds ?? 0;
         final transitionSeconds = deltaSeconds % sliceSeconds;
-        debugPrint('tranSec=$transitionSeconds / sliceSec=$sliceSeconds');
+        //debugPrint('transSec=$transitionSeconds / sliceSec=$sliceSeconds');
         radius = radius + (radius * (transitionSeconds / sliceSeconds * 0.1));
       }
       else if (isPassed) {
@@ -1676,6 +1788,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   }
 
   String _showSliceTitle(int slice, bool showCurrent, bool isFinalSlice) {
+    final langCode = _getCurrentLangCode();
+
     if (_timerMode == TimerMode.RELATIVE) {
       final sliceDuration = isFinalSlice ? _duration : _getDelay(slice);
       return formatDuration(
@@ -1687,9 +1801,10 @@ class BDTScaffoldState extends State<BDTScaffold> {
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
-      debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
+      //debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
+          langCode,
           showCurrent ? DateTime.now() : sliceTime,
           withLineBreak: true,
           withSeconds: delta.inMinutes < 10);
@@ -1733,21 +1848,24 @@ class BDTScaffoldState extends State<BDTScaffold> {
   bool _isRunning() => _startedAt != null;
 
   void _startRun(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
     if (_duration.inSeconds == 0) {
-      toastError(context, 'Duration might not be zero');
+      toastError(context, l10n.errorDurationIsZero);
       return;
     }
     if (_isRunning()) {
-      toastError(context, _stopRunningMessage());
       return;
     }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
-      toastError(context, 'Time already reached, set a new one');
+      toastError(context, l10n.errorTimeAlreadyElapsed);
       return;
     }
 
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
+
 
     _startedAt = DateTime.now();
     _startTimer();
@@ -1780,15 +1898,24 @@ class BDTScaffoldState extends State<BDTScaffold> {
       signalAlthoughCancelled: true,
       preferenceService: _preferenceService,
     );
-    notify(0, 'Timer started',
+    notify(0, l10n.timerStarted,
         preferenceService: _preferenceService,
         notificationService: _notificationService,
         showProgress: true,
         showStartInfo: true,
-        fixed: true);
+        fixed: true,
+        l10n: l10n
+    );
 
     _scheduleSliceNotifications();
 
+  }
+
+  void _startSpinner() {
+    _circleAnimationLastValue = 0;
+    _circleAnimationController.value = 0;
+    _circleAnimationController.repeat();
+    _circleAnimationDirection = false;
   }
 
   void _updateDuration(Duration duration, {required bool fromUser}) {
@@ -1851,6 +1978,8 @@ class BDTScaffoldState extends State<BDTScaffold> {
   void _stopRun(BuildContext context) {
     debugPrint('stopped');
     _stopTimer();
+    _circleAnimationController.stop();
+
     SignalService().stopAll();
     _persistState();
     _notificationService.cancelAllNotifications();
@@ -1987,14 +2116,41 @@ class BDTScaffoldState extends State<BDTScaffold> {
 
   bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
 
-  String _stopRunningMessage() {
-    if (_isAllRunsOver()) {
-      return 'Reset the timer first';
+  Iterable<int> _calculateDistributedSlices(int value) {
+    value++;
+    double perSlice = MAX_SLICE / value;
+    double slice = perSlice;
+    final breaks = HashSet<int>();
+    for (int i = 1; i <= value; i++) {
+      final fSlice = slice.round();
+      if (fSlice > 0 && fSlice < MAX_SLICE) breaks.add(fSlice);
+      slice += perSlice;
     }
-    else {
-      return 'Stop running first';
-    }
+    return breaks;
   }
+
+  List<DropdownMenuItem<Object?>> _getBreakDownItems() {
+    final l10n = AppLocalizations.of(context)!;
+
+    final breakDownItems =  _loadedBreakDowns.map((BreakDown breakDown) {
+      return DropdownMenuItem(
+        value: breakDown,
+        child: breakDown.id == _pinnedBreakDownId
+            ? Row(children: [
+          Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
+          Text(breakDown.getPresetName(context))
+        ])
+            : Text(breakDown.getPresetName(context)),
+      );
+    }).cast<DropdownMenuItem<Object?>>().toList();
+
+    breakDownItems.insert(0, DropdownMenuItem<Object?>(
+          value: _BUILD_BREAKDOWN_ITEM,
+          child: Text(l10n.splitBreaks + " ...")));
+
+    return breakDownItems;
+  }
+
 
 }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../service/ColorService.dart';
 
 class VolumeSliderDialog extends StatefulWidget {
@@ -27,7 +28,9 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final titleText = Text("Volume : ${_currentValue == 0 ? "-muted-" : _currentValue.toInt().toString() + "%" }");
+    final l10n = AppLocalizations.of(context)!;
+
+    final titleText = Text("${l10n.volume} : ${_currentValue == 0 ? "-${l10n.muted}-" : _currentValue.toInt().toString() + "%" }");
     return AlertDialog(
       alignment: Alignment.centerRight,
       shape: const RoundedRectangleBorder(),
@@ -64,7 +67,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
               activeColor: ColorService().getCurrentScheme().button,
               hoverColor: ColorService().getCurrentScheme().accent,
               value: _currentValue == 0,
-              title: const Text('Mute'),
+              title: Text(l10n.mute),
               onChanged: (value) {
                 setState(() {
                   if (value) {
@@ -90,7 +93,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
             // back a result to the page that opened the dialog
             Navigator.pop(context);
           },
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         TextButton(
           onPressed: () {
@@ -98,7 +101,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
             // back a result to the page that opened the dialog
             Navigator.pop(context, _currentValue);
           },
-          child: const Text('Ok'),
+          child: Text(l10n.ok),
         )
       ],
     );

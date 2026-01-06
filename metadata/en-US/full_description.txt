@@ -1,22 +1,35 @@
-This is a handy timer where you can define notifications ("breaks") while the timer is running. Imagine this scenario: You have 45 minutes time to go for a walk, so you should go back after the half of the time. So, set the timer duration to 45 minutes, define a break after the half of the time and start the timer. Now you get a notification (audio signal, vibration, device notification) when the half of the time is reached, AND of course when the complete time is reached.
+This is a handy timer that lets you set notifications ("breaks") during the timer's duration.
 
-Other scenarios could be to get notified every quarter of a duration to keep a feeling of the passing and remaining time. Or to get notifications short before the end of the duration.
+Imagine this scenario: You have 45 minutes for a walk and should return halfway through.
+So, set the timer duration to 45 minutes, define a break at the halfway point, and start the timer.
+You will now receive a notification (audio, vibration, device notification) once the halfway point is reached,
+AND, of course, when the entire time has elapsed.
 
-The notifications are encoded in patterns of audio beeps and/or vibrations to express the reached in-between break. The pattern is very simple: a short beep means "1", a long beeeeep means "5". So, e.g. "beeeeep beep" means "6". All signals are prefixed with a short "bepbep" sequence to attract attention.
+Other scenarios include notifications every 15 minutes to keep track of the elapsed and remaining time.
+Or to receive notifications shortly before the timer expires.
 
-With the audio and vibration patterns you can even get notified about the timer progress without pulling your phone out of the pocket and looking on it. This is also very handy during workouts.
+The notifications are coded as audio signals and/or vibrations so you can recognize the breaks without having to look at the display.
+The pattern is very simple: A short beep means "1," a long beep means "5." "Beeeeep beep," for example, means "6."
+All signals begin with a short "bep-bep" sequence to attract your attention.
+
+Thanks to the audio and vibration patterns, you'll be notified of the timer's progress without having to take your smartphone out of your pocket.
+This is especially convenient during workouts or other outdoor activities.
+
 
 <b>Features:</b>
- - up to 20 notifications ("breaks") during a timer run 
- - acoustic and haptic feedback 
- - intuitive patterns to recognise current reached break
- - two different timer modes, "Timer" and "Clock"
- - different "break" presets
- - storing own presets
- - different color schemes
+ - Up to 20 notifications ("breaks") during a timer run
+ - Audible and haptic feedback
+ - Intuitive patterns to indicate the current reached break
+ - Two different timer modes, "Timer" and "Clock"
+ - Various predefined "break" presets
+ - Save your own presets
+ - Various color and audio schemes
+
 
 
 For more information see <a href="https://bdt.jepfa.de">bdt.jepfa.de</a>
 
 If you like the app please star it on <a href="https://github.com/jenspfahl/BDT">Github</a>
+
+
 

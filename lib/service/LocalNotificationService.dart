@@ -84,9 +84,9 @@ class LocalNotificationService {
         message,
         when.subtract(Duration(seconds: when.second)), // trunc seconds
         NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
-        androidAllowWhileIdle: true,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-        payload: receiverKey + '-' + id.toString());
+        payload: receiverKey + '-' + id.toString(),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
   }
 
   Future<void> cancelNotification(int id) async {
@@ -141,7 +141,7 @@ class LocalNotificationService {
     return AndroidNotificationDetails(
       channelId,
       APP_NAME,
-      channelDescription: 'Timer points',
+      channelDescription: 'Timer break downs',
       color: color,
       playSound: false,
       vibrationPattern: null,
@@ -158,9 +158,5 @@ class LocalNotificationService {
     );
   }
 
-  void requestPermissions() {
-    AndroidFlutterLocalNotificationsPlugin? nativePlugin = _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation();
-    nativePlugin?.requestExactAlarmsPermission();
-  }
 }
 

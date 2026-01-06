@@ -1,0 +1,29 @@
+Dies ist ein praktischer Timer, mit dem Sie Benachrichtigungen („Pausen“) während der Laufzeit festlegen können.
+Stellen Sie sich folgendes Szenario vor: Sie haben 45 Minuten Zeit für einen Spaziergang und sollten nach der Hälfte der Zeit zurückkehren.
+Stellen Sie also die Timerdauer auf 45 Minuten ein, definieren Sie eine Pause bei der Hälfte der Zeit und starten Sie den Timer.
+Sie erhalten nun eine Benachrichtigung (Audiosignal, Vibration, Gerätebenachrichtigung), sobald die Hälfte der Zeit erreicht ist,
+UND natürlich auch, wenn die gesamte Zeit abgelaufen ist.
+
+Weitere Szenarien wären beispielsweise Benachrichtigungen alle 15 Minuten, um ein Gefühl für die verstrichene und verbleibende Zeit zu behalten.
+Oder um Benachrichtigungen kurz vor Ablauf der Zeit zu bekommen.
+
+Die Benachrichtigungen sind in Form von Audiosignalen und/oder Vibrationen kodiert, um die erreichten Pausen erkennen zu können, ohne auf das Display schauen zu müssen.
+Die Muster ist sehr einfach: Ein kurzer Piepton (beep) bedeutet „1“, ein langer Piepton (beeeeep) bedeutet „5“. „beeeeep beep“ bedeutet beispielsweise „6“.
+
+Alle Signale beginnen mit einer kurzen „Bep-Bep“-Sequenz, um Ihre Aufmerksamkeit zu erregen.
+Dank der Audio- und Vibrationsmuster werden Sie über den Timer-Fortschritt benachrichtigt, ohne Ihr Smartphone aus der Tasche holen zu müssen.
+Das ist besonders praktisch beim Training oder anderen Outdoor-Aktivitäten.
+
+<b>Funktionen:</b>
+
+- Bis zu 20 Benachrichtigungen („Pausen“) während eines Timer-Laufs
+- Akustisches und haptisches Feedback
+- Intuitive Muster zur Erkennung der aktuell erreichten Pause
+- Zwei verschiedene Timer-Modi: „Timer“ und „Uhr“
+- Verschiedene Pausen-Voreinstellungen
+- Speichern eigener Voreinstellungen
+- Verschiedene Farb- und Audio-Schemata
+
+Weitere Informationen finden Sie unter <a href="https://bdt.jepfa.de">bdt.jepfa.de</a>
+
+Wenn Ihnen die App gefällt, bewerten Sie sie bitte auf <a href="https://github.com/jenspfahl/BDT">GitHub</a>

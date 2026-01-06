@@ -15,11 +15,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.2.2+10202
+version: 1.4.0+10400
 
 environment:
-  sdk: ">=3.4.0"
-  flutter: 3.22.0
+  sdk: ">=3.4.0 <4.0.0"
+  flutter: ">=3.32.0 <3.38.0" # ensure only Flutter versions are used that have been tested and work with AlarmManagerPlus
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -32,10 +32,11 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  flutter_local_notifications: ^17.2.1+2
-  flutter_timezone: ^2.1.0
+  flutter_local_notifications: ^18.0.1
+  flutter_timezone: ^5.0.1
   floor: ^1.1.0
   intl: any
+  intl_utils: any
   numberpicker: ^2.1.2
   jiffy: ^6.3.1
   shared_preferences: ^2.3.1
@@ -46,32 +47,32 @@ dependencies:
   permission_handler: ^11.3.1
   sqflite: ^2.0.1
   path: ^1.8.0
-  flutter_translate: ^4.0.2
-  android_alarm_manager_plus: ^3.0.4
-  vibration: ^1.7.4-nullsafety.0
+  android_alarm_manager_plus: ^5.0.0
+  vibration: 3.1.5
   material_design_icons_flutter: ^7.0.7296
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
   sound_mode: ^3.0.0
   system_clock: ^2.0.0
   flutter_svg: ^2.0.10+1
   open_settings: ^2.0.2
-  flutter_fgbg: ^0.4.0
-  disable_battery_optimization: ^1.1.0+1
+  flutter_fgbg: ^0.7.0
+  disable_battery_optimization: ^1.1.2
+  dynamic_color: ^1.8.1
   flutter_sound_bridge:
     path: ./flutter_sound_bridge
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  wakelock: ^0.6.2
-  wakelock_windows: ^0.2.1
-
-
-
+  wakelock_plus: ^1.2.10
   timezone: any
+
+
 dependency_overrides:
-  package_info_plus: ^8.0.1
-  win32: ^5.0.0
+  win32: 5.15.0
+  intl: 0.20.2
+  vibration: 3.1.5
+
 
 
 dev_dependencies:
@@ -102,6 +103,8 @@ flutter_icons:
 # The following section is specific to Flutter packages.
 flutter:
 
+  generate: true
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -113,5 +116,4 @@ flutter:
   #   - images/a_dot_ham.jpeg
 
   assets:
-    - assets/i18n/en.json
     - assets/launcher_bdt_adaptive_fore.png

@@ -1,6 +1,6 @@
 # Break.Down.Timer (B.D.T)
 
-A timer with in-between notifications.
+A timer with intermediate notifications.
 
 ## What is this
 
@@ -20,18 +20,38 @@ Instead of placing breaks by your own, you can use the built-in presets of the a
 
 Fore more details, see [bdt.jepfa.de](https://bdt.jepfa.de).
 
+## Screenshots
+<details>
+<summary>Show screenshots</summary>
+
+![](metadata/en-US/images/phoneScreenshots/1.png)
+![](metadata/en-US/images/phoneScreenshots/2.png)
+![](metadata/en-US/images/phoneScreenshots/3.png)
+![](metadata/en-US/images/phoneScreenshots/4.png)
+![](metadata/en-US/images/phoneScreenshots/5.png)
+![](metadata/en-US/images/phoneScreenshots/6.png)
+![](metadata/en-US/images/phoneScreenshots/7.png)
+
+
+</details>
+
 ## Download
 
-**Important note**: There is an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) by another developer called "Schnupfeld". To get my original ad-free version, use the badges below (AppId `de.jepfa.bdt.adfree` for Google Play).
+**Important note**: There ~~is~~ was an _ad-containing_ fork on **Google Play** abusing my AppId (`de.jepfa.bdt`) by another developer called "Schnupfeld". To get my original ad-free version, use the badges below (AppId `de.jepfa.bdt.adfree` for Google Play).
 
 Update: The add-containing fork was removed from the Play Store meanwhile but still the AppId `de.jepfa.bdt` is burned forever and cannot be reused by anybody else than the origin publisher.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
      alt="Get it on F-Droid"
-     height="80">](https://f-droid.org/packages/de.jepfa.bdt/)
+     height="80">](https://f-droid.org/packages/de.jepfa.bdt/) 
 
 [<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
 alt="Get it on Google Play"
 height="80">](https://play.google.com/store/apps/details?id=de.jepfa.bdt.adfree)
 
 Or download the latest apk from [here.](https://bdt.jepfa.de/download/)
+
+# Contribute
+
+You can contribute with ideas, feature requests and bug fixes or reports.
+You are also welcome to translate the app on [Weblate](https://hosted.weblate.org/projects/break-down-timer/).

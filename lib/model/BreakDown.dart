@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class BreakDown implements Comparable<BreakDown> {
 
   int id;
@@ -61,12 +63,13 @@ class BreakDown implements Comparable<BreakDown> {
     return sorted.join(',');
   }
 
-  String getPresetName() {
+  String getPresetName(BuildContext context) {
+    final name = _getMaybeTranslated(id, this.name, context);
     if (duration != null) {
-      return '$name [for ${formatDuration(duration!)}]';
+      return '$name [${formatDuration(duration!)}]';
     }
     else if (time != null) {
-      return '$name [at ${formatTimeOfDay(time!)}]';
+      return '$name [${formatTimeOfDay(context, time!)}]';
     }
     else {
       return name;
@@ -85,6 +88,20 @@ class BreakDown implements Comparable<BreakDown> {
         ? '${time!.hour}:${time!.minute}'
         : null
   };
+
+  _getMaybeTranslated(int id, name, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    // the ids refer to #predefinedBreakDowns
+    return switch(id) {
+      -5 => l10n.every5thSlice,
+      -6 => l10n.every3rdSlice,
+      -9 => l10n.everyXMinutes(5),
+      -10 => l10n.everyXMinutes(10),
+      -11 => l10n.everyXMinutes(15),
+      int() => name,
+    };
+  }
 
 }
 

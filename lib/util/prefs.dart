@@ -11,6 +11,9 @@ Future<bool> mayVibrate(PreferenceService preferenceService) async {
 Future<bool> shouldSignalTwice(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE) == true;
 }
+Future<bool> shouldSignalWithoutEncodedNumber(PreferenceService preferenceService) async {
+  return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER) == true;
+}
 
 Future<bool> shouldCancelSignalling(PreferenceService preferenceService) async {
   await preferenceService.reload();
