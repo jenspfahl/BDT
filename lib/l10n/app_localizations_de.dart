@@ -50,6 +50,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get minutes => 'Minuten';
 
   @override
+  String get seconds => 'Sekunden';
+
+  @override
+  String get changeSeconds => 'Sekunden anpassen';
+
+  @override
   String get settings => 'Einstellungen';
 
   @override
@@ -57,6 +63,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get darkTheme => 'Dunkles Design';
+
+  @override
+  String get useSystemColors => 'Verwende dynamische Farben vom System';
 
   @override
   String get colorScheme => 'Farbschema';
@@ -184,7 +193,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String breakReached(Object breakCount, Object breakNumber) {
-    return 'Pause $breakNumber von $breakCount wurde erreicht';
+    return 'Pause $breakNumber von $breakCount erreicht';
   }
 
   @override
@@ -222,6 +231,17 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String breakPresetUnpinned(Object preset) {
     return 'Voreinstellung \'$preset\' nicht mehr markiert';
+  }
+
+  @override
+  String get every3rdSlice => 'Jedes dritte Segment';
+
+  @override
+  String get every5thSlice => 'Jedes fünfte Segment';
+
+  @override
+  String everyXMinutes(Object count) {
+    return 'Alle $count Minuten';
   }
 
   @override
@@ -315,6 +335,19 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
     return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen (Lauf $runCount)';
+  }
+
+  @override
+  String get splitBreaks => 'Pausen aufteilen';
+
+  @override
+  String splitBreaksDescription(Object duration) {
+    return 'Wählen Sie die Anzahl der benötigten Pausen für $duration aus.';
+  }
+
+  @override
+  String durationBetweenBreaks(Object breakCount, Object duration) {
+    return 'Dauer zwischen $breakCount Pausen: $duration';
   }
 
   @override

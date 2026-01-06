@@ -38,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
   bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
+  bool _useSystemColors = PreferenceService.PREF_USE_SYSTEM_COLORS.defaultValue;
   int _audioScheme = PreferenceService.PREF_AUDIO_SCHEME.defaultValue;
   bool _showSpinner = PreferenceService.PREF_SHOW_SPINNER.defaultValue;
   bool _showArrows = PreferenceService.PREF_SHOW_ARROWS.defaultValue;
@@ -90,9 +91,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
+            SettingsTile.switchTile(
+              title: Text(l10n.useSystemColors),
+              enabled: ColorService().isDynamicColorsSupported,
+              initialValue: _useSystemColors,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_USE_SYSTEM_COLORS, value)
+                    .then((_) {
+                  setState(() {
+                    _useSystemColors = value;
+                    _preferenceService.useSystemColors = _useSystemColors;
+                    AppBuilder.of(context)?.rebuild();
+                  });
+                });
+              },
+            ),
             SettingsTile(
               title: Text(l10n.colorScheme),
               description: Text(_getColorSchemeName(_preferenceService.colorSchema)),
+              enabled: !_useSystemColors,
               onPressed: (context) {
                 final choices = predefinedColorSchemes
                     .map((e) => ChoiceWidgetRow(
@@ -397,6 +415,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final darkMode = await _preferenceService.getBool(PreferenceService.PREF_DARK_MODE);
     if (darkMode != null) {
       _darkMode = darkMode;
+    }
+    final useSystemColors = await _preferenceService.getBool(PreferenceService.PREF_USE_SYSTEM_COLORS);
+    if (useSystemColors != null) {
+      _useSystemColors = useSystemColors;
     }
     final audioScheme = await _preferenceService.getInt(PreferenceService.PREF_AUDIO_SCHEME);
     if (audioScheme != null) {

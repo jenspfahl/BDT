@@ -65,6 +65,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   final HOMEPAGE = 'bdt.jepfa.de';
   final HOMEPAGE_SCHEME = 'https://';
+  
+  final _BUILD_BREAKDOWN_ITEM = 'build_breakdown_item';
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
@@ -73,6 +75,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   Duration? _originDuration;
   late DateTime _time;
   DateTime? _originTime;
+
+  int _breakDownCount = 3;
 
   final _selectedSlices = HashSet<int>();
   int? _pinnedBreakDownId;
@@ -400,7 +404,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-          debugPrint('refresh ui values');
+         // debugPrint('refresh ui values');
         });
       }
     });
@@ -442,7 +446,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               debugPrint('Recover last session');
               _setStateFromJson(stateAsJson);
               int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
-              _loadBreakDowns(focusPinned: true,
+              _loadBreakDowns(focusPinned: false,
                   preSelectedBreakDownId: preSelectedBreakDownId);
             }
           });
@@ -462,6 +466,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             });
           }
     });
+
+    Permission.scheduleExactAlarm.request();
 
     Permission.scheduleExactAlarm.request();
 
@@ -567,7 +573,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
       if (mounted) {
         _updateRunning();
-        debugPrint('.. timer refresh #${_runTimer?.tick} ..');
+        //debugPrint('.. timer refresh #${_runTimer?.tick} ..');
       }
     });
   }
@@ -581,7 +587,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
-      debugPrint('delta=$delta, ratio = $ratio');
+      //debugPrint('delta=$delta, ratio = $ratio');
       setState(() {
         _passedIndex = (MAX_SLICE * ratio).floor() + 1;
         // update all
@@ -802,10 +808,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             IconButton(
                 onPressed: () {
                   Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsScreen()))
-                      .then((value) {
+                      .then((value) async {
                         _loadBreakDowns(focusPinned: false);
                         _updateWakeLock();
-                        setState(() => _updateBreakOrder());
+                        await _updateBreakOrder();
+                        setState(() {});
                       });
                 },
                 icon: const Icon(Icons.settings)),
@@ -839,30 +846,35 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           _moveBreakDownSelectionToNext();
                         }
                       },
-                      child: DropdownButtonFormField<BreakDown?>(
+                      child: DropdownButtonFormField<Object?>(
                         isDense: true,
                         focusColor: ColorService().getCurrentScheme().accent,
                         onTap: () => FocusScope.of(context).unfocus(),
-                        value: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
+                        initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
                         hint: Text(l10n.breakPresets),
                         iconEnabledColor: ColorService().getCurrentScheme().button,
-                        icon: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+                        icon: Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: GestureDetector(
+                              onTap: () {
+                                _showBreakDownDialog(context);
+                              },
+                              child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
+                        ),
                         isExpanded: true,
                         onChanged:  _isRunning() ? null : (value) {
-                          _updateSelectedSlices(value);
+                          if (value is BreakDown) {
+                            _updateSelectedSlices(value);
+                          }
+                          else if (value == _BUILD_BREAKDOWN_ITEM) {
+                            debugPrint('_BUILD_BREAKDOWN_ITEM selected');
+                            setState(() {
+                              _selectedBreakDown = null; //TODO doesnt work
+                            });
+                            _showBreakDownDialog(context);
+                          }
                         },
-                        items: _loadedBreakDowns.map((BreakDown breakDown) {
-                          return DropdownMenuItem(
-                            value: breakDown,
-                            child: breakDown.id == _pinnedBreakDownId
-                                ? Row(children: [
-                                        Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
-                                        Text(breakDown.getPresetName(context))
-                                  ])
-                                : Text(breakDown.getPresetName(context)),
-                          );
-                        }).toList(),
-                      ),
+                        items: _getBreakDownItems()),
                     ),
                   ),
                   Flexible(child: IconButton(
@@ -1217,6 +1229,22 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     );
   }
 
+  void _showBreakDownDialog(BuildContext context) {
+    showBreakDownDialog(
+        context: context,
+        initialValue: _breakDownCount,
+        duration: _duration
+      ).then((value) {
+        if (value != null) {
+          setState(() {
+            _breakDownCount = value;
+            _selectedSlices.clear();
+            _selectedSlices.addAll(_calculateDistributedSlices(value));
+          });
+        }
+    });
+  }
+
   @override
   Future<void> dispose() async {
     debugPrint('App killed');
@@ -1382,6 +1410,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       backgroundColor: ColorService().getCurrentScheme().button,
       baseColor: ColorService().getCurrentScheme().primary,
       highlightedColor: ColorService().getCurrentScheme().accent,
+      buttonColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
       height: 48,
       width: 250,
       buttonSize: 48,
@@ -1540,13 +1569,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      var value1 = formatDuration(_getDelta()!) + (showArrows ? ' $downArrow' : '');
-      var value2 = formatDuration(_getRemaining()!) + (showArrows ? ' $upArrow' : "");
-      var value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
-      if (_isAllRunsOver()) {
-        value1 = formatDuration(_duration);
-        value2 = formatDuration(Duration.zero);
-      }
+      final value1 = formatDuration(_isAllRunsOver() ? _duration : _getDelta()!) + (showArrows ? ' $downArrow' : '');
+      final value2 = formatDuration(_isAllRunsOver() ? Duration.zero : _getRemaining()!) + (showArrows ? ' $upArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
 
       if (presentation == RelativeProgressPresentation.REMAINING) {
         return Text(value2);
@@ -1573,12 +1598,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      var value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
-      var value2 = formatDateTime(langCode, DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
-      var value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
-      if (_isAllRunsOver()) {
-        value2 = formatDateTime(langCode, _time, withSeconds: true);
-      }
+      final value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
         return _createTwoRowsCircle(value1, value2, smallValue1: true);
@@ -1703,6 +1725,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       duration = const Duration(minutes: 1);
       adjusted = true;
     }
+    if (duration.inHours >= 1) { // remove seconds
+      duration = Duration(minutes: duration.inMinutes);
+      // adjusted = true;
+    }
     _updateDuration(duration, fromUser: fromUser);
     return adjusted;
   }
@@ -1728,7 +1754,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       if (isInTransition) {
         final deltaSeconds = _getDelta()?.inSeconds ?? 0;
         final transitionSeconds = deltaSeconds % sliceSeconds;
-        debugPrint('tranSec=$transitionSeconds / sliceSec=$sliceSeconds');
+        //debugPrint('transSec=$transitionSeconds / sliceSec=$sliceSeconds');
         radius = radius + (radius * (transitionSeconds / sliceSeconds * 0.1));
       }
       else if (isPassed) {
@@ -1775,7 +1801,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
-      debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
+      //debugPrint('nowOrStartedAt=$nowOrStartedAt delta=${delta.inMinutes} sl=$slice sliceDur=$sliceDuration');
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
           langCode,
@@ -2089,6 +2115,41 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
 
   bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
+
+  Iterable<int> _calculateDistributedSlices(int value) {
+    value++;
+    double perSlice = MAX_SLICE / value;
+    double slice = perSlice;
+    final breaks = HashSet<int>();
+    for (int i = 1; i <= value; i++) {
+      final fSlice = slice.round();
+      if (fSlice > 0 && fSlice < MAX_SLICE) breaks.add(fSlice);
+      slice += perSlice;
+    }
+    return breaks;
+  }
+
+  List<DropdownMenuItem<Object?>> _getBreakDownItems() {
+    final l10n = AppLocalizations.of(context)!;
+
+    final breakDownItems =  _loadedBreakDowns.map((BreakDown breakDown) {
+      return DropdownMenuItem(
+        value: breakDown,
+        child: breakDown.id == _pinnedBreakDownId
+            ? Row(children: [
+          Icon(Icons.push_pin, color: _isRunning() ? Colors.grey : null,),
+          Text(breakDown.getPresetName(context))
+        ])
+            : Text(breakDown.getPresetName(context)),
+      );
+    }).cast<DropdownMenuItem<Object?>>().toList();
+
+    breakDownItems.insert(0, DropdownMenuItem<Object?>(
+          value: _BUILD_BREAKDOWN_ITEM,
+          child: Text(l10n.splitBreaks + " ...")));
+
+    return breakDownItems;
+  }
 
 
 }

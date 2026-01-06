@@ -173,6 +173,18 @@ abstract class AppLocalizations {
   /// **'Minutes'**
   String get minutes;
 
+  /// No description provided for @seconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds'**
+  String get seconds;
+
+  /// No description provided for @changeSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Change seconds'**
+  String get changeSeconds;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -190,6 +202,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark theme'**
   String get darkTheme;
+
+  /// No description provided for @useSystemColors.
+  ///
+  /// In en, this message translates to:
+  /// **'Use dynamic system colors'**
+  String get useSystemColors;
 
   /// No description provided for @colorScheme.
   ///
@@ -491,6 +509,24 @@ abstract class AppLocalizations {
   /// **'Preset \'{preset}\' unpinned'**
   String breakPresetUnpinned(Object preset);
 
+  /// No description provided for @every3rdSlice.
+  ///
+  /// In en, this message translates to:
+  /// **'every 3rd slice'**
+  String get every3rdSlice;
+
+  /// No description provided for @every5thSlice.
+  ///
+  /// In en, this message translates to:
+  /// **'every 5th slice'**
+  String get every5thSlice;
+
+  /// No description provided for @everyXMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'every {count} minutes'**
+  String everyXMinutes(Object count);
+
   /// No description provided for @savePresetTitle.
   ///
   /// In en, this message translates to:
@@ -640,6 +676,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})'**
   String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount);
+
+  /// No description provided for @splitBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Split breaks'**
+  String get splitBreaks;
+
+  /// No description provided for @splitBreaksDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the number of breaks needed for {duration}.'**
+  String splitBreaksDescription(Object duration);
+
+  /// No description provided for @durationBetweenBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration between {breakCount} breaks: {duration}'**
+  String durationBetweenBreaks(Object breakCount, Object duration);
 
   /// No description provided for @errorNoPermissionForNotifications.
   ///

@@ -50,6 +50,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get minutes => 'Minutes';
 
   @override
+  String get seconds => 'Seconds';
+
+  @override
+  String get changeSeconds => 'Change seconds';
+
+  @override
   String get settings => 'settings';
 
   @override
@@ -57,6 +63,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get darkTheme => 'Dark theme';
+
+  @override
+  String get useSystemColors => 'Use dynamic system colors';
 
   @override
   String get colorScheme => 'Color scheme';
@@ -225,6 +234,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get every3rdSlice => 'every 3rd slice';
+
+  @override
+  String get every5thSlice => 'every 5th slice';
+
+  @override
+  String everyXMinutes(Object count) {
+    return 'every $count minutes';
+  }
+
+  @override
   String get savePresetTitle => 'Save preset';
 
   @override
@@ -315,6 +335,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
     return '$remainingBreaks of $breakCount breaks left, repeating forever (run $runCount)';
+  }
+
+  @override
+  String get splitBreaks => 'Split breaks';
+
+  @override
+  String splitBreaksDescription(Object duration) {
+    return 'Select the number of breaks needed for $duration.';
+  }
+
+  @override
+  String durationBetweenBreaks(Object breakCount, Object duration) {
+    return 'Duration between $breakCount breaks: $duration';
   }
 
   @override

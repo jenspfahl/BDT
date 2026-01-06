@@ -13,10 +13,12 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "seconds": "Seconds",
+  "changeSeconds": "Change seconds",
 
   "settings": "settings",
   "commonSettings": "Common Settings",
   "darkTheme": "Dark theme",
+  "useSystemColors": "Use dynamic system colors",
   "colorScheme": "Color scheme",
   "selectColorScheme": "Change a color scheme",
   "audioSignals": "Audio signals",
@@ -79,6 +81,10 @@
   "breakPresetPinned" : "Preset '{preset}' pinned",
   "breakPresetUnpinned" : "Preset '{preset}' unpinned",
 
+  "every3rdSlice": "every 3rd slice",
+  "every5thSlice": "every 5th slice",
+  "everyXMinutes": "every {count} minutes",
+
   "savePresetTitle": "Save preset",
   "savePresetMessage": "Enter a name for your preset to save.",
   "savePresetHint": "choose a name",
@@ -109,6 +115,10 @@
   "xBreaksLeft": "{remainingBreaks} of {breakCount} breaks left",
   "xBreaksLeftRepeatOnce": "{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)",
   "xBreaksLeftRepeatForever": "{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})",
+
+  "splitBreaks": "Split breaks",
+  "splitBreaksDescription": "Select the number of breaks needed for {duration}.",
+  "durationBetweenBreaks": "Duration between {breakCount} breaks: {duration}",
 
   "errorNoPermissionForNotifications": "Notifications won't work as long as this permission is not granted.",
   "errorDeviceMuted": "Device is muted. Unmute first to set volume.",

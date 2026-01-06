@@ -13,10 +13,13 @@
   "hours": "Stunden",
   "minutes": "Minuten",
   "seconds": "Sekunden",
+  "changeSeconds": "Sekunden anpassen",
+
 
   "settings": "Einstellungen",
   "commonSettings": "Allgemeine Einstellungen",
   "darkTheme": "Dunkles Design",
+  "useSystemColors": "Verwende dynamische Farben vom System",
   "colorScheme": "Farbschema",
   "selectColorScheme": "Farbschema ändern",
   "audioSignals": "Audiosignale",
@@ -75,6 +78,11 @@
   "breakPresetPinned" : "Voreinstellung '{preset}' markiert",
   "breakPresetUnpinned" : "Voreinstellung '{preset}' nicht mehr markiert",
 
+
+  "every3rdSlice": "Jedes dritte Segment",
+  "every5thSlice": "Jedes fünfte Segment",
+  "everyXMinutes": "Alle {count} Minuten",
+
   "savePresetTitle": "Voreinstellung speichern",
   "savePresetMessage": "Geben Sie einen Namen für diese Voreinstellung ein.",
   "savePresetHint": "Wählen Sie einen Namen",
@@ -104,6 +112,10 @@
   "xBreaksLeft": "{remainingBreaks} von {breakCount} verbleibenden Pausen",
   "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen (Lauf {runCount} von 2)",
   "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen (Lauf {runCount})",
+
+  "splitBreaks": "Pausen aufteilen",
+  "splitBreaksDescription": "Wählen Sie die Anzahl der benötigten Pausen für {duration} aus.",
+  "durationBetweenBreaks": "Dauer zwischen {breakCount} Pausen: {duration}",
 
   "errorNoPermissionForNotifications": "Benachrichtigungen funktionieren nicht, solange diese Berechtigung nicht erteilt wurde.",
   "errorDeviceMuted": "Das Gerät ist stummgeschaltet. Deaktivieren Sie zuerst die Stummschaltung, um die Lautstärke einzustellen.",

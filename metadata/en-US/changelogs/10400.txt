@@ -1,0 +1,6 @@
+* Add tool to split breaks equally by given amount (#15)
+* Support dynamic system colors as Color Scheme (if supported by the OS) (#7)
+* Show indicator arrows when timer is running on time values (can be disabled) (#12)
+* German translation (more to come)
+* Smaller bug fixes
+* Upgrade to Android 16
