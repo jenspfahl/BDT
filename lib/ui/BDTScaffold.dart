@@ -1569,13 +1569,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      var value1 = formatDuration(_getDelta()!) + (showArrows ? ' $downArrow' : '');
-      var value2 = formatDuration(_getRemaining()!) + (showArrows ? ' $upArrow' : "");
-      var value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
-      if (_isAllRunsOver()) {
-        value1 = formatDuration(_duration);
-        value2 = formatDuration(Duration.zero);
-      }
+      final value1 = formatDuration(_isAllRunsOver() ? _duration : _getDelta()!) + (showArrows ? ' $downArrow' : '');
+      final value2 = formatDuration(_isAllRunsOver() ? Duration.zero : _getRemaining()!) + (showArrows ? ' $upArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
 
       if (presentation == RelativeProgressPresentation.REMAINING) {
         return Text(value2);
@@ -1602,12 +1598,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      var value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
-      var value2 = formatDateTime(langCode, DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
-      var value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
-      if (_isAllRunsOver()) {
-        value2 = formatDateTime(langCode, _time, withSeconds: true);
-      }
+      final value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
         return _createTwoRowsCircle(value1, value2, smallValue1: true);
