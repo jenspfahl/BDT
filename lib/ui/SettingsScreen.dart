@@ -91,7 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 });
               },
             ),
-            SettingsTile.switchTile(
+            if (ColorService().isDynamicColorsSupported) SettingsTile.switchTile(
               title: Text(l10n.useSystemColors),
               enabled: ColorService().isDynamicColorsSupported,
               initialValue: _useSystemColors,
