@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     compileSdkVersion 36
-    namespace 'de.jepfa.bdt'
+    namespace 'de.jepfa.bdt.adfree'
 
     ndkVersion "29.0.14206865"
 
@@ -40,7 +40,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "de.jepfa.bdt"
+        applicationId "de.jepfa.bdt.adfree"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion flutter.minSdkVersion

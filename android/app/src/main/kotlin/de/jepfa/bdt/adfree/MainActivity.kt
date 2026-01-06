@@ -1,4 +1,4 @@
-package de.jepfa.bdt
+package de.jepfa.bdt.adfree
 
 import io.flutter.embedding.android.FlutterActivity
 
