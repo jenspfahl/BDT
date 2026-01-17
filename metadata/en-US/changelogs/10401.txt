@@ -1,0 +1,1 @@
+* Default language should be English if no supported language found on host system (#25)
