@@ -43,7 +43,7 @@ class BDTApp extends StatelessWidget {
                       GlobalMaterialLocalizations.delegate,
                       GlobalWidgetsLocalizations.delegate,
                     ],
-                    supportedLocales: AppLocalizations.supportedLocales,
+                    supportedLocales: _ensureEnglishFirst(AppLocalizations.supportedLocales),
                     theme: ThemeData(
                         useMaterial3: false,
                         brightness: Brightness.light,
@@ -100,6 +100,14 @@ class BDTApp extends StatelessWidget {
           }
       );
     });
+  }
+
+  Iterable<Locale> _ensureEnglishFirst(List<Locale> supportedLocales) {
+    if (supportedLocales.firstOrNull?.languageCode == 'en') {
+      return supportedLocales;
+    }
+    final english = supportedLocales.firstWhere((l) => l.languageCode == 'en');
+    return [english]..addAll(supportedLocales.where((l) => l.languageCode != 'en'));
   }
 }
 
