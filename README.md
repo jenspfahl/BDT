@@ -1,3 +1,8 @@
+<a href="https://hosted.weblate.org/engage/break-down-timer/">
+<img src="https://hosted.weblate.org/widget/break-down-timer/svg-badge.svg" alt="Translation state" />
+</a>
+
+
 # Break.Down.Timer (B.D.T)
 
 A timer with intermediate notifications.
