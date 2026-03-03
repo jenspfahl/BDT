@@ -53,5 +53,9 @@ Or download the latest apk from [here.](https://bdt.jepfa.de/download/)
 
 # Contribute
 
+<a href="https://hosted.weblate.org/engage/break-down-timer/">
+<img src="https://hosted.weblate.org/widget/break-down-timer/svg-badge.svg" alt="Translation state" />
+</a>
+
 You can contribute with ideas, feature requests and bug fixes or reports.
 You are also welcome to translate the app on [Weblate](https://hosted.weblate.org/projects/break-down-timer/).
