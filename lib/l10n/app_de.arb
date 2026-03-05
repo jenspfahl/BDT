@@ -29,6 +29,8 @@
   "notifyUponReachedBreaksDescription": "Benachrichtigt, wenn eine Pause erreicht wird und ein Lauf gestartet oder beendet wurde.",
   "vibrateUponReachedBreaks": "Vibriert bei erreichten Pausen",
   "vibrateUponReachedBreaksDescription": "Vibriert mit einem Muster, wenn eine Pause erreicht wird und ein Lauf gestartet oder beendet wurde.",
+  "muteVolumeIfDeviceIsMuted": "Lautstärke unterdrücken, wenn das Gerät stummgeschaltet ist",
+  "muteVolumeIfDeviceIsMutedDescription": "Wenn diese Option aktiviert ist, werden Audiosignale unterdrückt, wenn das Gerät stummgeschaltet wurde.",
   "signalTwiceUponReachedBreaks": "Zweimaliges Signal bei erreichten Pausen",
   "signalTwiceUponReachedBreaksDescription": "Um keine Pause zu verpassen, wird jede Pause zweimal signalisiert.",
   "signalWithoutCounter": "Signal ohne Zählerinformation",

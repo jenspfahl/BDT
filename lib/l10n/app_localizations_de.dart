@@ -95,6 +95,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vibrateUponReachedBreaksDescription => 'Vibriert mit einem Muster, wenn eine Pause erreicht wird und ein Lauf gestartet oder beendet wurde.';
 
   @override
+  String get muteVolumeIfDeviceIsMuted => 'Lautstärke unterdrücken, wenn das Gerät stummgeschaltet ist';
+
+  @override
+  String get muteVolumeIfDeviceIsMutedDescription => 'Wenn diese Option aktiviert ist, werden Audiosignale unterdrückt, wenn das Gerät stummgeschaltet wurde.';
+
+  @override
   String get signalTwiceUponReachedBreaks => 'Zweimaliges Signal bei erreichten Pausen';
 
   @override

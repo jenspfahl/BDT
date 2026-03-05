@@ -55,6 +55,8 @@
   "@vibrateUponReachedBreaks": {},
   "vibrateUponReachedBreaksDescription": "休息点到达及运行开始或结束时按特定模式振动。",
   "@vibrateUponReachedBreaksDescription": {},
+  "muteVolumeIfDeviceIsMuted": "设备静音时抑制音量",
+  "muteVolumeIfDeviceIsMutedDescription": "启用后，设备静音时抑制音频信号。",
   "signalTwiceUponReachedBreaks": "休息点到达时发出两次信号",
   "@signalTwiceUponReachedBreaks": {},
   "signalTwiceUponReachedBreaksDescription": "为确保不错过休息，每个休息点都会发出两次信号。",

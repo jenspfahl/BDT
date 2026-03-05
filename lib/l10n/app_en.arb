@@ -26,8 +26,12 @@
   "runSettings": "Run Settings",
   "notifyUponReachedBreaks": "Notifies you when breaks are reached",
   "notifyUponReachedBreaksDescription": "Notifies you when a break is reached and a run has started or ended.",
+
   "vibrateUponReachedBreaks": "Vibrates when breaks are reached",
   "vibrateUponReachedBreaksDescription": "Vibrates with a pattern when a break is reached and a run has started or ended.",
+
+  "muteVolumeIfDeviceIsMuted": "Suppress the volume when the device is muted",
+  "muteVolumeIfDeviceIsMutedDescription": "When enabled, audio signals are suppressed when the device is muted.",
 
   "signalTwiceUponReachedBreaks": "Two signals when breaks are reached",
   "signalTwiceUponReachedBreaksDescription": "To ensure no break is missed, each break is signaled twice.",

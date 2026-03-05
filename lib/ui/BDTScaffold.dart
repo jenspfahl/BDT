@@ -400,7 +400,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     });
 
-    Timer.periodic(const Duration(seconds: 4), (_) {
+    Timer.periodic(const Duration(seconds: 3), (_) {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
@@ -671,7 +671,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                         .map((i) => GestureDetector(
                           onTapUp: (_) {
                             SignalService.makeSignalPattern(_getSignalForNumber(i),
-                                volume: _volume,
+                                volume: 80,
                                 neverSignalTwice: true,
                                 signalAlthoughCancelled: true,
                                 preferenceService: _preferenceService);
@@ -693,7 +693,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           rows.add(GestureDetector(
                             onTapUp: (_) {
                               SignalService.makeSignalPattern(_getSignalForNumber(100),
-                                  volume: _volume,
+                                  volume: 80,
                                   neverSignalTwice: true,
                                   signalAlthoughCancelled: true,
                                   preferenceService: _preferenceService);
@@ -789,20 +789,23 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     return;
                   }
 
+                  final muteVolumeIfDeviceIsMuted = PreferenceService().muteVolumeIfDeviceIsMuted;
+
                   final volume = await showVolumeSliderDialog(context,
                     initialSelection: _volume.toDouble(),
                     onChangedEnd: (value) {
-                      SignalService.setSignalVolume(value.round());
+                      SignalService.setSignalVolume(value.round(), muteVolumeIfDeviceIsMuted);
                       SignalService.makeShortSignal();
                     }
                   );
                   if (volume != null) {
                     setState(() {
                       _volume = volume.round();
+                      debugPrint('Volume = $_volume');
                       setVolume(_preferenceService, _volume);
                     }); // update
                   }
-                  SignalService.setSignalVolume(_volume);
+                  SignalService.setSignalVolume(_volume, muteVolumeIfDeviceIsMuted);
                 },
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
             IconButton(
@@ -1273,7 +1276,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return _timerMode == TimerMode.ABSOLUTE && _selectedBreakDown?.time != _time;
   }
 
-  bool _isDeviceMuted() => _ringerStatus == RingerModeStatus.silent || _ringerStatus == RingerModeStatus.vibrate;
+  bool _isDeviceMuted() {
+    final muteVolumeIfDeviceIsMuted = PreferenceService().muteVolumeIfDeviceIsMuted;
+    return muteVolumeIfDeviceIsMuted &&
+        (_ringerStatus == RingerModeStatus.silent || _ringerStatus == RingerModeStatus.vibrate);
+  }
 
   void _switchTimerMode(DragEndDetails details) {
     // Swiping in right direction.

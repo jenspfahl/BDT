@@ -33,6 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   bool _notifyAtBreaks = PreferenceService.PREF_NOTIFY_AT_BREAKS.defaultValue;
   bool _vibrateAtBreaks = PreferenceService.PREF_VIBRATE_AT_BREAKS.defaultValue;
+  bool _muteVolumeIfDeviceIsMuted = PreferenceService.PREF_MUTE_IF_DEVICE_MUTED.defaultValue;
   bool _signalTwice = PreferenceService.PREF_SIGNAL_TWICE.defaultValue;
   bool _signalWithoutCounter = PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER.defaultValue;
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
@@ -173,12 +174,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       final origVol = await getVolume(_preferenceService);
                       final newVol = max(20, origVol); // not too silent
                       _audioScheme = selection;
-                      await SignalService.setSignalVolume(newVol);
+                      await SignalService.setSignalVolume(newVol, false);
                       await SignalService.makeSignal(const Duration(milliseconds: 400),
                           audioSchemeId: selection,
                           noVibration: true
                       );
-                      await SignalService.setSignalVolume(origVol);
+                      await SignalService.setSignalVolume(origVol, _muteVolumeIfDeviceIsMuted);
                     }
                 );
               },
@@ -206,6 +207,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onToggle: (bool value) {
                 _preferenceService.setBool(PreferenceService.PREF_VIBRATE_AT_BREAKS, value);
                 setState(() => _vibrateAtBreaks = value);
+              },
+            ),
+            SettingsTile.switchTile(
+              title: Text(l10n.muteVolumeIfDeviceIsMuted),
+              description: Text(l10n.muteVolumeIfDeviceIsMutedDescription),
+              initialValue: _muteVolumeIfDeviceIsMuted,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) async {
+                await _preferenceService.setBool(PreferenceService.PREF_MUTE_IF_DEVICE_MUTED, value);
+                await _preferenceService.refresh();
+                setState(() => _muteVolumeIfDeviceIsMuted = value);
               },
             ),
             SettingsTile.switchTile(
@@ -395,6 +407,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final vibrateAtBreaks = await _preferenceService.getBool(PreferenceService.PREF_VIBRATE_AT_BREAKS);
     if (vibrateAtBreaks != null) {
       _vibrateAtBreaks = vibrateAtBreaks;
+    }
+    final muteVolumeIfDeviceIsMuted = await _preferenceService.getBool(PreferenceService.PREF_MUTE_IF_DEVICE_MUTED);
+    if (muteVolumeIfDeviceIsMuted != null) {
+      _muteVolumeIfDeviceIsMuted = muteVolumeIfDeviceIsMuted;
     }
     final signalTwice = await _preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE);
     if (signalTwice != null) {

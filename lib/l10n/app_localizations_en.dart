@@ -95,6 +95,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vibrateUponReachedBreaksDescription => 'Vibrates with a pattern when a break is reached and a run has started or ended.';
 
   @override
+  String get muteVolumeIfDeviceIsMuted => 'Suppress the volume when the device is muted';
+
+  @override
+  String get muteVolumeIfDeviceIsMutedDescription => 'When enabled, audio signals are suppressed when the device is muted.';
+
+  @override
   String get signalTwiceUponReachedBreaks => 'Two signals when breaks are reached';
 
   @override

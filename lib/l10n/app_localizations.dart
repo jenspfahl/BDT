@@ -265,6 +265,18 @@ abstract class AppLocalizations {
   /// **'Vibrates with a pattern when a break is reached and a run has started or ended.'**
   String get vibrateUponReachedBreaksDescription;
 
+  /// No description provided for @muteVolumeIfDeviceIsMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppress the volume when the device is muted'**
+  String get muteVolumeIfDeviceIsMuted;
+
+  /// No description provided for @muteVolumeIfDeviceIsMutedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, audio signals are suppressed when the device is muted.'**
+  String get muteVolumeIfDeviceIsMutedDescription;
+
   /// No description provided for @signalTwiceUponReachedBreaks.
   ///
   /// In en, this message translates to:

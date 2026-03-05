@@ -95,6 +95,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get vibrateUponReachedBreaksDescription => '休息点到达及运行开始或结束时按特定模式振动。';
 
   @override
+  String get muteVolumeIfDeviceIsMuted => '设备静音时抑制音量';
+
+  @override
+  String get muteVolumeIfDeviceIsMutedDescription => '启用后，设备静音时抑制音频信号。';
+
+  @override
   String get signalTwiceUponReachedBreaks => '休息点到达时发出两次信号';
 
   @override
