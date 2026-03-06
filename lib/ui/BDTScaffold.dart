@@ -97,7 +97,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   final _preferenceService = PreferenceService();
   Timer? _runTimer;
   DateTime? _startedAt;
-  int _volume = MAX_VOLUME;
+  int _volume = DEFAULT_VOLUME;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
   late AnimationController _circleAnimationController;
@@ -671,7 +671,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                         .map((i) => GestureDetector(
                           onTapUp: (_) {
                             SignalService.makeSignalPattern(_getSignalForNumber(i),
-                                volume: 80,
+                                volume: _volume,
                                 neverSignalTwice: true,
                                 signalAlthoughCancelled: true,
                                 preferenceService: _preferenceService);
@@ -693,7 +693,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           rows.add(GestureDetector(
                             onTapUp: (_) {
                               SignalService.makeSignalPattern(_getSignalForNumber(100),
-                                  volume: 80,
+                                  volume: _volume,
                                   neverSignalTwice: true,
                                   signalAlthoughCancelled: true,
                                   preferenceService: _preferenceService);

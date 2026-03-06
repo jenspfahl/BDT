@@ -116,7 +116,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultBreakOrder => 'The break order descending by default';
 
   @override
-  String get defaultBreakOrderDescription => 'Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.';
+  String get defaultBreakOrderDescription => 'Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.';
 
   @override
   String get showRunSpinner => 'Show run indicator';

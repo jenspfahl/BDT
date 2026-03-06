@@ -39,7 +39,7 @@
   "signalWithoutCounterDescription": "Don't encode the counter in the audio and vibration signal.",
 
   "defaultBreakOrder": "The break order descending by default",
-  "defaultBreakOrderDescription": "Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.",
+  "defaultBreakOrderDescription": "Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.",
 
   "showRunSpinner": "Show run indicator",
   "showRunSpinnerDescription": "Displays a spinning indicator in the timer wheel while the timer is running.",

@@ -98,7 +98,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get muteVolumeIfDeviceIsMuted => 'Lautstärke unterdrücken, wenn das Gerät stummgeschaltet ist';
 
   @override
-  String get muteVolumeIfDeviceIsMutedDescription => 'Wenn diese Option aktiviert ist, werden Audiosignale unterdrückt, wenn das Gerät stummgeschaltet wurde.';
+  String get muteVolumeIfDeviceIsMutedDescription => 'Wenn diese Option aktiviert ist, werden Audiosignale unterdrückt, wenn das Gerät stummgeschaltet ist.';
 
   @override
   String get signalTwiceUponReachedBreaks => 'Zweimaliges Signal bei erreichten Pausen';
@@ -116,7 +116,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get defaultBreakOrder => 'Die Pausenreihenfolge ist standardmäßig absteigend';
 
   @override
-  String get defaultBreakOrderDescription => 'Anstatt 1, 2, 3 ... wird die Reihenfolge ..., 3, 2, 1 verwendet.';
+  String get defaultBreakOrderDescription => 'Anstatt 1, 2, 3, … wird die Reihenfolge …, 3, 2, 1 verwendet.';
 
   @override
   String get showRunSpinner => 'Lauf-Indikator anzeigen';

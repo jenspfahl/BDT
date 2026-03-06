@@ -1,0 +1,3 @@
+* Emit audio signals even when in Do Not Disturb mode, with opt-out (#20)
+* Add option to mute audio signals if device is also muted
+* Add Chinese language

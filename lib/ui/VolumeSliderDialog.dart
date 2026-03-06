@@ -110,6 +110,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
 }
 
 int MAX_VOLUME = 100;
+int DEFAULT_VOLUME = 80;
 
 Icon createVolumeIcon(int volume) {
   return Icon(volume == 0

@@ -310,7 +310,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultBreakOrderDescription.
   ///
   /// In en, this message translates to:
-  /// **'Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.'**
+  /// **'Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.'**
   String get defaultBreakOrderDescription;
 
   /// No description provided for @showRunSpinner.
