@@ -62,6 +62,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get commonSettings => '通用设置';
 
   @override
+  String get language => 'Language';
+
+  @override
+  String get helpToTranslate => 'This is not your language? Help to translate the app!';
+
+  @override
   String get darkTheme => '深色主题';
 
   @override

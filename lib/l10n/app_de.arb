@@ -18,6 +18,8 @@
 
   "settings": "Einstellungen",
   "commonSettings": "Allgemeine Einstellungen",
+  "language": "Sprache",
+  "helpToTranslate": "Dies ist nicht deine Sprache? Helfe, die App zu übersetzen!",
   "darkTheme": "Dunkles Design",
   "useSystemColors": "Verwende dynamische Farben vom System",
   "colorScheme": "Farbschema",

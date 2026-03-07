@@ -77,6 +77,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SettingsSection(
           title: Text(l10n.commonSettings, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
+            SettingsTile(
+                title: Text(l10n.language),
+                onPressed: (value) {
+                  showHelpToTranslateDialog(context);
+                }
+            ),
             SettingsTile.switchTile(
               title: Text(l10n.darkTheme),
               initialValue: _darkMode,

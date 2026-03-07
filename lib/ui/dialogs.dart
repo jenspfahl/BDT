@@ -5,6 +5,7 @@ import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:open_settings/open_settings.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../l10n/app_localizations.dart';
 import '../main.dart';
@@ -12,6 +13,7 @@ import '../service/PreferenceService.dart';
 import 'ChoiceWidget.dart';
 import 'DurationPicker.dart';
 
+final TRANSLATE_ENGAGE_URL = 'https://hosted.weblate.org/engage/break-down-timer/';
 
 void showConfirmationDialog(BuildContext context, String title, String message,
     {Icon? icon, Function()? okPressed, Function()? cancelPressed}) {
@@ -341,6 +343,36 @@ Future<void> showChoiceDialog(BuildContext context, String title, List<ChoiceWid
           ],
         );
       }
+  );
+}
+
+void showHelpToTranslateDialog(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
+
+  AlertDialog alert = AlertDialog(
+    title: Text(l10n.language),
+    content: Text(l10n.helpToTranslate),
+    actions: [
+      TextButton(
+        child: Text(l10n.ok),
+        onPressed:  () {
+          Navigator.pop(context);
+          launchUrlString(TRANSLATE_ENGAGE_URL, mode: LaunchMode.externalApplication);
+        },
+      ),
+      TextButton(
+        child: Text(l10n.cancel),
+        onPressed:  () {
+          Navigator.pop(context);
+        },
+      ),
+    ],
+  );  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
   );
 }
 

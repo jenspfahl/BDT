@@ -199,6 +199,18 @@ abstract class AppLocalizations {
   /// **'Common Settings'**
   String get commonSettings;
 
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @helpToTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not your language? Help to translate the app!'**
+  String get helpToTranslate;
+
   /// No description provided for @darkTheme.
   ///
   /// In en, this message translates to:

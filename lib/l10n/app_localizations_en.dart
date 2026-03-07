@@ -62,6 +62,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSettings => 'Common Settings';
 
   @override
+  String get language => 'Language';
+
+  @override
+  String get helpToTranslate => 'This is not your language? Help to translate the app!';
+
+  @override
   String get darkTheme => 'Dark theme';
 
   @override
