@@ -888,25 +888,30 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 ],
               ),
             ),
-            GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onHorizontalDragEnd: _switchTimerMode,
-              child: CupertinoSlidingSegmentedControl<TimerMode>(
-                backgroundColor: ColorService().getCurrentScheme().background,
-                thumbColor: ColorService().getCurrentScheme().button,
-                padding: const EdgeInsets.all(8),
-                children: <TimerMode, Widget> {
-                  TimerMode.RELATIVE: Icon(Icons.timer_outlined,
-                      color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                  TimerMode.ABSOLUTE: Icon(Icons.alarm,
-                      color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                },
-                onValueChanged: (value) {
-                  if (value != null) {
-                    setState(() => _setTimerMode(value));
-                  }
-                },
-                groupValue: _timerMode,
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, getTimerModeHeight(), 0, 0),
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onHorizontalDragEnd: _switchTimerMode,
+                child: CupertinoSlidingSegmentedControl<TimerMode>(
+                  backgroundColor: ColorService().getCurrentScheme().background,
+                  thumbColor: ColorService().getCurrentScheme().button,
+                  padding: const EdgeInsets.all(8),
+                  children: <TimerMode, Widget> {
+                    TimerMode.RELATIVE: Padding(padding: EdgeInsets.all(getTimerModeHeight()),
+                      child: Icon(Icons.timer_outlined,
+                        color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)),
+                    TimerMode.ABSOLUTE:  Padding(padding: EdgeInsets.all(getTimerModeHeight()),
+                        child: Icon(Icons.alarm,
+                          color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)),
+                  },
+                  onValueChanged: (value) {
+                    if (value != null) {
+                      setState(() => _setTimerMode(value));
+                    }
+                  },
+                  groupValue: _timerMode,
+                ),
               ),
             ),
             AspectRatio(
@@ -2156,6 +2161,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           child: Text(l10n.splitBreaks + " ...")));
 
     return breakDownItems;
+  }
+
+  double getTimerModeHeight() {
+    final deviceHeight = MediaQuery.of(context).size.height;
+    debugPrint("deviceHeight=$deviceHeight");
+    return deviceHeight >= 790 ? 8 : 0;
   }
 
 
