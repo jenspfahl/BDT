@@ -651,6 +651,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final visitTextParts = l10n.visitAppHomePage('<<<URL>>>').split('<<<URL>>>');
 
 
+    final buffer = (MediaQuery.of(context).size.height / 16);
+    debugPrint("buffer=$buffer");
     return FGBGNotifier(
       onEvent: (event) {
         if (event == FGBGType.background) {
@@ -1235,7 +1237,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: _createStatsLine(),
                   )),
-              const SizedBox(height: 120) // behind the Floating Button
+              SizedBox(height: 120 + buffer) // behind the Floating Button
             ],
           ),
         ),
