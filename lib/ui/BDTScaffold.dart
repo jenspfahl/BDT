@@ -32,6 +32,7 @@ import '../service/ColorService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
 import 'SettingsScreen.dart';
+import 'SlidingControl.dart';
 import 'VolumeSliderDialog.dart';
 import 'dialogs.dart';
 
@@ -893,17 +894,22 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               child: GestureDetector(
                 behavior: HitTestBehavior.translucent,
                 onHorizontalDragEnd: _switchTimerMode,
-                child: CupertinoSlidingSegmentedControl<TimerMode>(
+                child: SlidingControl<TimerMode>(
                   backgroundColor: ColorService().getCurrentScheme().background,
                   thumbColor: ColorService().getCurrentScheme().button,
                   padding: const EdgeInsets.all(8),
+                  cornerRadius: Radius.circular(9 + getTimerModeHeight()),
                   children: <TimerMode, Widget> {
-                    TimerMode.RELATIVE: Padding(padding: EdgeInsets.all(getTimerModeHeight()),
+                    TimerMode.RELATIVE: Padding(
+                      padding: EdgeInsets.all(getTimerModeHeight()),
                       child: Icon(Icons.timer_outlined,
-                        color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)),
-                    TimerMode.ABSOLUTE:  Padding(padding: EdgeInsets.all(getTimerModeHeight()),
+                        color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
+                    ),
+                    TimerMode.ABSOLUTE: Padding(
+                        padding: EdgeInsets.all(getTimerModeHeight()),
                         child: Icon(Icons.alarm,
-                          color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)),
+                          color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)
+                    ),
                   },
                   onValueChanged: (value) {
                     if (value != null) {
