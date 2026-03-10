@@ -62,6 +62,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get commonSettings => 'Allgemeine Einstellungen';
 
   @override
+  String get language => 'Sprache';
+
+  @override
+  String get helpToTranslate => 'Dies ist nicht deine Sprache? Helfe, die App zu übersetzen!';
+
+  @override
   String get darkTheme => 'Dunkles Design';
 
   @override
@@ -95,6 +101,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get vibrateUponReachedBreaksDescription => 'Vibriert mit einem Muster, wenn eine Pause erreicht wird und ein Lauf gestartet oder beendet wurde.';
 
   @override
+  String get muteVolumeIfDeviceIsMuted => 'Lautstärke unterdrücken, wenn das Gerät stummgeschaltet ist';
+
+  @override
+  String get muteVolumeIfDeviceIsMutedDescription => 'Wenn diese Option aktiviert ist, werden Audiosignale unterdrückt, wenn das Gerät stummgeschaltet ist.';
+
+  @override
   String get signalTwiceUponReachedBreaks => 'Zweimaliges Signal bei erreichten Pausen';
 
   @override
@@ -110,7 +122,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get defaultBreakOrder => 'Die Pausenreihenfolge ist standardmäßig absteigend';
 
   @override
-  String get defaultBreakOrderDescription => 'Anstatt 1, 2, 3 ... wird die Reihenfolge ..., 3, 2, 1 verwendet.';
+  String get defaultBreakOrderDescription => 'Anstatt 1, 2, 3, … wird die Reihenfolge …, 3, 2, 1 verwendet.';
 
   @override
   String get showRunSpinner => 'Lauf-Indikator anzeigen';

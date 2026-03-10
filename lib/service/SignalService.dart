@@ -47,7 +47,7 @@ class SignalService {
     int? volume,
     PreferenceService? preferenceService,
     bool neverSignalTwice = false,
-    bool signalAlthoughCancelled = false
+    bool signalAlthoughCancelled = false,
   }) async {
     final prefService = preferenceService ?? PreferenceService();
     final id = Random().nextInt(10000000);
@@ -58,7 +58,9 @@ class SignalService {
     final signalWithoutNumber = await shouldSignalWithoutEncodedNumber(PreferenceService());
 
     final vol = volume ?? await getVolume(prefService);
-    SignalService.setSignalVolume(vol);
+
+    final muteVolumeIfDeviceIsMuted = prefService.muteVolumeIfDeviceIsMuted;
+    SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted);
 
     await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
 
@@ -164,8 +166,11 @@ class SignalService {
 
   static pause(Duration duration) async => Future.delayed(duration);
 
-  static setSignalVolume(int volume) async {
-    await FlutterSoundBridge.setVolume(volume);
+  static setSignalVolume(int volume, bool muteVolumeIfDeviceIsMuted) async {
+    final audioStream = muteVolumeIfDeviceIsMuted
+        ? AudioStreams.STREAM_SYSTEM
+        : AudioStreams.STREAM_ALARM;
+    await FlutterSoundBridge.setVolume(volume, audioStream);
   }
 
   Future<void> stopAll() async {
