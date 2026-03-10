@@ -62,6 +62,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonSettings => 'Common Settings';
 
   @override
+  String get language => 'Language';
+
+  @override
+  String get helpToTranslate => 'This is not your language? Help to translate the app!';
+
+  @override
   String get darkTheme => 'Dark theme';
 
   @override
@@ -95,6 +101,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vibrateUponReachedBreaksDescription => 'Vibrates with a pattern when a break is reached and a run has started or ended.';
 
   @override
+  String get muteVolumeIfDeviceIsMuted => 'Suppress the volume when the device is muted';
+
+  @override
+  String get muteVolumeIfDeviceIsMutedDescription => 'When enabled, audio signals are suppressed when the device is muted.';
+
+  @override
   String get signalTwiceUponReachedBreaks => 'Two signals when breaks are reached';
 
   @override
@@ -110,7 +122,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get defaultBreakOrder => 'The break order descending by default';
 
   @override
-  String get defaultBreakOrderDescription => 'Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.';
+  String get defaultBreakOrderDescription => 'Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.';
 
   @override
   String get showRunSpinner => 'Show run indicator';

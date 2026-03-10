@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,7 +93,8 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en')
+    Locale('en'),
+    Locale('zh')
   ];
 
   /// No description provided for @ok.
@@ -197,6 +199,18 @@ abstract class AppLocalizations {
   /// **'Common Settings'**
   String get commonSettings;
 
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @helpToTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'This is not your language? Help to translate the app!'**
+  String get helpToTranslate;
+
   /// No description provided for @darkTheme.
   ///
   /// In en, this message translates to:
@@ -263,6 +277,18 @@ abstract class AppLocalizations {
   /// **'Vibrates with a pattern when a break is reached and a run has started or ended.'**
   String get vibrateUponReachedBreaksDescription;
 
+  /// No description provided for @muteVolumeIfDeviceIsMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Suppress the volume when the device is muted'**
+  String get muteVolumeIfDeviceIsMuted;
+
+  /// No description provided for @muteVolumeIfDeviceIsMutedDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'When enabled, audio signals are suppressed when the device is muted.'**
+  String get muteVolumeIfDeviceIsMutedDescription;
+
   /// No description provided for @signalTwiceUponReachedBreaks.
   ///
   /// In en, this message translates to:
@@ -296,7 +322,7 @@ abstract class AppLocalizations {
   /// No description provided for @defaultBreakOrderDescription.
   ///
   /// In en, this message translates to:
-  /// **'Instead of 1, 2, 3... the order ..., 3, 2, 1 is used.'**
+  /// **'Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.'**
   String get defaultBreakOrderDescription;
 
   /// No description provided for @showRunSpinner.
@@ -747,7 +773,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -760,6 +786,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   switch (locale.languageCode) {
     case 'de': return AppLocalizationsDe();
     case 'en': return AppLocalizationsEn();
+    case 'zh': return AppLocalizationsZh();
   }
 
   throw FlutterError(

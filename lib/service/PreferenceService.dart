@@ -18,6 +18,7 @@ class PreferenceService {
   static final PREF_AUDIO_SCHEME = PrefDef('pref/common/audioScheme', DEFAULT_AUDIO_SCHEME_ID);
   static final PREF_NOTIFY_AT_BREAKS = PrefDef('pref/run/notifyAtBreaks', true);
   static final PREF_VIBRATE_AT_BREAKS = PrefDef('pref/run/vibrateAtBreaks', true);
+  static final PREF_MUTE_IF_DEVICE_MUTED = PrefDef('pref/run/muteIfDeviceMuted', false);
   static final PREF_SIGNAL_TWICE = PrefDef('pref/run/signalTwice', false);
   static final PREF_SIGNAL_WITHOUT_NUMBER = PrefDef('pref/run/signalWithoutNumber', false);
   static final PREF_BREAK_ORDER_DESCENDING = PrefDef('pref/run/breakOrderDescending', false);
@@ -54,6 +55,7 @@ class PreferenceService {
   bool useSystemColors = PREF_USE_SYSTEM_COLORS.defaultValue;
   bool showSpinner = PREF_SHOW_SPINNER.defaultValue;
   bool showArrows = PREF_SHOW_ARROWS.defaultValue;
+  bool muteVolumeIfDeviceIsMuted = PREF_MUTE_IF_DEVICE_MUTED.defaultValue;
 
   factory PreferenceService() {
     return _service;
@@ -74,6 +76,7 @@ class PreferenceService {
     hidePredefinedPresets = await getBool(PREF_HIDE_PREDEFINED_PRESETS) ?? PREF_HIDE_PREDEFINED_PRESETS.defaultValue;
     showSpinner = await getBool(PREF_SHOW_SPINNER) ?? PREF_SHOW_SPINNER.defaultValue;
     showArrows = await getBool(PREF_SHOW_ARROWS) ?? PREF_SHOW_ARROWS.defaultValue;
+    muteVolumeIfDeviceIsMuted = await getBool(PREF_MUTE_IF_DEVICE_MUTED) ?? PREF_MUTE_IF_DEVICE_MUTED.defaultValue;
   }
 
   Future<String?> getString(PrefDef def) async {
