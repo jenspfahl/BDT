@@ -1,3 +1,5 @@
+![Static Badge](https://img.shields.io/badge/made_by-a_human_(not_AI)-green?style=flat-square)
+
 
 [![translation status](https://hosted.weblate.org/widget/break-down-timer/svg-badge.svg)](https://hosted.weblate.org/engage/break-down-timer/)
 
