@@ -1766,11 +1766,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (23 * 2);
     final sliceSeconds = _duration.inSeconds / MAX_SLICE;
 
-    return slices.map((slice) {
+    return slices.indexed.map((indexed) {
+      final index = indexed.$1;
+      final slice = indexed.$2;
+
       final isTouched = slice == _touchedIndex;
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
       final isSelected = _selectedSlices.contains(slice);
+      final isLeftSelected = slice == 1 || _selectedSlices.contains(slice - 1);
+      final isRightSelected = slice == MAX_SLICE - 1 || _selectedSlices.contains(slice + 1);
+      final shouldAlternate = (isLeftSelected || isRightSelected) && index.isEven;
+
       final isFinalSlice = slice == MAX_SLICE;
       final list = _selectedSortedSlices();
       final indexOfSelected = list.indexOf(slice) + 1;
@@ -1805,8 +1812,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               : isInTransition
                 ? const TextStyle(fontSize: 8)
                 : const TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,
+        titlePositionPercentageOffset: isTouched ? 1.17 : shouldAlternate && _isTopOrBottomSlice(slice) ? 1.5 : 1.23, // if nearby slice has also a title, try to use a different offset to not collide
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
+        badgePositionPercentageOffset: shouldAlternate ? 0.8 : null
       );
     }).toList();
   }
@@ -2180,6 +2188,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     debugPrint("deviceHeight=$deviceHeight");
     return deviceHeight >= 750 ? 8 : 0;
   }
+
+  bool _isTopOrBottomSlice(int slice) => slice >= 55 || slice <=5 || (slice >= 25 && slice <=35);
 
 
 }
