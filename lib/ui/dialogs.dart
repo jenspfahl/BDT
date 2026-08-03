@@ -226,7 +226,7 @@ Future<int?> showBreakDownDialog({
     insetPadding: const EdgeInsets.all(16),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 380.0,
+      height: 430.0,
       width: 330.0,
 
       child: StatefulBuilder(

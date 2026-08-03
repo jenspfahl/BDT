@@ -30,11 +30,11 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    final titleText = Text("${l10n.volume} : ${_currentValue == 0 ? "-${l10n.muted}-" : _currentValue.toInt().toString() + "%" }");
+    final titleText = Text(softWrap: true, "${l10n.volume} : ${_currentValue == 0 ? "-${l10n.muted}-" : _currentValue.toInt().toString() + "%" }");
     return AlertDialog(
       alignment: Alignment.centerRight,
       shape: const RoundedRectangleBorder(),
-      title: Row(children: [
+      title: Wrap(children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
                 child: createVolumeIcon(_currentValue.round()),

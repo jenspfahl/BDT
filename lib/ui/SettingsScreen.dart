@@ -343,6 +343,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: Text(l10n.clockModeAsDefault),
               description: Text(l10n.clockModeAsDefaultDescription),
               initialValue: _clockModeAsDefault,
+              enabled: true, // TODO false if isRunning()
               activeSwitchColor: ColorService().getCurrentScheme().button,
               onToggle: (bool value) {
                 _preferenceService.setBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT, value);

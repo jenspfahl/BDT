@@ -1,0 +1,2 @@
+* Add Tamil and Russian (partly) language
+* Fix overlapping labels for neighboring slices (#27)
