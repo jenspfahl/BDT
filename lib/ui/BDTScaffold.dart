@@ -1045,8 +1045,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                       Visibility(
                         visible: _selectedBreakDown != null,
                         child: Positioned(
-                          top: 20,
-                          left: 20,
+                          top: 17,
+                          left: 17,
                           child: IconButton(
                             color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                             onPressed: () {
@@ -1077,8 +1077,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                       Visibility(
                         visible: _canSaveUserPreset() || _canDeleteUserPreset(),
                         child: Positioned(
-                            bottom: 20,
-                            left: 20,
+                            bottom: 17,
+                            left: 17,
                             child: IconButton(
                               color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                               onPressed: () {
@@ -1177,8 +1177,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                             )),
                       ),
                       Positioned(
-                        top: 20,
-                        right: 20,
+                        top: 17,
+                        right: 17,
                         child: IconButton(
                             color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                             onPressed: () async {
@@ -1209,8 +1209,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                             icon: Icon(MdiIcons.restart)),
                       ),
                       Positioned(
-                        bottom: 20,
-                        right: 20,
+                        bottom: 17,
+                        right: 17,
                         child: IconButton(
                             color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
                             onPressed: () {
@@ -1766,11 +1766,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (23 * 2);
     final sliceSeconds = _duration.inSeconds / MAX_SLICE;
 
-    return slices.map((slice) {
+    return slices.indexed.map((indexed) {
+      final index = indexed.$1;
+      final slice = indexed.$2;
+
       final isTouched = slice == _touchedIndex;
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
       final isSelected = _selectedSlices.contains(slice);
+      final isLeftSelected = slice == 1 || _selectedSlices.contains(slice - 1);
+      final isRightSelected = slice == MAX_SLICE - 1 || _selectedSlices.contains(slice + 1);
+      final shouldAlternate = (isLeftSelected || isRightSelected) && index.isEven;
+
       final isFinalSlice = slice == MAX_SLICE;
       final list = _selectedSortedSlices();
       final indexOfSelected = list.indexOf(slice) + 1;
@@ -1801,12 +1808,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         title: _showSliceTitle(slice, isInTransition, isFinalSlice),
         titleStyle:
           isFinalSlice
-              ? const TextStyle(fontSize: 14)
+              ? const TextStyle(fontSize: 14.5)
               : isInTransition
-                ? const TextStyle(fontSize: 8)
-                : const TextStyle(fontSize: 10),
-        titlePositionPercentageOffset: isTouched ? 0.9 : 1.23,
+                ? const TextStyle(fontSize: 9)
+                : const TextStyle(fontSize: 11),
+        titlePositionPercentageOffset: isTouched ? 1.22 : !isInTransition && shouldAlternate && _isTopOrBottomSlice(slice) ? 1.55 : 1.25, // if nearby slice has also a title, try to use a different offset to not collide
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
+        badgePositionPercentageOffset: shouldAlternate ? 0.8 : null
       );
     }).toList();
   }
@@ -2180,6 +2188,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     debugPrint("deviceHeight=$deviceHeight");
     return deviceHeight >= 750 ? 8 : 0;
   }
+
+  bool _isTopOrBottomSlice(int slice) => slice >= 50 || slice <=10 || (slice >= 20 && slice <=40);
 
 
 }
