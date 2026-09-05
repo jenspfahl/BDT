@@ -826,7 +826,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         ),
         body: LayoutBuilder(
           builder: (context, constraints) {
-            final isLandscape = constraints.maxWidth > constraints.maxHeight;
+            final isLandscape = _isLandscape(context);
             final content = Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1392,6 +1392,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           final selected = _selectedBreakDown;
           if (selected != null) {
             BreakDownService().deleteBreakDown(selected);
+            if (_isPinnedBreakDown()) {
+              _pinnedBreakDownId = null;
+              setPinnedBreakDown(
+                  _preferenceService, _pinnedBreakDownId);
+            }
             _selectedSlices.clear();
             _updateSelectedBreakDown(null);
             _loadBreakDowns(focusPinned: true);
