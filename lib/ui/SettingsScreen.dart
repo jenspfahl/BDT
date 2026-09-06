@@ -5,6 +5,7 @@ import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:settings_ui/settings_ui.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -356,11 +357,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         SettingsSection(
           title: Text(l10n.info, style: TextStyle(color: ColorService().getCurrentScheme().accent)),
           tiles: [
-            if (!usesExactAlarmPermission())
-              SettingsTile(
+            SettingsTile(
                 title: Text(l10n.batteryOptimizations),
                 onPressed: (value) {
-                  showBatterySavingHint(context, _preferenceService);
+
+                  requiresExactAlarmPermission().then((requiresExactAlarmPermission) {
+                    if (requiresExactAlarmPermission) {
+                      Permission.scheduleExactAlarm.request();
+                    }
+                    else {
+                      showBatterySavingHint(context, _preferenceService);
+                    }
+                  });
+
                 }
               ),
             SettingsTile(

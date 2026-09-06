@@ -447,30 +447,33 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         }
       }
     });
-    
 
 
-    if (!usesExactAlarmPermission()) {
-      _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
-          .then((dismissed) async {
-            if (dismissed != true) {
-              final whitelisted =
-                  await BatteryOptimizationPermission.isIgnoringBatteryOptimizations();
+    requiresExactAlarmPermission().then((requiresExactAlarmPermission) {
+      if (requiresExactAlarmPermission) {
+        Permission.scheduleExactAlarm.status.then((status) {
+          if (!status.isGranted) {
+            Permission.scheduleExactAlarm.request();
+          }
+        });
+      }
+      else {
+        _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+            .then((dismissed) async {
+          if (dismissed != true) {
+            final whitelisted =
+            await BatteryOptimizationPermission.isIgnoringBatteryOptimizations();
 
-              if (!whitelisted) {
-                final ok = await BatteryOptimizationPermission.ensureBatteryWhitelist(
-                  tryOemScreens: true,
-                  openSettingsFallbacks: true,
-                );
-              }
-
+            debugPrint('dismissed=$dismissed, whitelisted=$whitelisted');
+            if (!whitelisted) {
+              final ok = await BatteryOptimizationPermission.ensureBatteryWhitelist(
+                tryOemScreens: true,
+                openSettingsFallbacks: true,
+              );
             }
-      });
-    }
 
-    Permission.scheduleExactAlarm.status.then((status) {
-      if (!status.isGranted) {
-        Permission.scheduleExactAlarm.request();
+          }
+        });
       }
     });
 

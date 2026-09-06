@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import '../service/ColorService.dart';
 
 
@@ -84,12 +86,23 @@ int _adjust(int channel, int delta) {
   return (channel - delta).clamp(0, 255);
 }
 
-int? getAndroidSdkVersion() {
-  debugPrint('SDK ver${Platform.version}');
+Future<String?> getAndroidVersion() async {
+  final deviceInfo = DeviceInfoPlugin();
   if (Platform.isAndroid) {
-    return int.tryParse(Platform.version.split('.').last);
+    final androidInfo = await deviceInfo.androidInfo;
+    return androidInfo.version.release; // Returns the Android version (e.g., "14")
   }
   return null;
 }
 
-bool usesExactAlarmPermission() => (getAndroidSdkVersion()??0) >= 31;
+
+Future<bool> requiresExactAlarmPermission() async {
+  final versionString = await getAndroidVersion();
+  if (versionString != null) {
+    final version = int.tryParse(versionString);
+    return version != null && version >= 12;
+  }
+
+  return false;
+
+}
