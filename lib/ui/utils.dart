@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'dart:io';
 import '../service/ColorService.dart';
 
 
@@ -83,3 +83,13 @@ Color lighter(Color other, int delta) {
 int _adjust(int channel, int delta) {
   return (channel - delta).clamp(0, 255);
 }
+
+int? getAndroidSdkVersion() {
+  debugPrint('SDK ver${Platform.version}');
+  if (Platform.isAndroid) {
+    return int.tryParse(Platform.version.split('.').last);
+  }
+  return null;
+}
+
+bool usesExactAlarmPermission() => (getAndroidSdkVersion()??0) >= 31;

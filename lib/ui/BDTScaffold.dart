@@ -457,20 +457,24 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     
 
 
-    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
-        .then((dismissed) {
-          if (dismissed != true) {
-            DisableBatteryOptimization.isBatteryOptimizationDisabled.then((isDisabled) {
-              if (isDisabled != true) {
-                DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
-              }
-            });
-          }
+    if (!usesExactAlarmPermission()) {
+      _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+          .then((dismissed) {
+            if (dismissed != true) {
+              DisableBatteryOptimization.isBatteryOptimizationDisabled.then((isDisabled) {
+                if (isDisabled != true) {
+                  DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
+                }
+              });
+            }
+      });
+    }
+
+    Permission.scheduleExactAlarm.status.then((status) {
+      if (!status.isGranted) {
+        Permission.scheduleExactAlarm.request();
+      }
     });
-
-    Permission.scheduleExactAlarm.request();
-
-    Permission.scheduleExactAlarm.request();
 
     _circleAnimationController =
         AnimationController(duration: const Duration(seconds: 1), vsync: this);
