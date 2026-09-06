@@ -856,35 +856,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                             _moveBreakDownSelectionToNext();
                           }
                         },
-                        child: DropdownButtonFormField<Object?>(
-                          isDense: true,
-                          focusColor: ColorService().getCurrentScheme().accent,
-                          onTap: () => FocusScope.of(context).unfocus(),
-                          initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
-                          hint: Text(l10n.breakPresets),
-                          iconEnabledColor: ColorService().getCurrentScheme().button,
-                          icon: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: GestureDetector(
-                                onTap: () {
-                                  _showBreakDownDialog(context);
-                                },
-                                child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
-                          ),
-                          isExpanded: true,
-                          onChanged:  _isRunning() ? null : (value) {
-                            if (value is BreakDown) {
-                              _updateSelectedSlices(value);
-                            }
-                            else if (value == _BUILD_BREAKDOWN_ITEM) {
-                              debugPrint('_BUILD_BREAKDOWN_ITEM selected');
-                              setState(() {
-                                _selectedBreakDown = null; //TODO doesnt work
-                              });
-                              _showBreakDownDialog(context);
-                            }
-                          },
-                          items: _getBreakDownItems()),
+                        child: _buildBreakDownDropdown(context),
                       ),
                     ),
                     Flexible(child: IconButton(
@@ -900,30 +872,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onHorizontalDragEnd: _switchTimerMode,
-                  child: SlidingControl<TimerMode>(
-                    backgroundColor: ColorService().getCurrentScheme().background,
-                    thumbColor: ColorService().getCurrentScheme().button,
-                    padding: EdgeInsets.fromLTRB(8, 8, 8, getTimerModeHeight()),
-                    cornerRadius: Radius.circular(9 + getTimerModeHeight()),
-                    children: <TimerMode, Widget> {
-                      TimerMode.RELATIVE: Padding(
-                        padding: EdgeInsets.all(getTimerModeHeight()),
-                        child: Icon(Icons.timer_outlined,
-                            color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                      ),
-                      TimerMode.ABSOLUTE: Padding(
-                          padding: EdgeInsets.all(getTimerModeHeight()),
-                          child: Icon(Icons.alarm,
-                              color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)
-                      ),
-                    },
-                    onValueChanged: (value) {
-                      if (value != null) {
-                        setState(() => _setTimerMode(value));
-                      }
-                    },
-                    groupValue: _timerMode,
-                  ),
+                  child: _buildTimerModeControl(),
                 ),
               ),
               Flexible(
@@ -1274,7 +1223,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       MediaQuery.of(context).size.width > MediaQuery.of(context).size.height;
 
   Widget _buildLandscapeControls(BuildContext context) {
-    final scheme = ColorService().getCurrentScheme();
     final canEdit = !_isRunning();
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 12),
@@ -1286,18 +1234,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               onPressed: canEdit ? _moveBreakDownSelectionToNext : null,
               icon: const Icon(Icons.arrow_back_ios),
             ),
-            Expanded(child: DropdownButtonFormField<Object?>(
-              isDense: true,
-              isExpanded: true,
-              initialValue: _loadedBreakDowns.contains(_selectedBreakDown)
-                  ? _selectedBreakDown : null,
-              hint: Text(AppLocalizations.of(context)!.breakPresets),
-              onChanged: canEdit ? (value) {
-                if (value is BreakDown) _updateSelectedSlices(value);
-                if (value == _BUILD_BREAKDOWN_ITEM) _showBreakDownDialog(context);
-              } : null,
-              items: _getBreakDownItems(),
-            )),
+            Expanded(child: _buildBreakDownDropdown(context, landscape: true)),
             IconButton(
               onPressed: canEdit ? _moveBreakDownSelectionToPrevious : null,
               icon: const Icon(Icons.arrow_forward_ios),
@@ -1306,24 +1243,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           const SizedBox(height: 8),
           GestureDetector(
             onHorizontalDragEnd: _switchTimerMode,
-            child: SlidingControl<TimerMode>(
-              backgroundColor: scheme.background,
-              thumbColor: scheme.button,
-              padding: const EdgeInsets.all(8),
-              cornerRadius: const Radius.circular(12),
-              children: {
-                TimerMode.RELATIVE: Icon(Icons.timer_outlined,
-                    color: _timerMode == TimerMode.RELATIVE
-                        ? scheme.accent : scheme.button),
-                TimerMode.ABSOLUTE: Icon(Icons.alarm,
-                    color: _timerMode == TimerMode.ABSOLUTE
-                        ? scheme.accent : scheme.button),
-              },
-              groupValue: _timerMode,
-              onValueChanged: (value) {
-                if (canEdit && value != null) setState(() => _setTimerMode(value));
-              },
-            ),
+            child: _buildTimerModeControl(landscape: true),
           ),
           const SizedBox(height: 12),
           Center(child: _createStatsLine()),
@@ -1354,6 +1274,78 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               : _createStartButton(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildBreakDownDropdown(BuildContext context, {bool landscape = false}) {
+    final scheme = ColorService().getCurrentScheme();
+    final canEdit = !_isRunning();
+    return DropdownButtonFormField<Object?>(
+      isDense: true,
+      isExpanded: true,
+      focusColor: landscape ? null : scheme.accent,
+      onTap: landscape ? null : () => FocusScope.of(context).unfocus(),
+      initialValue: _loadedBreakDowns.contains(_selectedBreakDown)
+          ? _selectedBreakDown : null,
+      hint: Text(AppLocalizations.of(context)!.breakPresets),
+      iconEnabledColor: landscape ? null : scheme.button,
+      icon: landscape ? null : Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: GestureDetector(
+          onTap: () => _showBreakDownDialog(context),
+          child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+        ),
+      ),
+      onChanged: canEdit ? (value) {
+        if (value is BreakDown) {
+          _updateSelectedSlices(value);
+        }
+        else if (value == _BUILD_BREAKDOWN_ITEM) {
+          if (!landscape) {
+            debugPrint('_BUILD_BREAKDOWN_ITEM selected');
+            setState(() {
+              _selectedBreakDown = null; //TODO doesnt work
+            });
+          }
+          _showBreakDownDialog(context);
+        }
+      } : null,
+      items: _getBreakDownItems(),
+    );
+  }
+
+  Widget _buildTimerModeControl({bool landscape = false}) {
+    final scheme = ColorService().getCurrentScheme();
+    final height = landscape ? 0.0 : getTimerModeHeight();
+    return SlidingControl<TimerMode>(
+      backgroundColor: scheme.background,
+      thumbColor: scheme.button,
+      padding: landscape ? const EdgeInsets.all(8) : EdgeInsets.fromLTRB(8, 8, 8, height),
+      cornerRadius: landscape ? const Radius.circular(12) : Radius.circular(9 + height),
+      children: <TimerMode, Widget>{
+        TimerMode.RELATIVE: landscape
+            ? Icon(Icons.timer_outlined,
+                color: _timerMode == TimerMode.RELATIVE ? scheme.accent : scheme.button)
+            : Padding(
+                padding: EdgeInsets.all(height),
+                child: Icon(Icons.timer_outlined,
+                    color: _timerMode == TimerMode.RELATIVE ? scheme.accent : scheme.button),
+              ),
+        TimerMode.ABSOLUTE: landscape
+            ? Icon(Icons.alarm,
+                color: _timerMode == TimerMode.ABSOLUTE ? scheme.accent : scheme.button)
+            : Padding(
+                padding: EdgeInsets.all(height),
+                child: Icon(Icons.alarm,
+                    color: _timerMode == TimerMode.ABSOLUTE ? scheme.accent : scheme.button),
+              ),
+      },
+      groupValue: _timerMode,
+      onValueChanged: (value) {
+        if ((!landscape || !_isRunning()) && value != null) {
+          setState(() => _setTimerMode(value));
+        }
+      },
     );
   }
 
