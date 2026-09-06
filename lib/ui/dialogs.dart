@@ -1,10 +1,10 @@
+import 'package:battery_optimization_permission/battery_optimization_permission.dart';
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:open_settings_plus/open_settings_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../l10n/app_localizations.dart';
@@ -389,10 +389,7 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
         child: Text(l10n.openSettings),
         onPressed:  () {
           Navigator.pop(context);
-          final openSettings = OpenSettingsPlus.shared;
-          if (openSettings is OpenSettingsPlusAndroid) {
-            openSettings.batterySaver();
-          }
+          BatteryOptimizationPermission.openBatteryOptimizationSettings();
         },
       ),
       TextButton(

@@ -1,5 +1,4 @@
-import 'package:bdt/ui/BDTScaffold.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
 import '../model/common.dart';
 import '../service/PreferenceService.dart';
@@ -99,14 +98,11 @@ Future<int?> getProgress(PreferenceService preferenceService) async {
     return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
   }
   else {
-    final total = 100;
     final progress = await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
-    debugPrint("total=$total");
-    debugPrint("progress=$progress");
-    if (total == null || progress == null) {
+    if (progress == null) {
       return null;
     }
-    return total - progress;
+    return 100 - progress;
   }
 }
 
