@@ -1,3 +1,6 @@
+import 'package:bdt/ui/BDTScaffold.dart';
+import 'package:flutter/cupertino.dart';
+
 import '../model/common.dart';
 import '../service/PreferenceService.dart';
 
@@ -96,8 +99,10 @@ Future<int?> getProgress(PreferenceService preferenceService) async {
     return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
   }
   else {
-    final total = await preferenceService.getInt(PreferenceService.STATE_RUN_BREAKS_COUNT);
+    final total = 100;
     final progress = await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
+    debugPrint("total=$total");
+    debugPrint("progress=$progress");
     if (total == null || progress == null) {
       return null;
     }
