@@ -28,6 +28,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../l10n/app_localizations.dart';
 import '../model/BreakDown.dart';
+import '../model/common.dart';
 import '../service/ColorService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
@@ -43,13 +44,6 @@ class BDTScaffold extends StatefulWidget {
     return BDTScaffoldState();
   }
 }
-
-enum TimerMode {RELATIVE, ABSOLUTE}
-enum Direction {ASC, DESC}
-enum RunMode {NO_REPEAT, REPEAT_ONCE, REPEAT_FOREVER}
-enum RelativeProgressPresentation {ALL, REMAINING, PROGRESSING, REMAINING_PRORESSING}
-enum AbsoluteProgressPresentation {ALL, START_CURRENT, CURRENT_END}
-
 
 final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
@@ -588,7 +582,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     setProgress(_preferenceService, progress != null ? (progress * 100).round() : null);
     setStartedAt(_preferenceService, _startedAt);
     setBreaksCount(_preferenceService, _selectedSlices.length);
-    
+    setRunDirection(_preferenceService, _direction);
+
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;

@@ -39,6 +39,7 @@ class PreferenceService {
 
   static final STATE_RUN_STATE = PrefDef('state/runState', null);
   static final STATE_RUN_BREAKS_COUNT = PrefDef('state/runBreaksCount', null);
+  static final STATE_RUN_DIRECTION = PrefDef('state/runDirection', null);
   static final STATE_RUN_PROGRESS = PrefDef('state/runProgress', null);
   static final STATE_RUN_STARTED_AT = PrefDef('state/runStartedAt', null);
   static final STATE_SIGNAL_PROCESSING = PrefDef('state/signalProcessing', null);

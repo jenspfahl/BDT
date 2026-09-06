@@ -1,3 +1,4 @@
+import '../model/common.dart';
 import '../service/PreferenceService.dart';
 
 Future<bool> mayNotify(PreferenceService preferenceService) async {
@@ -75,9 +76,33 @@ setBreaksCount(PreferenceService preferenceService, int count) async {
   await preferenceService.setInt(PreferenceService.STATE_RUN_BREAKS_COUNT, count);
 }
 
+Future<Direction?> getRunDirection(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  final value = await preferenceService.getInt(PreferenceService.STATE_RUN_DIRECTION);
+  if (value == null) {
+    return null;
+  }
+  return Direction.values.firstWhere((v)=> v.index == value);
+}
+
+setRunDirection(PreferenceService preferenceService, Direction direction) async {
+  await preferenceService.setInt(PreferenceService.STATE_RUN_DIRECTION, direction.index);
+}
+
 Future<int?> getProgress(PreferenceService preferenceService) async {
   await preferenceService.reload();
-  return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
+  final direction = await getRunDirection(preferenceService);
+  if (direction == null || direction == Direction.ASC) {
+    return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
+  }
+  else {
+    final total = await preferenceService.getInt(PreferenceService.STATE_RUN_BREAKS_COUNT);
+    final progress = await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
+    if (total == null || progress == null) {
+      return null;
+    }
+    return total - progress;
+  }
 }
 
 setProgress(PreferenceService preferenceService, int? progress) async {
