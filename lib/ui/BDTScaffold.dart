@@ -11,13 +11,13 @@ import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/utils.dart';
-import 'package:disable_battery_optimization/disable_battery_optimization.dart';
+//import 'package:disable_battery_optimization/disable_battery_optimization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
@@ -450,7 +450,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     });
     
 
-
+/*
     if (!usesExactAlarmPermission()) {
       _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
           .then((dismissed) {
@@ -462,7 +462,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               });
             }
       });
-    }
+    }*/
 
     Permission.scheduleExactAlarm.status.then((status) {
       if (!status.isGranted) {

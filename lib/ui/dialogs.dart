@@ -4,7 +4,7 @@ import 'package:bdt/ui/VolumeSliderDialog.dart';
 import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:open_settings/open_settings.dart';
+import 'package:open_settings_plus/open_settings_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../l10n/app_localizations.dart';
@@ -389,7 +389,10 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
         child: Text(l10n.openSettings),
         onPressed:  () {
           Navigator.pop(context);
-          OpenSettings.openIgnoreBatteryOptimizationSetting();
+          final openSettings = OpenSettingsPlus.shared;
+          if (openSettings is OpenSettingsPlusAndroid) {
+            openSettings.batterySaver();
+          }
         },
       ),
       TextButton(

@@ -49,14 +49,14 @@ dependencies:
   path: ^1.8.0
   android_alarm_manager_plus: ^5.0.0
   vibration: 3.1.5
-  material_design_icons_flutter: ^7.0.7296
+  flutter_material_design_icons: ^3.1.0+7447
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
   sound_mode: ^3.0.0
   system_clock: ^2.0.0
   flutter_svg: ^2.0.10+1
-  open_settings: ^2.0.2
+  open_settings_plus: 0.5.1
   flutter_fgbg: ^0.7.0
-  disable_battery_optimization: ^1.1.2
+ # disable_battery_optimization: ^1.1.2
   dynamic_color: ^1.8.1
   flutter_sound_bridge:
     path: ./flutter_sound_bridge
