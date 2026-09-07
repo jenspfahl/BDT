@@ -2117,6 +2117,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (jsonMap['repetition'] != null) {
       _repetition = jsonMap['repetition'];
     }
+
+    if (!_isRunning()) {
+      _time = adjustToTodayIfInThePast(_time);
+    }
   }
 
   String _getSignalStringForNumber(int signal) {
