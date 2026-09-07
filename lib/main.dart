@@ -18,12 +18,15 @@ Future<void> main() async {
   await AndroidAlarmManager.initialize();
   await PreferenceService().init();
 
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
+  ])
       .then((_) {
     runApp(BDTApp());
   });
 
 }
-
 
 
