@@ -137,6 +137,12 @@ abstract class AppLocalizations {
   /// **'To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn\'t working correctly, you should do just that. Open Settings and enable the exception (\'Not Optimized\') for \'{appName}\'.'**
   String batterySavingsHint(Object appName);
 
+  /// No description provided for @notExcludeFromBatterySavingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.'**
+  String get notExcludeFromBatterySavingsHint;
+
   /// No description provided for @openSettings.
   ///
   /// In en, this message translates to:

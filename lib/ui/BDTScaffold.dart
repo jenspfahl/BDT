@@ -449,11 +449,37 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     });
 
 
-    requiresExactAlarmPermission().then((requiresExactAlarmPermission) {
-      if (requiresExactAlarmPermission) {
-        Permission.scheduleExactAlarm.status.then((status) {
-          if (!status.isGranted) {
-            Permission.scheduleExactAlarm.request();
+    usesExactAlarmPermission().then((usesExactAlarmPermission) async {
+
+      final exemptFromBatteryOptimization = await BatteryOptimizationPermission.isIgnoringBatteryOptimizations();
+
+      debugPrint('usesExactAlarmPermission=$usesExactAlarmPermission exemptFromBatteryOptimization=$exemptFromBatteryOptimization');
+
+      if (usesExactAlarmPermission) {
+
+        Permission.scheduleExactAlarm.status.then((status) async {
+          if (status.isGranted) {
+            if (exemptFromBatteryOptimization) {
+              _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+                  .then((dismissed) {
+                    if (dismissed != true) {
+                      showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
+                    }
+                  });
+            }
+          }
+          else {
+            final status = await Permission.scheduleExactAlarm.request();
+            if (status.isGranted) {
+              if (exemptFromBatteryOptimization) {
+                _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+                    .then((dismissed) {
+                  if (dismissed != true) {
+                    showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
+                  }
+                });
+              }
+            }
           }
         });
       }
@@ -461,12 +487,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
             .then((dismissed) async {
           if (dismissed != true) {
-            final whitelisted =
-            await BatteryOptimizationPermission.isIgnoringBatteryOptimizations();
 
-            debugPrint('dismissed=$dismissed, whitelisted=$whitelisted');
-            if (!whitelisted) {
-              final ok = await BatteryOptimizationPermission.ensureBatteryWhitelist(
+            if (!exemptFromBatteryOptimization) {
+              await BatteryOptimizationPermission.ensureBatteryWhitelist(
                 tryOemScreens: true,
                 openSettingsFallbacks: true,
               );

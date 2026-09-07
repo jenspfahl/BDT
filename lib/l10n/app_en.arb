@@ -5,6 +5,7 @@
   "reset": "Reset",
   "breakName": "break",
   "batterySavingsHint": "To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn't working correctly, you should do just that. Open Settings and enable the exception ('Not Optimized') for '{appName}'.",
+  "notExcludeFromBatterySavingsHint": "Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.",
   "openSettings": "Open Settings",
   "dontAskAgain": "Don't ask again",
   "volume": "Volume",

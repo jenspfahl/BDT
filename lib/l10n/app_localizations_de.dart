@@ -29,6 +29,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get notExcludeFromBatterySavingsHint => 'Mit Android 12+ gibt es eine neue Berechtigung, um exakte Alarme zu erlauben. Falls exakte Alarme dennoch nicht funktionieren, muss die Hintergrund-Akkunutzung wieder OPTIMIERT werden.';
+
+  @override
   String get openSettings => 'Einstellungen öffnen';
 
   @override

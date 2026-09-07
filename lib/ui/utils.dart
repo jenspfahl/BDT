@@ -96,7 +96,7 @@ Future<String?> getAndroidVersion() async {
 }
 
 
-Future<bool> requiresExactAlarmPermission() async {
+Future<bool> usesExactAlarmPermission() async {
   final versionString = await getAndroidVersion();
   if (versionString != null) {
     final version = int.tryParse(versionString);

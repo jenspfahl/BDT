@@ -33,6 +33,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   final PreferenceService _preferenceService = PreferenceService();
 
+  bool _usesExactAlarmPermission = false;
+
   bool _notifyAtBreaks = PreferenceService.PREF_NOTIFY_AT_BREAKS.defaultValue;
   bool _vibrateAtBreaks = PreferenceService.PREF_VIBRATE_AT_BREAKS.defaultValue;
   bool _muteVolumeIfDeviceIsMuted = PreferenceService.PREF_MUTE_IF_DEVICE_MUTED.defaultValue;
@@ -50,7 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _enableWakeLock = PreferenceService.PREF_WAKE_LOCK.defaultValue;
   bool _clearStateOnStartup = PreferenceService.PREF_CLEAR_STATE_ON_STARTUP.defaultValue;
   bool _clockModeAsDefault = PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT.defaultValue;
-
 
   String _version = 'n/a';
 
@@ -360,16 +361,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SettingsTile(
                 title: Text(l10n.batteryOptimizations),
                 onPressed: (value) {
-
-                  requiresExactAlarmPermission().then((requiresExactAlarmPermission) {
-                    if (requiresExactAlarmPermission) {
-                      Permission.scheduleExactAlarm.request();
-                    }
-                    else {
-                      showBatterySavingHint(context, _preferenceService);
-                    }
-                  });
-
+                  if (_usesExactAlarmPermission) {
+                    showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
+                  }
+                  else {
+                    showExcludeFromBatterySavingHint(context, _preferenceService);
+                  }
                 }
               ),
             SettingsTile(
@@ -414,6 +411,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   _loadAllPrefs() async {
+
+    _usesExactAlarmPermission = await usesExactAlarmPermission();
 
     final packageInfo = await PackageInfo.fromPlatform();
     _version = packageInfo.version;
