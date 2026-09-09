@@ -96,6 +96,9 @@ Future<String?> getAndroidVersion() async {
 }
 
 
+bool isLandscape(BuildContext context) =>
+    MediaQuery.of(context).size.width > MediaQuery.of(context).size.height;
+
 Future<bool> usesExactAlarmPermission() async {
   final versionString = await getAndroidVersion();
   if (versionString != null) {
