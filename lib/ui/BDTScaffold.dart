@@ -854,10 +854,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         body: LayoutBuilder(
           builder: (context, constraints) {
 
-            final mediaHeight = MediaQuery.of(context).size.height;
-            final placeBehindFloatingButton = (mediaHeight / 16);
-            debugPrint('mediaHeight=$mediaHeight, placeBehindFloatingButton=$placeBehindFloatingButton');
-
             if (isLandscape(context)) {
 
               final leftContent = _buildWheelWithSatelliteIcons(
@@ -900,6 +896,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               );
             }
             else {
+
+              final mediaHeight = MediaQuery.of(context).size.height;
+              final placeBehindFloatingButton = (mediaHeight / 16);
+              debugPrint('mediaHeight=$mediaHeight, placeBehindFloatingButton=$placeBehindFloatingButton');
+
 
               final content = Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
