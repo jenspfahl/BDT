@@ -24,7 +24,11 @@ Future<void> main() async {
     DeviceOrientation.landscapeLeft,
     DeviceOrientation.landscapeRight,
   ])
-      .then((_) {
+      .then((_) async {
+    await SystemChrome.setEnabledSystemUIMode(
+        SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top]);
+
     runApp(BDTApp());
   });
 

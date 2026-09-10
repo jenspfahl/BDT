@@ -877,7 +877,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: _buildStartStopButtion(context),
+                      child: _buildStartStopButton(context),
                     )
                     // behind the Floating Button
                   ]);
@@ -930,12 +930,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           },
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: (isLandscape(context)) ? null: _buildStartStopButtion(context),
+        floatingActionButton: (isLandscape(context)) ? null: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildStartStopButton(context),
+        ),
       ),
     );
   }
 
-  Widget _buildStartStopButtion(BuildContext context) {
+  Widget _buildStartStopButton(BuildContext context) {
     return _isRunning() && !_isAllRunsOver()
           ? _createSwipeToStopButton(context)
           : _createStartButton(context);
@@ -1338,30 +1341,24 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     );
   }
 
-  Widget _buildTimerModeControl({bool landscape = false}) {
+  Widget _buildTimerModeControl() {
     final scheme = ColorService().getCurrentScheme();
-    final height = landscape ? 0.0 : getTimerModeHeight();
+    final height = getTimerModeHeight();
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onHorizontalDragEnd: _switchTimerMode,
       child: SlidingControl<TimerMode>(
         backgroundColor: scheme.background,
         thumbColor: scheme.button,
-        padding: landscape ? const EdgeInsets.all(8) : EdgeInsets.fromLTRB(8, 8, 8, height),
-        cornerRadius: landscape ? const Radius.circular(12) : Radius.circular(9 + height),
+        padding: EdgeInsets.fromLTRB(8, 8, 8, height),
+        cornerRadius: Radius.circular(9 + height),
         children: <TimerMode, Widget>{
-          TimerMode.RELATIVE: landscape
-              ? Icon(Icons.timer_outlined,
-                  color: _timerMode == TimerMode.RELATIVE ? scheme.accent : scheme.button)
-              : Padding(
+          TimerMode.RELATIVE: Padding(
                   padding: EdgeInsets.all(height),
                   child: Icon(Icons.timer_outlined,
                       color: _timerMode == TimerMode.RELATIVE ? scheme.accent : scheme.button),
                 ),
-          TimerMode.ABSOLUTE: landscape
-              ? Icon(Icons.alarm,
-                  color: _timerMode == TimerMode.ABSOLUTE ? scheme.accent : scheme.button)
-              : Padding(
+          TimerMode.ABSOLUTE:Padding(
                   padding: EdgeInsets.all(height),
                   child: Icon(Icons.alarm,
                       color: _timerMode == TimerMode.ABSOLUTE ? scheme.accent : scheme.button),
@@ -1369,7 +1366,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         },
         groupValue: _timerMode,
         onValueChanged: (value) {
-          if ((!landscape || !_isRunning()) && value != null) {
+          if ((!_isRunning()) && value != null) {
             setState(() => _setTimerMode(value));
           }
         },
