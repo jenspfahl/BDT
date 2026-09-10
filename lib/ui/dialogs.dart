@@ -2,6 +2,7 @@ import 'package:battery_optimization_permission/battery_optimization_permission.
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
+import 'package:bdt/ui/utils.dart';
 import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
@@ -167,25 +168,27 @@ Future<bool?> showDurationPickerDialog({
   required ValueChanged<Duration> onChanged,
 }) {
 
+  final _isLandscape = isLandscape(context);
+
   final durationPicker = DurationPicker(
       initialDuration: initialDuration,
       onChanged: onChanged,
+      isLandscape: _isLandscape
   );
 
   final l10n = AppLocalizations.of(context)!;
-
   Dialog dialog = Dialog(
     insetPadding: const EdgeInsets.all(24),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 360.0,
-      width: 360.0,
+      height: _isLandscape ? 300 : 360.0,
+      width: _isLandscape ? 490 : 360.0,
 
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           durationPicker,
-          const SizedBox(height: 20.0),
+          SizedBox(height: _isLandscape ? 0 : 20.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -260,6 +263,7 @@ Future<int?> showBreakDownDialog({
                     value: _breakCount,
                     minValue: 1,
                     maxValue: MAX_BREAKS,
+                    axis: isLandscape(context) ? Axis.horizontal : Axis.vertical,
                     selectedTextStyle: TextStyle(
                         fontSize: 24,
                         color: ColorService()
