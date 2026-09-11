@@ -29,6 +29,9 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
+  String get notExcludeFromBatterySavingsHint => 'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.';
+
+  @override
   String get openSettings => 'அமைப்புகளைத் திறக்கவும்';
 
   @override

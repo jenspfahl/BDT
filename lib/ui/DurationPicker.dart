@@ -12,15 +12,18 @@ class DurationPicker extends StatefulWidget {
   late final int _initialMinutes;
   late final int _initialSeconds;
   final ValueChanged<Duration> onChanged;
+  late final bool isLandscape;
 
   DurationPicker({
     Duration? initialDuration,
     required this.onChanged,
-    bool? showSeconds
+    bool? showSeconds,
+    required bool isLandscape
   }) {
     this._initialHours = initialDuration?.inHours ?? 0;
     this._initialMinutes = (initialDuration?.inMinutes ?? 0) % 60;
     this._initialSeconds = (initialDuration?.inSeconds ?? 0) % 60;
+    this.isLandscape = isLandscape;
   }
   
   @override
@@ -61,6 +64,7 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _hours,
       minValue: 0,
       maxValue: MAX_HOURS,
+      axis: widget.isLandscape ? Axis.horizontal : Axis.vertical,
       selectedTextStyle: TextStyle(
           fontSize: 24,
           color: ColorService()
@@ -75,6 +79,7 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _minutes,
       minValue: 0,
       maxValue: MAX_MINUTES,
+      axis: widget.isLandscape ? Axis.horizontal : Axis.vertical,
       selectedTextStyle: TextStyle(
           fontSize: 24,
           color: ColorService()
@@ -89,6 +94,7 @@ class _DurationPickerState extends State<DurationPicker> {
       value: _seconds,
       minValue: 0,
       maxValue: MAX_SECONDS,
+      axis: widget.isLandscape ? Axis.horizontal : Axis.vertical,
       selectedTextStyle: TextStyle(
           fontSize: 24,
           color: ColorService()
@@ -104,36 +110,9 @@ class _DurationPickerState extends State<DurationPicker> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Column(
-                children: [
-                  Text(l10n.hours, style: const TextStyle(fontSize: 18)),
-                  const Text(ABBREV_HOURS),
-                  const Text(''),
-                  hoursPicker
-                ],
-              ),
-              Column(
-                children: [
-                  Text(l10n.minutes, style: const TextStyle(fontSize: 18)),
-                  const Text(ABBREV_MINUTES),
-                  const Text(''),
-                  minutesPicker,
-                ],
-              ),
-              if (_showSeconds) Column(
-                children: [
-                  Text(l10n.seconds, style: const TextStyle(fontSize: 18)),
-                  const Text(ABBREV_SECONDS),
-                  const Text(''),
-                  secondsPicker,
-                ],
-              ),
-
-            ],
-          ),
+          child: widget.isLandscape
+            ? _buildHorizontalPickers(l10n, hoursPicker, minutesPicker, secondsPicker)
+            : _buildVerticalPickers(l10n, hoursPicker, minutesPicker, secondsPicker),
         ),
         if (!_showSeconds) TextButton(
           child: Text('${l10n.changeSeconds} >>>'),
@@ -144,6 +123,75 @@ class _DurationPickerState extends State<DurationPicker> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildVerticalPickers(AppLocalizations l10n, NumberPicker hoursPicker, NumberPicker minutesPicker, NumberPicker secondsPicker) {
+    return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Column(
+              children: [
+                Text(l10n.hours, style: const TextStyle(fontSize: 18)),
+                const Text(ABBREV_HOURS),
+                const Text(''),
+                hoursPicker
+              ],
+            ),
+            Column(
+              children: [
+                Text(l10n.minutes, style: const TextStyle(fontSize: 18)),
+                const Text(ABBREV_MINUTES),
+                const Text(''),
+                minutesPicker,
+              ],
+            ),
+            if (_showSeconds) Column(
+              children: [
+                Text(l10n.seconds, style: const TextStyle(fontSize: 18)),
+                const Text(ABBREV_SECONDS),
+                const Text(''),
+                secondsPicker,
+              ],
+            ),
+
+          ],
+        );
+  }
+
+  Widget _buildHorizontalPickers(AppLocalizations l10n, NumberPicker hoursPicker, NumberPicker minutesPicker, NumberPicker secondsPicker) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        _buildHorizontalChronoUnitRow(l10n.hours, ABBREV_HOURS, hoursPicker),
+        _buildHorizontalChronoUnitRow(l10n.minutes, ABBREV_MINUTES, minutesPicker),
+        if (_showSeconds)
+          _buildHorizontalChronoUnitRow(l10n.seconds, ABBREV_SECONDS, secondsPicker),
+      ],
+    );
+  }
+
+  Widget _buildHorizontalChronoUnitRow(String title, String subTitle, NumberPicker chronoUnitPicker) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+          children: [
+            SizedBox(
+              width: 140,
+              height: 60,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 18)),
+                  Text(subTitle),
+                ],
+              ),
+            ),
+            const Text(''),
+            chronoUnitPicker
+          ],
+        ),
     );
   }
 

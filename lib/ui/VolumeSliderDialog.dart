@@ -1,3 +1,4 @@
+import 'package:bdt/ui/utils.dart';
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
@@ -46,7 +47,7 @@ class _VolumeSliderDialogState extends State<VolumeSliderDialog> {
           children: [
             Expanded(
               child: RotatedBox(
-                quarterTurns: -1,
+                quarterTurns: isLandscape(context) ? 0 : -1,
                 child: Slider(
                   value: _currentValue,
                   min: 0,
