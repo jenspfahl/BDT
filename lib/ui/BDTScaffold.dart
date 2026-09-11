@@ -1366,7 +1366,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         },
         groupValue: _timerMode,
         onValueChanged: (value) {
-          if ((!_isRunning()) && value != null) {
+          if (value != null) {
             setState(() => _setTimerMode(value));
           }
         },
