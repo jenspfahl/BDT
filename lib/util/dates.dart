@@ -13,6 +13,14 @@ DateTime truncToMinutes(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
 }
 
+DateTime adjustToTodayIfInThePast(DateTime dateTime) {
+  final now = DateTime.now();
+  if (dateTime.isBefore(now)) {
+    return dateTime.copyWith(year: now.year, month: now.month, day: now.day);
+  }
+  return dateTime;
+}
+
 DateTime roundToHour(DateTime dateTime) {
   if (dateTime.minute > 0) {
     return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour)
@@ -23,13 +31,10 @@ DateTime roundToHour(DateTime dateTime) {
   }
 }
 
-
-
 bool isToday(DateTime? dateTime) {
   if (dateTime == null) return false;
   return truncToDate(dateTime) == truncToDate(DateTime.now());
 }
-
 
 String formatDateTime(String languageCode, DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
   final betweenChar = withLineBreak ? '\n' : ' ';

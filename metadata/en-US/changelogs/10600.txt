@@ -1,0 +1,3 @@
+* Fix dropped notifications in DOZE mode (#26)
+* Add landscape mode (thanks to https://github.com/alankyshum)
+* fix decreasing progress bar in notification

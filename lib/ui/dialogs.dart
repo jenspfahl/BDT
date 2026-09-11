@@ -1,10 +1,11 @@
+import 'package:battery_optimization_permission/battery_optimization_permission.dart';
 import 'package:bdt/service/ColorService.dart';
 import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:bdt/ui/VolumeSliderDialog.dart';
+import 'package:bdt/ui/utils.dart';
 import 'package:bdt/util/dates.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:open_settings/open_settings.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../l10n/app_localizations.dart';
@@ -167,25 +168,27 @@ Future<bool?> showDurationPickerDialog({
   required ValueChanged<Duration> onChanged,
 }) {
 
+  final _isLandscape = isLandscape(context);
+
   final durationPicker = DurationPicker(
       initialDuration: initialDuration,
       onChanged: onChanged,
+      isLandscape: _isLandscape
   );
 
   final l10n = AppLocalizations.of(context)!;
-
   Dialog dialog = Dialog(
     insetPadding: const EdgeInsets.all(24),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4.0)), //this right here
     child: Container(
-      height: 360.0,
-      width: 360.0,
+      height: _isLandscape ? 300 : 360.0,
+      width: _isLandscape ? 490 : 360.0,
 
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           durationPicker,
-          const SizedBox(height: 20.0),
+          SizedBox(height: _isLandscape ? 0 : 20.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -260,6 +263,7 @@ Future<int?> showBreakDownDialog({
                     value: _breakCount,
                     minValue: 1,
                     maxValue: MAX_BREAKS,
+                    axis: isLandscape(context) ? Axis.horizontal : Axis.vertical,
                     selectedTextStyle: TextStyle(
                         fontSize: 24,
                         color: ColorService()
@@ -378,7 +382,7 @@ void showHelpToTranslateDialog(BuildContext context) {
 
 
 
-showBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
+showExcludeFromBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
   final l10n = AppLocalizations.of(context)!;
 
   AlertDialog alert = AlertDialog(
@@ -389,7 +393,8 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
         child: Text(l10n.openSettings),
         onPressed:  () {
           Navigator.pop(context);
-          OpenSettings.openIgnoreBatteryOptimizationSetting();
+          BatteryOptimizationPermission.openBatteryOptimizationSettings();
+          preferenceService.setBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, false);
         },
       ),
       TextButton(
@@ -408,6 +413,39 @@ showBatterySavingHint(BuildContext context, PreferenceService preferenceService)
     },
   );
 }
+
+showEnsureToNotExcludeFromBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
+  final l10n = AppLocalizations.of(context)!;
+
+  AlertDialog alert = AlertDialog(
+    title: const Text(APP_NAME),
+    content: Text(l10n.notExcludeFromBatterySavingsHint),
+    actions: [
+      TextButton(
+        child: Text(l10n.openSettings),
+        onPressed:  () {
+          Navigator.pop(context);
+          BatteryOptimizationPermission.openBatteryOptimizationSettings();
+          preferenceService.setBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, false);
+        },
+      ),
+      TextButton(
+        child: Text(l10n.dontAskAgain),
+        onPressed:  () {
+          Navigator.pop(context);
+          preferenceService.setBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);
+        },
+      ),
+    ],
+  );  // show the dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
 
 Future<dynamic> showPopUpMenuAtTapDown(BuildContext context, TapDownDetails tapDown, List<PopupMenuEntry> items) {
   return showMenu(

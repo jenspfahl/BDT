@@ -11,13 +11,12 @@ import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
 import 'package:bdt/ui/utils.dart';
-import 'package:disable_battery_optimization/disable_battery_optimization.dart';
+import 'package:battery_optimization_permission/battery_optimization_permission.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
-import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:slider_button/slider_button.dart';
 import 'package:sound_mode/sound_mode.dart';
@@ -28,6 +27,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../l10n/app_localizations.dart';
 import '../model/BreakDown.dart';
+import '../model/common.dart';
 import '../service/ColorService.dart';
 import '../util/dates.dart';
 import '../util/prefs.dart';
@@ -43,13 +43,6 @@ class BDTScaffold extends StatefulWidget {
     return BDTScaffoldState();
   }
 }
-
-enum TimerMode {RELATIVE, ABSOLUTE}
-enum Direction {ASC, DESC}
-enum RunMode {NO_REPEAT, REPEAT_ONCE, REPEAT_FOREVER}
-enum RelativeProgressPresentation {ALL, REMAINING, PROGRESSING, REMAINING_PRORESSING}
-enum AbsoluteProgressPresentation {ALL, START_CURRENT, CURRENT_END}
-
 
 final MAX_BREAKS = 20;
 final MAX_SLICE = 60;
@@ -454,23 +447,58 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         }
       }
     });
-    
 
 
-    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
-        .then((dismissed) {
-          if (dismissed != true) {
-            DisableBatteryOptimization.isBatteryOptimizationDisabled.then((isDisabled) {
-              if (isDisabled != true) {
-                DisableBatteryOptimization.showDisableBatteryOptimizationSettings();
-              }
-            });
+    usesExactAlarmPermission().then((usesExactAlarmPermission) async {
+
+      final exemptFromBatteryOptimization = await BatteryOptimizationPermission.isIgnoringBatteryOptimizations();
+
+      debugPrint('usesExactAlarmPermission=$usesExactAlarmPermission exemptFromBatteryOptimization=$exemptFromBatteryOptimization');
+
+      if (usesExactAlarmPermission) {
+
+        Permission.scheduleExactAlarm.status.then((status) async {
+          if (status.isGranted) {
+            if (exemptFromBatteryOptimization) {
+              _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+                  .then((dismissed) {
+                    if (dismissed != true) {
+                      showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
+                    }
+                  });
+            }
           }
+          else {
+            final status = await Permission.scheduleExactAlarm.request();
+            if (status.isGranted) {
+              if (exemptFromBatteryOptimization) {
+                _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+                    .then((dismissed) {
+                  if (dismissed != true) {
+                    showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
+                  }
+                });
+              }
+            }
+          }
+        });
+      }
+      else {
+        _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+            .then((dismissed) async {
+          if (dismissed != true) {
+
+            if (!exemptFromBatteryOptimization) {
+              await BatteryOptimizationPermission.ensureBatteryWhitelist(
+                tryOemScreens: true,
+                openSettingsFallbacks: true,
+              );
+            }
+
+          }
+        });
+      }
     });
-
-    Permission.scheduleExactAlarm.request();
-
-    Permission.scheduleExactAlarm.request();
 
     _circleAnimationController =
         AnimationController(duration: const Duration(seconds: 1), vsync: this);
@@ -584,7 +612,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     setProgress(_preferenceService, progress != null ? (progress * 100).round() : null);
     setStartedAt(_preferenceService, _startedAt);
     setBreaksCount(_preferenceService, _selectedSlices.length);
-    
+    setRunDirection(_preferenceService, _direction);
+
     final delta = _getDelta();
     if (delta != null) {
       final ratio = delta.inSeconds / _duration.inSeconds;
@@ -651,8 +680,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final visitTextParts = l10n.visitAppHomePage('<<<URL>>>').split('<<<URL>>>');
 
 
-    final buffer = (MediaQuery.of(context).size.height / 16);
-    debugPrint("buffer=$buffer");
     return FGBGNotifier(
       onEvent: (event) {
         if (event == FGBGType.background) {
@@ -662,7 +689,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(APP_NAME_SHORT),
+          title: Text(isLandscape(context) ? APP_NAME : APP_NAME_SHORT),
           elevation: 0,
           actions: [
             IconButton(
@@ -824,428 +851,623 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 icon: const Icon(Icons.settings)),
           ],
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                        child: IconButton(
-                          onPressed: () => _moveBreakDownSelectionToNext(),
-                          color: _isRunning() || _isBreakDownSelectionAtStart() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                          icon: const Icon(Icons.arrow_back_ios),
-                        )),
-                    Expanded(
-                      flex: 9,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onHorizontalDragEnd: (details) {
-                          // Swiping in left direction.
-                          if (details.velocity.pixelsPerSecond.dx < 0) {
-                            _moveBreakDownSelectionToPrevious();
-                          }
+        body: LayoutBuilder(
+          builder: (context, constraints) {
 
-                          // Swiping in right direction.
-                          if (details.velocity.pixelsPerSecond.dx > 0) {
-                            _moveBreakDownSelectionToNext();
-                          }
-                        },
-                        child: DropdownButtonFormField<Object?>(
-                          isDense: true,
-                          focusColor: ColorService().getCurrentScheme().accent,
-                          onTap: () => FocusScope.of(context).unfocus(),
-                          initialValue: _loadedBreakDowns.contains(_selectedBreakDown) ? _selectedBreakDown : null,
-                          hint: Text(l10n.breakPresets),
-                          iconEnabledColor: ColorService().getCurrentScheme().button,
-                          icon: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: GestureDetector(
-                                onTap: () {
-                                  _showBreakDownDialog(context);
-                                },
-                                child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png'))),
-                          ),
-                          isExpanded: true,
-                          onChanged:  _isRunning() ? null : (value) {
-                            if (value is BreakDown) {
-                              _updateSelectedSlices(value);
-                            }
-                            else if (value == _BUILD_BREAKDOWN_ITEM) {
-                              debugPrint('_BUILD_BREAKDOWN_ITEM selected');
-                              setState(() {
-                                _selectedBreakDown = null; //TODO doesnt work
-                              });
-                              _showBreakDownDialog(context);
-                            }
-                          },
-                          items: _getBreakDownItems()),
-                      ),
+            if (isLandscape(context)) {
+
+              final leftContent = _buildWheelWithSatelliteIcons(
+                  context, l10n, true, constraints);
+
+              final rightContent = Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(5, 0, 15, 0),
+                      child: _buildPresetSelector(context),
                     ),
-                    Flexible(child: IconButton(
-                      color: _isRunning() || _isBreakDownSelectionAtEnd() ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                      onPressed: () => _moveBreakDownSelectionToPrevious(),
-                      icon: const Icon(Icons.arrow_forward_ios),
-                    )),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(0, getTimerModeHeight(), 0, 0),
+                      child: _buildTimerModeControl(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: _createStatsLine(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: _buildStartStopButton(context),
+                    )
+                    // behind the Floating Button
+                  ]);
+
+              return SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                        flex: 55,
+                        child: leftContent),
+                    Expanded(
+                        flex: 45,
+                        child: rightContent),
                   ],
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(0, getTimerModeHeight(), 0, 0),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragEnd: _switchTimerMode,
-                  child: SlidingControl<TimerMode>(
-                    backgroundColor: ColorService().getCurrentScheme().background,
-                    thumbColor: ColorService().getCurrentScheme().button,
-                    padding: EdgeInsets.fromLTRB(8, 8, 8, getTimerModeHeight()),
-                    cornerRadius: Radius.circular(9 + getTimerModeHeight()),
-                    children: <TimerMode, Widget> {
-                      TimerMode.RELATIVE: Padding(
-                        padding: EdgeInsets.all(getTimerModeHeight()),
-                        child: Icon(Icons.timer_outlined,
-                            color: _timerMode == TimerMode.RELATIVE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button),
-                      ),
-                      TimerMode.ABSOLUTE: Padding(
-                          padding: EdgeInsets.all(getTimerModeHeight()),
-                          child: Icon(Icons.alarm,
-                              color: _timerMode == TimerMode.ABSOLUTE ? ColorService().getCurrentScheme().accent : ColorService().getCurrentScheme().button)
-                      ),
-                    },
-                    onValueChanged: (value) {
-                      if (value != null) {
-                        setState(() => _setTimerMode(value));
-                      }
-                    },
-                    groupValue: _timerMode,
+              );
+            }
+            else {
+
+              final mediaHeight = MediaQuery.of(context).size.height;
+              final placeBehindFloatingButton = (mediaHeight / 16);
+              debugPrint('mediaHeight=$mediaHeight, placeBehindFloatingButton=$placeBehindFloatingButton');
+
+
+              final content = Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(5, 0, 5, 0),
+                    child: _buildPresetSelector(context),
                   ),
-                ),
-              ),
-              AspectRatio(
-                aspectRatio: 0.97,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragEnd: _switchTimerMode,
-                  child: Stack(
-                    children: [
-                      PieChart(
-                        PieChartData(
-                            pieTouchData: PieTouchData(
-                                touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                                  if (_isRunning()) {
-                                    return;
-                                  }
-                                  if (event is FlTapUpEvent
-                                      || event is FlPointerExitEvent
-                                      || event is FlLongPressEnd
-                                      || event is FlPanEndEvent
-                                  ) {
-                                    setState(() {
-                                      _touchedIndex = 0;
-                                    });
-                                  }
-                                  else if (event is FlTapDownEvent) {
-                                    setState(() {
-                                      if (
-                                      pieTouchResponse == null ||
-                                          pieTouchResponse.touchedSection == null) {
-                                        _touchedIndex = -1;
-                                        return;
-                                      }
-                                      _touchedIndex =
-                                          (pieTouchResponse.touchedSection!
-                                              .touchedSectionIndex + 1) % MAX_SLICE;
-                                      debugPrint('_touchedIndex=$_touchedIndex');
-                                      if (_touchedIndex != 0) {
-                                        if (_selectedSlices.contains(
-                                            _touchedIndex)) {
-                                          _selectedSlices.remove(_touchedIndex);
-                                          _persistState();
-                                        }
-                                        else {
-                                          if (_selectedSlices.length < MAX_BREAKS) {
-                                            _selectedSlices.add(_touchedIndex);
-                                            _persistState();
-                                          }
-                                          else {
-                                            toastError(context,
-                                                l10n.errorMaxBreaksReached(MAX_BREAKS));
-                                          }
-                                        }
-                                      }
-                                      debugPrint('_selected=$_selectedSlices');
-                                    });
-                                  }
-                                }),
-                            borderData: FlBorderData(
-                                show: false
-                            ),
-                            sectionsSpace: 1,
-                            centerSpaceRadius: CENTER_RADIUS,
-                            sections: _createSections(),
-                            startDegreeOffset: 270 + 2.5
-                        ),
-                        swapAnimationDuration: const Duration(milliseconds: 75),
-                      ),
-                      Center(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          child: SizedBox(
-                              width: CENTER_RADIUS * 1.8,
-                              height: CENTER_RADIUS * 1.8,
-                              child: Center(child: Stack(
-                                fit: StackFit.expand,
-                                children: [
-                                  if (_preferenceService.showSpinner && (_isRunning() && !_isAllRunsOver()))
-                                    Center(
-                                      child: SizedBox.expand(
-                                        child: CircularProgressIndicator(
-                                            strokeWidth: 1,
-                                            strokeCap: StrokeCap.round,
-                                            color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
-                                            backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
-                                            value: _circleAnimationController.value
-                                        ),
-                                      ),
-                                    ),
-                                  Center(child: _createCycleWidget()),
-                                ],)
-                              )),
-                          onTap: () {
-                            if (_isRunning()) {
-                              setState(() {
-                                if (_timerMode == TimerMode.RELATIVE) {
-                                  final index = _relativeProgressPresentation.index + 1;
-                                  _relativeProgressPresentation =
-                                      RelativeProgressPresentation.values.elementAt(index % RelativeProgressPresentation.values.length);
-                                  _preferenceService.setInt(PreferenceService.PREF_TIMER_PROGRESS_PRESENTATION, _relativeProgressPresentation.index);
-                                }
-                                else if (_timerMode == TimerMode.ABSOLUTE) {
-                                  final index = _absoluteProgressPresentation.index + 1;
-                                  _absoluteProgressPresentation =
-                                      AbsoluteProgressPresentation.values.elementAt(index % AbsoluteProgressPresentation.values.length);
-                                  _preferenceService.setInt(PreferenceService.PREF_CLOCK_PROGRESS_PRESENTATION, _absoluteProgressPresentation.index);
-                                }
-                              });
-                            }
-                            else {
-                              if (_timerMode == TimerMode.RELATIVE) {
-                                _changeDuration(context);
-                              }
-                              else if (_timerMode == TimerMode.ABSOLUTE) {
-                                _changeTime(context);
-                              }
-                            }
-                          },
-                        ),
-                      ),
-                      Visibility(
-                        visible: _selectedBreakDown != null,
-                        child: Positioned(
-                          top: 17,
-                          left: 17,
-                          child: IconButton(
-                            color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                            onPressed: () {
-                              if (_isRunning()) {
-                                //toastError(context, _stopRunningMessage());
-                                return;
-                              }
-                              if (_selectedBreakDown != null) {
-                                setState(() {
-                                  if (_isPinnedBreakDown()) {
-                                    _pinnedBreakDownId = null;
-                                    toastInfo(context, l10n.breakPresetUnpinned(_selectedBreakDown?.getPresetName(context)??'?'));
-                                  }
-                                  else {
-                                    _pinnedBreakDownId = _selectedBreakDown?.id;
-                                    toastInfo(context, l10n.breakPresetPinned(_selectedBreakDown?.getPresetName(context)??'?'));
-                                  }
-                                  setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
-                                });
-                              }
-                            },
-                            icon: _isPinnedBreakDown()
-                                ? const Icon(Icons.push_pin)
-                                : const Icon(Icons.push_pin_outlined),
-                          ),
-                        ),
-                      ),
-                      Visibility(
-                        visible: _canSaveUserPreset() || _canDeleteUserPreset(),
-                        child: Positioned(
-                            bottom: 17,
-                            left: 17,
-                            child: IconButton(
-                              color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                              onPressed: () {
-                                if (_isRunning()) {
-                                  //toastError(context, _stopRunningMessage());
-                                  return;
-                                }
-                                if (_canDeleteUserPreset()) {
-                                  final breakDownName = _selectedBreakDown?.getPresetName(context)??'?';
-                                  showConfirmationDialog(context, l10n.removePresetTitle, l10n.removePresetMessage(breakDownName),
-                                      okPressed: () {
-                                        if (_selectedBreakDown != null) {
-                                          BreakDownService().deleteBreakDown(_selectedBreakDown!);
-                                          if (_isPinnedBreakDown()) {
-                                            _pinnedBreakDownId = null;
-                                            setPinnedBreakDown(
-                                                _preferenceService, _pinnedBreakDownId);
-                                          }
-
-                                          _updateSelectedBreakDown(null); // this not in setState
-                                          _selectedSlices.clear();
-                                          _loadBreakDowns(focusPinned: true);
-                                        }
-                                        Navigator.pop(context);
-                                        toastInfo(context, l10n.removePresetDone(breakDownName));
-                                      },
-                                      cancelPressed: () {
-                                        Navigator.pop(context);
-                                      });
-                                }
-                                else {
-                                  var newName = _selectedBreakDown?.name;
-                                  var isPredefined = _selectedBreakDown?.isPredefined() == true;
-                                  if (isPredefined) {
-                                    newName = newName != null ? newName + ' (modified)' : null;
-                                  }
-                                  final isTimerModeDuration = _timerMode == TimerMode.RELATIVE;
-                                  final isSwitched = ValueNotifier(
-                                      _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
-                                  showInputWithSwitchDialog(context,
-                                      l10n.savePresetTitle, l10n.savePresetMessage,
-                                      initText: newName,
-                                      hintText: l10n.savePresetHint,
-                                      switchText: isTimerModeDuration
-                                          ? '${l10n.savePresetIncludeDuration}\n(${formatDuration(_duration)})'
-                                          : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(context, TimeOfDay.fromDateTime(_time))})',
-                                      isSwitched: isSwitched,
-                                      validator: (value) {
-                                        if (value == null || value.trim().isEmpty) {
-                                          return l10n.errorSavePresetNameMissing;
-                                        }
-                                        return null;
-                                      },
-                                      cancelPressed: () => Navigator.pop(context),
-                                      okPressed: (input) async {
-
-                                        final id = isPredefined ? null : _selectedBreakDown?.id;
-                                        var newName = input.trim();
-                                        final allBreakDowns = await BreakDownService().getAllBreakDowns();
-                                        final foundWithSameName = allBreakDowns
-                                            .where((e) => e.name == newName && e.id != id)
-                                            .isNotEmpty;
-                                        if (foundWithSameName) {
-                                          Navigator.pop(context);
-                                          toastError(context, l10n.errorSavePresetNameInUse);
-                                          return;
-                                        }
-
-                                        final saveCurrentDuration = isSwitched.value && isTimerModeDuration;
-                                        final saveCurrentTime = isSwitched.value && !isTimerModeDuration;
-
-                                        BreakDown newBreakDown;
-                                        if (saveCurrentDuration) {
-                                          newBreakDown = BreakDown.withDuration(id??0, newName, Set.of(_selectedSlices), _duration);
-                                        }
-                                        else if (saveCurrentTime) {
-                                          newBreakDown = BreakDown.withTime(id??0, newName, Set.of(_selectedSlices), TimeOfDay.fromDateTime(_time));
-                                        }
-                                        else {
-                                          newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
-                                        }
-                                        BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
-                                          _updateSelectedBreakDown(savedBreakDown); // this not in setState
-                                          _loadBreakDowns(focusPinned: false); // here setState is called
-
-                                          toastInfo(context, l10n.savePresetDone(newName));
-                                        });
-
-                                        Navigator.pop(context);
-                                      });
-                                }
-                              },
-                              icon: _canDeleteUserPreset()
-                                  ? const Icon(Icons.delete_forever)
-                                  : const Icon(Icons.save),
-                            )),
-                      ),
-                      Positioned(
-                        top: 17,
-                        right: 17,
-                        child: IconButton(
-                            color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                            onPressed: () async {
-                              if (_isRunning()) {
-                                //toastError(context, _stopRunningMessage());
-                                return;
-                              }
-                              if (_selectedSlices.isEmpty) {
-                                await _updateBreakOrder();
-                                final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
-                                setState(() {
-                                  // reset to defaults
-                                  _timerMode = useClockMode == true ? TimerMode.ABSOLUTE : TimerMode.RELATIVE;
-                                  _runMode = RunMode.NO_REPEAT;
-                                  _updateDuration(kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60), fromUser: true);
-                                  _updateTime(_deriveTime(), fromUser: true);
-                                  _persistState();
-                                });
-                                toastInfo(context, l10n.errorNoBreaksToReset);
-                              }
-                              else {
-                                setState(() {
-                                  _selectedSlices.clear();
-                                  _updateSelectedBreakDown(null);
-                                });
-                              }
-                            },
-                            icon: Icon(MdiIcons.restart)),
-                      ),
-                      Positioned(
-                        bottom: 17,
-                        right: 17,
-                        child: IconButton(
-                            color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
-                            onPressed: () {
-                              if (_isRunning()) {
-                                //toastError(context, _stopRunningMessage());
-                                return;
-                              }
-                              setState(() {
-                                _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
-                                toastInfo(context, _direction == Direction.ASC
-                                    ? l10n.breakOrderSwitchedToAscending
-                                    : l10n.breakOrderSwitchedToDescending);
-                                _persistState();
-                              });
-                            },
-                            icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
-                      ),
-                    ],
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(0, getTimerModeHeight(), 0, 0),
+                    child: _buildTimerModeControl(),
                   ),
-                ),
-              ),
-              Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: _createStatsLine(),
-                  )),
-              SizedBox(height: 120 + buffer) // behind the Floating Button
-            ],
-          ),
+
+                  _buildWheelWithSatelliteIcons(context, l10n, false, constraints),
+
+                  Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: _createStatsLine(),
+                      )),
+                  SizedBox(height: 120 + placeBehindFloatingButton)
+                  // behind the Floating Button
+                ],
+              );
+              return Center(child: content);
+            }
+          },
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: _isRunning() && !_isAllRunsOver()
-            ? _createSwipeToStopButton(context)
-            : _createStartButton(context),
+        floatingActionButton: (isLandscape(context)) ? null: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: _buildStartStopButton(context),
+        ),
       ),
+    );
+  }
+
+  Widget _buildStartStopButton(BuildContext context) {
+    return _isRunning() && !_isAllRunsOver()
+          ? _createSwipeToStopButton(context)
+          : _createStartButton(context);
+  }
+
+  Row _buildPresetSelector(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+            child: IconButton(
+              onPressed: () => _moveBreakDownSelectionToNext(),
+              color: _isRunning() ||
+                  _isBreakDownSelectionAtStart() ? Colors
+                  .grey[700] : ColorService()
+                  .getCurrentScheme()
+                  .button,
+              icon: const Icon(Icons.arrow_back_ios),
+            )),
+        Expanded(
+          flex: 9,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragEnd: (details) {
+              // Swiping in left direction.
+              if (details.velocity.pixelsPerSecond.dx < 0) {
+                _moveBreakDownSelectionToPrevious();
+              }
+
+              // Swiping in right direction.
+              if (details.velocity.pixelsPerSecond.dx > 0) {
+                _moveBreakDownSelectionToNext();
+              }
+            },
+            child: _buildBreakDownDropdown(context),
+          ),
+        ),
+        Flexible(child: IconButton(
+          color: _isRunning() || _isBreakDownSelectionAtEnd()
+              ? Colors.grey[700]
+              : ColorService()
+              .getCurrentScheme()
+              .button,
+          onPressed: () => _moveBreakDownSelectionToPrevious(),
+          icon: const Icon(Icons.arrow_forward_ios),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildWheelWithSatelliteIcons(BuildContext context, AppLocalizations l10n, bool isLandscape, BoxConstraints constraints) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: _switchTimerMode,
+      child: AspectRatio(
+        aspectRatio: isLandscape ? 1 : 0.97,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                PieChart(
+                  PieChartData(
+                      pieTouchData: PieTouchData(
+                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            if (_isRunning()) {
+                              return;
+                            }
+                            if (event is FlTapUpEvent
+                                || event is FlPointerExitEvent
+                                || event is FlLongPressEnd
+                                || event is FlPanEndEvent
+                            ) {
+                              setState(() {
+                                _touchedIndex = 0;
+                              });
+                            }
+                            else if (event is FlTapDownEvent) {
+                              setState(() {
+                                if (
+                                pieTouchResponse == null ||
+                                    pieTouchResponse.touchedSection == null) {
+                                  _touchedIndex = -1;
+                                  return;
+                                }
+                                _touchedIndex =
+                                    (pieTouchResponse.touchedSection!
+                                        .touchedSectionIndex + 1) % MAX_SLICE;
+                                debugPrint('_touchedIndex=$_touchedIndex');
+                                if (_touchedIndex != 0) {
+                                  if (_selectedSlices.contains(
+                                      _touchedIndex)) {
+                                    _selectedSlices.remove(_touchedIndex);
+                                    _persistState();
+                                  }
+                                  else {
+                                    if (_selectedSlices.length < MAX_BREAKS) {
+                                      _selectedSlices.add(_touchedIndex);
+                                      _persistState();
+                                    }
+                                    else {
+                                      toastError(context,
+                                          l10n.errorMaxBreaksReached(MAX_BREAKS));
+                                    }
+                                  }
+                                }
+                                debugPrint('_selected=$_selectedSlices');
+                              });
+                            }
+                          }),
+                      borderData: FlBorderData(
+                          show: false
+                      ),
+                      sectionsSpace: 1,
+                      centerSpaceRadius:CENTER_RADIUS,
+                      sections: _createSections(isLandscape, constraints),
+                      startDegreeOffset: 270 + 2.5
+                  ),
+                  swapAnimationDuration: const Duration(milliseconds: 75),
+                ),
+                Center(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    child: SizedBox(
+                        width: CENTER_RADIUS * 1.8,
+                        height: CENTER_RADIUS * 1.8,
+                        child: Center(child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (_preferenceService.showSpinner && (_isRunning() && !_isAllRunsOver()))
+                              Center(
+                                child: SizedBox.expand(
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 1,
+                                      strokeCap: StrokeCap.round,
+                                      color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
+                                      backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
+                                      value: _circleAnimationController.value
+                                  ),
+                                ),
+                              ),
+                            Center(child: _createCycleWidget()),
+                          ],)
+                        )),
+                    onTap: () {
+                      if (_isRunning()) {
+                        setState(() {
+                          if (_timerMode == TimerMode.RELATIVE) {
+                            final index = _relativeProgressPresentation.index + 1;
+                            _relativeProgressPresentation =
+                                RelativeProgressPresentation.values.elementAt(index % RelativeProgressPresentation.values.length);
+                            _preferenceService.setInt(PreferenceService.PREF_TIMER_PROGRESS_PRESENTATION, _relativeProgressPresentation.index);
+                          }
+                          else if (_timerMode == TimerMode.ABSOLUTE) {
+                            final index = _absoluteProgressPresentation.index + 1;
+                            _absoluteProgressPresentation =
+                                AbsoluteProgressPresentation.values.elementAt(index % AbsoluteProgressPresentation.values.length);
+                            _preferenceService.setInt(PreferenceService.PREF_CLOCK_PROGRESS_PRESENTATION, _absoluteProgressPresentation.index);
+                          }
+                        });
+                      }
+                      else {
+                        if (_timerMode == TimerMode.RELATIVE) {
+                          _changeDuration(context);
+                        }
+                        else if (_timerMode == TimerMode.ABSOLUTE) {
+                          _changeTime(context);
+                        }
+                      }
+                    },
+                  ),
+                ),
+                Visibility(
+                  visible: _selectedBreakDown != null,
+                  child: Positioned(
+                    top: 17,
+                    left: 17,
+                    child: IconButton(
+                      color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                      onPressed: () {
+                        if (_isRunning()) {
+                          //toastError(context, _stopRunningMessage());
+                          return;
+                        }
+                        if (_selectedBreakDown != null) {
+                          setState(() {
+                            if (_isPinnedBreakDown()) {
+                              _pinnedBreakDownId = null;
+                              toastInfo(context, l10n.breakPresetUnpinned(_selectedBreakDown?.getPresetName(context)??'?'));
+                            }
+                            else {
+                              _pinnedBreakDownId = _selectedBreakDown?.id;
+                              toastInfo(context, l10n.breakPresetPinned(_selectedBreakDown?.getPresetName(context)??'?'));
+                            }
+                            setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
+                          });
+                        }
+                      },
+                      icon: _isPinnedBreakDown()
+                          ? const Icon(Icons.push_pin)
+                          : const Icon(Icons.push_pin_outlined),
+                    ),
+                  ),
+                ),
+                Visibility(
+                  visible: _canSaveUserPreset() || _canDeleteUserPreset(),
+                  child: Positioned(
+                      bottom: 17,
+                      left: 17,
+                      child: IconButton(
+                        color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                        onPressed: () {
+                          if (_isRunning()) {
+                            //toastError(context, _stopRunningMessage());
+                            return;
+                          }
+                          if (_canDeleteUserPreset()) {
+                            final breakDownName = _selectedBreakDown?.getPresetName(context)??'?';
+                            showConfirmationDialog(context, l10n.removePresetTitle, l10n.removePresetMessage(breakDownName),
+                                okPressed: () {
+                                  if (_selectedBreakDown != null) {
+                                    BreakDownService().deleteBreakDown(_selectedBreakDown!);
+                                    if (_isPinnedBreakDown()) {
+                                      _pinnedBreakDownId = null;
+                                      setPinnedBreakDown(
+                                          _preferenceService, _pinnedBreakDownId);
+                                    }
+
+                                    _updateSelectedBreakDown(null); // this not in setState
+                                    _selectedSlices.clear();
+                                    _loadBreakDowns(focusPinned: true);
+                                  }
+                                  Navigator.pop(context);
+                                  toastInfo(context, l10n.removePresetDone(breakDownName));
+                                },
+                                cancelPressed: () {
+                                  Navigator.pop(context);
+                                });
+                          }
+                          else {
+                            var newName = _selectedBreakDown?.name;
+                            var isPredefined = _selectedBreakDown?.isPredefined() == true;
+                            if (isPredefined) {
+                              newName = newName != null ? newName + ' (modified)' : null;
+                            }
+                            final isTimerModeDuration = _timerMode == TimerMode.RELATIVE;
+                            final isSwitched = ValueNotifier(
+                                _selectedBreakDown?.duration != null || _selectedBreakDown?.time != null);
+                            showInputWithSwitchDialog(context,
+                                l10n.savePresetTitle, l10n.savePresetMessage,
+                                initText: newName,
+                                hintText: l10n.savePresetHint,
+                                switchText: isTimerModeDuration
+                                    ? '${l10n.savePresetIncludeDuration}\n(${formatDuration(_duration)})'
+                                    : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(context, TimeOfDay.fromDateTime(_time))})',
+                                isSwitched: isSwitched,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return l10n.errorSavePresetNameMissing;
+                                  }
+                                  return null;
+                                },
+                                cancelPressed: () => Navigator.pop(context),
+                                okPressed: (input) async {
+
+                                  final id = isPredefined ? null : _selectedBreakDown?.id;
+                                  var newName = input.trim();
+                                  final allBreakDowns = await BreakDownService().getAllBreakDowns();
+                                  final foundWithSameName = allBreakDowns
+                                      .where((e) => e.name == newName && e.id != id)
+                                      .isNotEmpty;
+                                  if (foundWithSameName) {
+                                    Navigator.pop(context);
+                                    toastError(context, l10n.errorSavePresetNameInUse);
+                                    return;
+                                  }
+
+                                  final saveCurrentDuration = isSwitched.value && isTimerModeDuration;
+                                  final saveCurrentTime = isSwitched.value && !isTimerModeDuration;
+
+                                  BreakDown newBreakDown;
+                                  if (saveCurrentDuration) {
+                                    newBreakDown = BreakDown.withDuration(id??0, newName, Set.of(_selectedSlices), _duration);
+                                  }
+                                  else if (saveCurrentTime) {
+                                    newBreakDown = BreakDown.withTime(id??0, newName, Set.of(_selectedSlices), TimeOfDay.fromDateTime(_time));
+                                  }
+                                  else {
+                                    newBreakDown = BreakDown(id??0, newName, Set.of(_selectedSlices));
+                                  }
+                                  BreakDownService().saveBreakDown(newBreakDown).then((savedBreakDown) {
+                                    _updateSelectedBreakDown(savedBreakDown); // this not in setState
+                                    _loadBreakDowns(focusPinned: false); // here setState is called
+
+                                    toastInfo(context, l10n.savePresetDone(newName));
+                                  });
+
+                                  Navigator.pop(context);
+                                });
+                          }
+                        },
+                        icon: _canDeleteUserPreset()
+                            ? const Icon(Icons.delete_forever)
+                            : const Icon(Icons.save),
+                      )),
+                ),
+                Positioned(
+                  top: 17,
+                  right: 17,
+                  child: IconButton(
+                      color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                      onPressed: () async {
+                        if (_isRunning()) {
+                          //toastError(context, _stopRunningMessage());
+                          return;
+                        }
+                        if (_selectedSlices.isEmpty) {
+                          await _updateBreakOrder();
+                          final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
+                          setState(() {
+                            // reset to defaults
+                            _timerMode = useClockMode == true ? TimerMode.ABSOLUTE : TimerMode.RELATIVE;
+                            _runMode = RunMode.NO_REPEAT;
+                            _updateDuration(kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60), fromUser: true);
+                            _updateTime(_deriveTime(), fromUser: true);
+                            _persistState();
+                          });
+                          toastInfo(context, l10n.errorNoBreaksToReset);
+                        }
+                        else {
+                          setState(() {
+                            _selectedSlices.clear();
+                            _updateSelectedBreakDown(null);
+                          });
+                        }
+                      },
+                      icon: Icon(MdiIcons.restart)),
+                ),
+                Positioned(
+                  bottom: 17,
+                  right: 17,
+                  child: IconButton(
+                      color: _isRunning()  ? Colors.grey[700] : ColorService().getCurrentScheme().button,
+                      onPressed: () {
+                        if (_isRunning()) {
+                          //toastError(context, _stopRunningMessage());
+                          return;
+                        }
+                        setState(() {
+                          _direction = (_direction == Direction.ASC ? Direction.DESC : Direction.ASC);
+                          toastInfo(context, _direction == Direction.ASC
+                              ? l10n.breakOrderSwitchedToAscending
+                              : l10n.breakOrderSwitchedToDescending);
+                          _persistState();
+                        });
+                      },
+                      icon: Icon(_direction == Direction.ASC ? Icons.north : _direction == Direction.DESC ? Icons.south : Icons.swap_vert)),
+                ),
+              ],
+            );
+          }
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBreakDownDropdown(BuildContext context, {bool landscape = false}) {
+    final scheme = ColorService().getCurrentScheme();
+    final canEdit = !_isRunning();
+    return DropdownButtonFormField<Object?>(
+      isDense: true,
+      isExpanded: true,
+      focusColor: landscape ? null : scheme.accent,
+      onTap: landscape ? null : () => FocusScope.of(context).unfocus(),
+      initialValue: _loadedBreakDowns.contains(_selectedBreakDown)
+          ? _selectedBreakDown : null,
+      hint: Text(AppLocalizations.of(context)!.breakPresets),
+      iconEnabledColor: landscape ? null : scheme.button,
+      icon: landscape ? null : Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: GestureDetector(
+          onTap: () => _showBreakDownDialog(context),
+          child: const ImageIcon(AssetImage('assets/launcher_bdt_adaptive_fore.png')),
+        ),
+      ),
+      onChanged: canEdit ? (value) {
+        if (value is BreakDown) {
+          _updateSelectedSlices(value);
+        }
+        else if (value == _BUILD_BREAKDOWN_ITEM) {
+          if (!landscape) {
+            debugPrint('_BUILD_BREAKDOWN_ITEM selected');
+            setState(() {
+              _selectedBreakDown = null; //TODO doesnt work
+            });
+          }
+          _showBreakDownDialog(context);
+        }
+      } : null,
+      items: _getBreakDownItems(),
+    );
+  }
+
+  Widget _buildTimerModeControl() {
+    final scheme = ColorService().getCurrentScheme();
+    final height = getTimerModeHeight();
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onHorizontalDragEnd: _switchTimerMode,
+      child: SlidingControl<TimerMode>(
+        backgroundColor: scheme.background,
+        thumbColor: scheme.button,
+        padding: EdgeInsets.fromLTRB(8, 8, 8, height),
+        cornerRadius: Radius.circular(9 + height),
+        children: <TimerMode, Widget>{
+          TimerMode.RELATIVE: Padding(
+                  padding: EdgeInsets.all(height),
+                  child: Icon(Icons.timer_outlined,
+                      color: _timerMode == TimerMode.RELATIVE ? scheme.accent : scheme.button),
+                ),
+          TimerMode.ABSOLUTE:Padding(
+                  padding: EdgeInsets.all(height),
+                  child: Icon(Icons.alarm,
+                      color: _timerMode == TimerMode.ABSOLUTE ? scheme.accent : scheme.button),
+                ),
+        },
+        groupValue: _timerMode,
+        onValueChanged: (value) {
+          if ((!_isRunning()) && value != null) {
+            setState(() => _setTimerMode(value));
+          }
+        },
+      ),
+    );
+  }
+
+  void _toggleLandscapePin() {
+    setState(() {
+      _pinnedBreakDownId = _isPinnedBreakDown() ? null : _selectedBreakDown?.id;
+      setPinnedBreakDown(_preferenceService, _pinnedBreakDownId);
+    });
+  }
+
+  void _toggleLandscapeDirection() {
+    setState(() {
+      _direction = _direction == Direction.ASC ? Direction.DESC : Direction.ASC;
+      _persistState();
+    });
+  }
+
+  void _resetLandscape() {
+    setState(() {
+      _selectedSlices.clear();
+      _updateSelectedBreakDown(null);
+      _runMode = RunMode.NO_REPEAT;
+      _persistState();
+    });
+  }
+
+  void _handleLandscapePresetAction() {
+    final l10n = AppLocalizations.of(context)!;
+    if (_canDeleteUserPreset()) {
+      final name = _selectedBreakDown?.getPresetName(context) ?? '?';
+      showConfirmationDialog(
+        context,
+        l10n.removePresetTitle,
+        l10n.removePresetMessage(name),
+        okPressed: () {
+          final selected = _selectedBreakDown;
+          if (selected != null) {
+            BreakDownService().deleteBreakDown(selected);
+            if (_isPinnedBreakDown()) {
+              _pinnedBreakDownId = null;
+              setPinnedBreakDown(
+                  _preferenceService, _pinnedBreakDownId);
+            }
+            _selectedSlices.clear();
+            _updateSelectedBreakDown(null);
+            _loadBreakDowns(focusPinned: true);
+          }
+          Navigator.pop(context);
+        },
+        cancelPressed: () => Navigator.pop(context),
+      );
+      return;
+    }
+
+    var name = _selectedBreakDown?.name;
+    if (_selectedBreakDown?.isPredefined() == true && name != null) {
+      name = '$name (modified)';
+    }
+    final includeValue = ValueNotifier(_selectedBreakDown?.duration != null ||
+        _selectedBreakDown?.time != null);
+    final durationMode = _timerMode == TimerMode.RELATIVE;
+    showInputWithSwitchDialog(
+      context,
+      l10n.savePresetTitle,
+      l10n.savePresetMessage,
+      initText: name,
+      hintText: l10n.savePresetHint,
+      switchText: durationMode
+          ? '${l10n.savePresetIncludeDuration}\n(${formatDuration(_duration)})'
+          : '${l10n.savePresetIncludeTime}\n(${formatTimeOfDay(context, TimeOfDay.fromDateTime(_time))})',
+      isSwitched: includeValue,
+      validator: (value) => value == null || value.trim().isEmpty
+          ? l10n.errorSavePresetNameMissing : null,
+      cancelPressed: () => Navigator.pop(context),
+      okPressed: (input) async {
+        final trimmed = input.trim();
+        final id = _selectedBreakDown?.isPredefined() == true
+            ? null : _selectedBreakDown?.id;
+        final duplicate = (await BreakDownService().getAllBreakDowns())
+            .any((item) => item.name == trimmed && item.id != id);
+        if (duplicate) {
+          Navigator.pop(context);
+          toastError(context, l10n.errorSavePresetNameInUse);
+          return;
+        }
+        final saved = includeValue.value && durationMode
+            ? BreakDown.withDuration(id ?? 0, trimmed, Set.of(_selectedSlices), _duration)
+            : includeValue.value
+                ? BreakDown.withTime(id ?? 0, trimmed, Set.of(_selectedSlices),
+                    TimeOfDay.fromDateTime(_time))
+                : BreakDown(id ?? 0, trimmed, Set.of(_selectedSlices));
+        final result = await BreakDownService().saveBreakDown(saved);
+        _updateSelectedBreakDown(result);
+        _loadBreakDowns(focusPinned: false);
+        Navigator.pop(context);
+        toastInfo(context, l10n.savePresetDone(trimmed));
+      },
     );
   }
 
@@ -1757,13 +1979,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return adjusted;
   }
 
+
   List<int> _selectedSortedSlices() => _selectedSlices.toList()..sort();
 
   Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / MAX_SLICE).round());
 
-  List<PieChartSectionData> _createSections() {
-    var slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
-    double r = (MediaQuery.of(context).size.width / 2) - CENTER_RADIUS - (23 * 2);
+  List<PieChartSectionData> _createSections(bool isLandscape, BoxConstraints constraints) {
+    final slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
+    final width = constraints.minWidth;
+    final height = constraints.minHeight;
+    debugPrint('width=$width height=$height');
+    double r = (min(width, height) / 2) -
+        CENTER_RADIUS - 23 * 2;
     final sliceSeconds = _duration.inSeconds / MAX_SLICE;
 
     return slices.indexed.map((indexed) {
@@ -1794,6 +2021,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       final value = 1.0;
 
+      final titlePositionPercentageOffset = isTouched
+          ? 1.22
+          : !isInTransition && shouldAlternate && _isTopOrBottomSlice(slice) // if nearby slice has also a title, try to use a different offset to not collide
+          ? 1.55
+          : 1.25;
       return PieChartSectionData(
         color: isFinalSlice
             ? ColorService().getCurrentScheme().accent
@@ -1812,7 +2044,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               : isInTransition
                 ? const TextStyle(fontSize: 9)
                 : const TextStyle(fontSize: 11),
-        titlePositionPercentageOffset: isTouched ? 1.22 : !isInTransition && shouldAlternate && _isTopOrBottomSlice(slice) ? 1.55 : 1.25, // if nearby slice has also a title, try to use a different offset to not collide
+        titlePositionPercentageOffset: titlePositionPercentageOffset * (isLandscape ? 1.15 : 1),
         badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
         badgePositionPercentageOffset: shouldAlternate ? 0.8 : null
       );
@@ -2088,6 +2320,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (jsonMap['repetition'] != null) {
       _repetition = jsonMap['repetition'];
     }
+
+    if (!_isRunning()) {
+      _time = adjustToTodayIfInThePast(_time);
+    }
   }
 
   String _getSignalStringForNumber(int signal) {
@@ -2193,4 +2429,3 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
 
 }
-

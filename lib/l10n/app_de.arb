@@ -5,6 +5,7 @@
   "reset": "Zurücksetzen",
   "breakName": "Pause",
   "batterySavingsHint": "Um präzise Alarme zu planen, sollte diese App von allen Akkuoptimierungen ausgenommen werden. Funktioniert die App nicht richtig, sollten Sie genau das tun. Öffnen Sie die Einstellungen und aktivieren Sie die Ausnahme ('Nicht optimiert') für '{appName}'.",
+  "notExcludeFromBatterySavingsHint": "Mit Android 12+ gibt es eine neue Berechtigung, um exakte Alarme zu erlauben. Falls exakte Alarme dennoch nicht funktionieren, muss die Hintergrund-Akkunutzung wieder OPTIMIERT werden.",
   "openSettings": "Einstellungen öffnen",
   "dontAskAgain": "Nicht mehr fragen",
   "volume": "Lautstärke",
