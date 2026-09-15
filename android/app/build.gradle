@@ -24,9 +24,9 @@ if (flutterVersionName == null) {
 }
 
 android {
-    compileSdkVersion 36
     namespace 'de.jepfa.bdt'
 
+    compileSdkVersion 36
     ndkVersion "29.0.14206865"
 
     compileOptions {
