@@ -51,7 +51,7 @@ dependencies:
   vibration: 3.1.5
   flutter_material_design_icons: ^3.1.0+7447
   slider_button: 2.0.0 # stick to 2.0.0 to not get slider state reset with every setState in BDTScaffold
-  sound_mode: ^3.0.0
+  sound_mode_advanced: ^4.0.0
   system_clock: ^2.0.0
   flutter_svg: ^2.0.10+1
   flutter_fgbg: ^0.7.0
@@ -78,8 +78,6 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  floor_generator: ^1.1.0
-  build_runner: ^2.0.0
   flutter_launcher_icons: ^0.13.1
 
 flutter_icons:
