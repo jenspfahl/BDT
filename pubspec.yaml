@@ -15,11 +15,11 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.6.0+10600
+version: 1.6.1+10601
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
-  flutter: ">=3.32.0 <3.38.0" # ensure only Flutter versions are used that have been tested and work with AlarmManagerPlus
+  flutter: ">=3.32.0 <3.48.0" # ensure only Flutter versions are used that have been tested and work with AlarmManagerPlus
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
