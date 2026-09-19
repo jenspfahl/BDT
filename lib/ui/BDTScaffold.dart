@@ -18,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:slider_button/slider_button.dart';
+import 'package:sliding_action_button/sliding_action_button.dart';
 import 'package:sound_mode_advanced/sound_mode_advanced.dart';
 import 'package:system_clock/system_clock.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -1646,25 +1646,24 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   Widget _createSwipeToStopButton(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return SliderButton(
-      action: () async {
-        debugPrint("click");
-        _stopRun(context);
-        return true;
-      },
-      backgroundColor: ColorService().getCurrentScheme().button,
-      baseColor: ColorService().getCurrentScheme().primary,
-      highlightedColor: ColorService().getCurrentScheme().accent,
-      buttonColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
+    return SlideToActionButton(
+      initialSlidingActionLabel: '     \u27A0 ${l10n.swipeToStop}',
+      initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent),
+      thumbSize: 48,
       height: 48,
-      width: 250,
-      buttonSize: 48,
-      shimmer: false,
-      dismissThresholds: 0.99,
-      label: Text('\u27A0 ${l10n.swipeToStop}',
-          style: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent)),
-      icon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
+      width: 260,
+      thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
+      enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
+      animationDuration: const Duration(milliseconds: 400),
+      enableHapticFeedback: false,
+      leftEdgeSpacing: 0,
+      rightEdgeSpacing: 0,
+      completionThreshold: 0.99,
+      onSlideActionCompleted: () {
+        _stopRun(context);
+      },
     );
+
   }
 
   Widget _createStartButton(BuildContext context) {

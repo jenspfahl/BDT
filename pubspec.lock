@@ -796,27 +796,19 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
-  shimmer:
-    dependency: transitive
-    description:
-      name: shimmer
-      sha256: "5f88c883a22e9f9f299e5ba0e4f7e6054857224976a5d9f839d4ebdc94a14ac9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   sky_engine:
     dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
-  slider_button:
+  sliding_action_button:
     dependency: "direct main"
     description:
-      name: slider_button
-      sha256: "6c3ecf519dc0134e97523532619756e23f87e44528277b9ad75b9492d1b4339a"
+      name: sliding_action_button
+      sha256: "67d93c5e0a877ab4891f07f7c0c0d35280cad8ceec4530ee57d9470e9614c54e"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "1.0.0"
   sound_mode_advanced:
     dependency: "direct main"
     description:

@@ -50,7 +50,7 @@ dependencies:
   android_alarm_manager_plus: ^5.1.1
   vibration: ^3.2.1
   flutter_material_design_icons: ^3.1.0+7447
-  slider_button: ^3.1.0
+  sliding_action_button: ^1.0.0
   sound_mode_advanced: ^4.0.0
   system_clock: ^3.0.0
   flutter_svg: ^2.0.10+1
