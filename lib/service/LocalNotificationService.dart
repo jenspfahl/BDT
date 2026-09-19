@@ -55,7 +55,7 @@ class LocalNotificationService {
 
     tz.initializeTimeZones();
 
-    await _flutterLocalNotificationsPlugin.initialize(initializationSettings,
+    await _flutterLocalNotificationsPlugin.initialize(settings: initializationSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) async {
           final payload = response.payload;
           if (payload != null) {
@@ -68,10 +68,10 @@ class LocalNotificationService {
 
   Future<void> showNotification(String receiverKey, int id, String title, String message, String channelId, bool keepAsProgress, bool ongoing, int? progress, String payload, [Color? color]) async {
     await _flutterLocalNotificationsPlugin.show(
-      id,
-      title, 
-      message,
-      NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress, ongoing, progress)),
+      id: id,
+      title: title,
+      body: message,
+      notificationDetails: NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress, ongoing, progress)),
       payload: receiverKey + '-' + payload,
     );
   }
@@ -79,18 +79,17 @@ class LocalNotificationService {
   Future<void> scheduleNotification(String receiverKey, int id, String title, message, Duration duration, String channelId, [Color? color]) async {
     final when = tz.TZDateTime.now(tz.local).add(duration);
     await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        message,
-        when.subtract(Duration(seconds: when.second)), // trunc seconds
-        NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        id: id,
+        title: title,
+        body: message,
+        scheduledDate: when.subtract(Duration(seconds: when.second)), // trunc seconds
+        notificationDetails: NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
         payload: receiverKey + '-' + id.toString(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
   }
 
   Future<void> cancelNotification(int id) async {
-    await _flutterLocalNotificationsPlugin.cancel(id);
+    await _flutterLocalNotificationsPlugin.cancel(id: id);
   }
 
   Future<void> cancelAllNotifications() async {

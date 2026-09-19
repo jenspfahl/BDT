@@ -898,8 +898,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
               final mediaHeight = MediaQuery.of(context).size.height;
               final placeBehindFloatingButton = (mediaHeight / 16);
-              debugPrint('mediaHeight=$mediaHeight, placeBehindFloatingButton=$placeBehindFloatingButton');
-
 
               final content = Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1649,8 +1647,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final l10n = AppLocalizations.of(context)!;
 
     return SliderButton(
-      action: () {
+      action: () async {
+        debugPrint("click");
         _stopRun(context);
+        return true;
       },
       backgroundColor: ColorService().getCurrentScheme().button,
       baseColor: ColorService().getCurrentScheme().primary,
@@ -1987,7 +1987,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
     final width = constraints.minWidth;
     final height = constraints.minHeight;
-    debugPrint('width=$width height=$height');
     double r = (min(width, height) / 2) -
         CENTER_RADIUS - 23 * 2;
     final sliceSeconds = _duration.inSeconds / MAX_SLICE;
@@ -2420,7 +2419,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   double getTimerModeHeight() {
     final deviceHeight = MediaQuery.of(context).size.height;
-    debugPrint("deviceHeight=$deviceHeight");
     return deviceHeight >= 750 ? 8 : 0;
   }
 
