@@ -351,7 +351,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     int? progress = null;
     final now = DateTime.now();
     if (showBreakInfo) {
-      progress = await getProgress(prefService);
+      progress = await getProgress(prefService, id - 1);
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
         final duration = startedAt.difference(now).abs();
@@ -607,8 +607,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   void _updateRunning() {
-    final progress = _getProgress();
-    setProgress(_preferenceService, progress != null ? (progress * 100).round() : null);
+    final progressPath = _getProgressPath();
+    setProgressPath(_preferenceService, progressPath);
     setStartedAt(_preferenceService, _startedAt);
     setBreaksCount(_preferenceService, _selectedSlices.length);
     setRunDirection(_preferenceService, _direction);
@@ -653,10 +653,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return Duration(seconds: finalTime.difference(now).abs().inSeconds + 1);
   }
 
-  double? _getProgress() {
-    final progressed = _getDelta();
-    if (progressed != null) {
-      return progressed.inSeconds / _duration.inSeconds;
+  String? _getProgressPath() {
+    if (_isRunning()) {
+      return _selectedSortedSlices().join(',');
     }
     else {
       return null;

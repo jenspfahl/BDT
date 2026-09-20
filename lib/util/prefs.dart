@@ -1,3 +1,4 @@
+import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:flutter/foundation.dart';
 
 import '../model/common.dart';
@@ -91,27 +92,47 @@ setRunDirection(PreferenceService preferenceService, Direction direction) async 
   await preferenceService.setInt(PreferenceService.STATE_RUN_DIRECTION, direction.index);
 }
 
-Future<int?> getProgress(PreferenceService preferenceService) async {
+Future<int?> getProgress(PreferenceService preferenceService, int currentIndex) async {
   await preferenceService.reload();
   final direction = await getRunDirection(preferenceService);
-  if (direction == null || direction == Direction.ASC) {
-    return await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
+  final progressPath = await preferenceService.getString(PreferenceService.STATE_RUN_PROGRESS_PATH);
+  debugPrint('use progressPath=$progressPath and index=$currentIndex');
+
+  if (progressPath == null) {
+    return null;
   }
-  else {
-    final progress = await preferenceService.getInt(PreferenceService.STATE_RUN_PROGRESS);
-    if (progress == null) {
+  final split = progressPath.split(',');
+  if (split.isEmpty || currentIndex < 0 || currentIndex > split.length - 1 ) {
+    return null;
+  }
+
+  if (direction == null || direction == Direction.ASC) {
+    final value = int.tryParse(split[currentIndex]);
+    debugPrint('path value=$value');
+    if (value == null) {
       return null;
     }
-    return 100 - progress;
+
+    return value;
+  }
+  else {
+    final value = int.tryParse(split[split.length - 1 - currentIndex]);
+    debugPrint('path value=$value for idx=${split.length - 1 - currentIndex}');
+    if (value == null) {
+      return null;
+    }
+
+    return MAX_SLICE - value;
   }
 }
 
-setProgress(PreferenceService preferenceService, int? progress) async {
-  if (progress != null) {
-    await preferenceService.setInt(PreferenceService.STATE_RUN_PROGRESS, progress);
+setProgressPath(PreferenceService preferenceService, String? path) async {
+  debugPrint('progress path: $path');
+  if (path != null) {
+    await preferenceService.setString(PreferenceService.STATE_RUN_PROGRESS_PATH, path);
   }
   else {
-    await preferenceService.remove(PreferenceService.STATE_RUN_PROGRESS);
+    await preferenceService.remove(PreferenceService.STATE_RUN_PROGRESS_PATH);
   }
 }
 

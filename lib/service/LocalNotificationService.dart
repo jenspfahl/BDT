@@ -1,3 +1,4 @@
+import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -149,7 +150,7 @@ class LocalNotificationService {
       indeterminate: keepAsProgress && progress == null,
       showProgress: keepAsProgress,
       progress: progress??0,
-      maxProgress: 100,
+      maxProgress: MAX_SLICE,
       autoCancel: false,
       ongoing: ongoing,
       priority: Priority.high,
