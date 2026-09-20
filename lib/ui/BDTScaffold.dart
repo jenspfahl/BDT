@@ -915,7 +915,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
                   Center(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
                         child: _createStatsLine(),
                       )),
                   SizedBox(height: 120 + placeBehindFloatingButton)
