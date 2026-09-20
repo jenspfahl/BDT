@@ -272,7 +272,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final l10n = await _loadLocalizations();
 
     await notify(100, l10n.timerFinished,
-        showBreakInfo: true, showProgress: true, l10n: l10n);
+        showBreakInfo: true, showProgress: true, isFinished: true, l10n: l10n);
     await SignalService.makeSignalPattern(SIG_END);
   }
 
@@ -335,6 +335,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     bool showBreakInfo = false, 
     bool showStartInfo = false,
     bool fixed = false,
+    bool isFinished = false,
     required AppLocalizations l10n
   }) async {
     final prefService = preferenceService ?? PreferenceService();
@@ -351,7 +352,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     int? progress = null;
     final now = DateTime.now();
     if (showBreakInfo) {
-      progress = await getProgress(prefService, id - 1);
+      progress = await getProgress(prefService, id - 1, isFinished);
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
         final duration = startedAt.difference(now).abs();

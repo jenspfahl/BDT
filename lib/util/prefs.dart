@@ -92,9 +92,18 @@ setRunDirection(PreferenceService preferenceService, Direction direction) async 
   await preferenceService.setInt(PreferenceService.STATE_RUN_DIRECTION, direction.index);
 }
 
-Future<int?> getProgress(PreferenceService preferenceService, int currentIndex) async {
+Future<int?> getProgress(PreferenceService preferenceService, int currentIndex, bool isFinished) async {
   await preferenceService.reload();
   final direction = await getRunDirection(preferenceService);
+  if (isFinished) {
+    if (direction == null || direction == Direction.ASC) {
+      return MAX_SLICE;
+    }
+    else {
+      return 0;
+    }
+  }
+
   final progressPath = await preferenceService.getString(PreferenceService.STATE_RUN_PROGRESS_PATH);
   debugPrint('use progressPath=$progressPath and index=$currentIndex');
 
