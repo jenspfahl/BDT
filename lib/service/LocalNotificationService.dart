@@ -2,11 +2,10 @@ import 'package:bdt/ui/BDTScaffold.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
-
 import '../main.dart';
 
-const CHANNEL_ID_BDT = 'de.jepfa.bdt.notifications';
+const CHANNEL_ID_BDT_SIGNALS = 'bdt_signals';
+const CHANNEL_ID_BDT_FGS = 'bdt_foreground_notification';
 
 
 // stolen from https://github.com/iloveteajay/flutter_local_notification/https://github.com/iloveteajay/flutter_local_notification/
@@ -67,26 +66,27 @@ class LocalNotificationService {
         });
   }
 
-  Future<void> showNotification(String receiverKey, int id, String title, String message, String channelId, bool keepAsProgress, bool ongoing, int? progress, String payload, [Color? color]) async {
+  Future<void> showNotification(
+      String receiverKey,
+      int id,
+      String title,
+      String message,
+      String channelId,
+      String channelName,
+      String channelDescription,
+      bool keepAsProgress,
+      bool ongoing,
+      int? progress,
+      String payload,
+      Color? color) async {
     await _flutterLocalNotificationsPlugin.show(
       id: id,
       title: title,
       body: message,
-      notificationDetails: NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, keepAsProgress, ongoing, progress)),
+      notificationDetails: NotificationDetails(
+          android: _createAndroidNotificationDetails(color, channelId, channelName, channelDescription, keepAsProgress, ongoing, progress)),
       payload: receiverKey + '-' + payload,
     );
-  }
-
-  Future<void> scheduleNotification(String receiverKey, int id, String title, message, Duration duration, String channelId, [Color? color]) async {
-    final when = tz.TZDateTime.now(tz.local).add(duration);
-    await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id: id,
-        title: title,
-        body: message,
-        scheduledDate: when.subtract(Duration(seconds: when.second)), // trunc seconds
-        notificationDetails: NotificationDetails(android: _createAndroidNotificationDetails(color, channelId, false, false, null)),
-        payload: receiverKey + '-' + id.toString(),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
   }
 
   Future<void> cancelNotification(int id) async {
@@ -137,11 +137,18 @@ class LocalNotificationService {
   }
 
 
-  AndroidNotificationDetails _createAndroidNotificationDetails(Color? color, String channelId, bool keepAsProgress, bool ongoing, int? progress) {
+  AndroidNotificationDetails _createAndroidNotificationDetails(
+      Color? color,
+      String channelId,
+      String channelName,
+      String channelDescription,
+      bool keepAsProgress,
+      bool ongoing,
+      int? progress) {
     return AndroidNotificationDetails(
       channelId,
-      APP_NAME,
-      channelDescription: 'Timer break downs',
+      channelName,
+      channelDescription: channelDescription,
       color: color,
       playSound: false,
       vibrationPattern: null,

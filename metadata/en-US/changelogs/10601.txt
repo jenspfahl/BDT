@@ -1,2 +1,3 @@
 * fix progress bar in notifications if app is stopped
+* fix dropping audio signals if app is in background (Android 17+)
 * Update internal dependencies

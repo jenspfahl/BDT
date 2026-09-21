@@ -197,6 +197,30 @@ abstract class AppLocalizations {
   /// **'Change seconds'**
   String get changeSeconds;
 
+  /// No description provided for @notificationChannelNameForBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Breaks'**
+  String get notificationChannelNameForBreaks;
+
+  /// No description provided for @notificationChannelDescriptionForBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies when breaks are reached'**
+  String get notificationChannelDescriptionForBreaks;
+
+  /// No description provided for @notificationChannelNameForAppInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background activities'**
+  String get notificationChannelNameForAppInBackground;
+
+  /// No description provided for @notificationChannelDescriptionForAppInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies when the app is running in background'**
+  String get notificationChannelDescriptionForAppInBackground;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:

@@ -59,6 +59,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get changeSeconds => 'Sekunden anpassen';
 
   @override
+  String get notificationChannelNameForBreaks => 'Pausen';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Benachrichtigt, wenn Pausen erreicht werden';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Hintergrundaktivitäten';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Benachrichtigt, wenn die App im Hintergrund läuft';
+
+  @override
   String get settings => 'Einstellungen';
 
   @override

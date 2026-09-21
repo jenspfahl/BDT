@@ -16,6 +16,12 @@
   "seconds": "Seconds",
   "changeSeconds": "Change seconds",
 
+  "notificationChannelNameForBreaks": "Breaks",
+  "notificationChannelDescriptionForBreaks": "Notifies when breaks are reached",
+  "notificationChannelNameForAppInBackground": "Background activities",
+  "notificationChannelDescriptionForAppInBackground": "Notifies when the app is running in background",
+
+
   "settings": "settings",
   "commonSettings": "Common Settings",
   "language": "Language",

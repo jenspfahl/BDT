@@ -16,6 +16,10 @@
   "seconds": "Sekunden",
   "changeSeconds": "Sekunden anpassen",
 
+  "notificationChannelNameForBreaks": "Pausen",
+  "notificationChannelDescriptionForBreaks": "Benachrichtigt, wenn Pausen erreicht werden",
+  "notificationChannelNameForAppInBackground": "Hintergrundaktivitäten",
+  "notificationChannelDescriptionForAppInBackground": "Benachrichtigt, wenn die App im Hintergrund läuft",
 
   "settings": "Einstellungen",
   "commonSettings": "Allgemeine Einstellungen",

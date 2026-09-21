@@ -59,6 +59,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeSeconds => 'Change seconds';
 
   @override
+  String get notificationChannelNameForBreaks => 'Breaks';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Notifies when breaks are reached';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Background activities';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Notifies when the app is running in background';
+
+  @override
   String get settings => 'settings';
 
   @override
