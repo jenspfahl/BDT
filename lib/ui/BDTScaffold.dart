@@ -1308,6 +1308,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           //toastError(context, _stopRunningMessage());
                           return;
                         }
+
                         if (_selectedSlices.isEmpty) {
                           await _updateBreakOrder();
                           final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
@@ -1321,6 +1322,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           });
                           toastInfo(context, l10n.errorNoBreaksToReset);
                         }
+                        else if (_selectedBreakDown != null &&
+                            (_hasBreakDownChanged() || _hasDurationChangedForCurrentBreakDown || _hasTimeChangedForCurrentBreakDown)) {
+                          setState(() {
+                            _selectedSlices.clear();
+                            _selectedSlices.addAll(_selectedBreakDown!.slices);
+                            _updateSelectedBreakDown(_selectedBreakDown!);
+                          });
+                        }
                         else {
                           setState(() {
                             _selectedSlices.clear();
@@ -1328,7 +1337,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                           });
                         }
                       },
-                      icon: Icon(MdiIcons.restart)),
+                      icon: const Icon(MdiIcons.restart)),
                 ),
                 Positioned(
                   bottom: 17,
@@ -1662,25 +1671,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer),
           onPressed: () {
             if (_isRunning()) {
-             // if (_isAllRunsOver()) {
-                _stopRun(context);
-            /*  } //TODO no need for this branch, or?
-              else {
-                showConfirmationDialog(
-                  context,
-                  'Stop run',
-                  'Really want to stop the run before it is finished?',
-                  icon: Icon(MdiIcons.stopCircle),
-                  okPressed: () {
-                    Navigator.pop(
-                        context); // dismiss dialog, should be moved in Dialogs.dart somehow
-                    _stopRun(context);
-                  },
-                  cancelPressed: () =>
-                      Navigator.pop(
-                          context), // dismiss dialog, should be moved in Dialogs.dart somehow
-                );
-              }*/
+              _stopRun(context);
             }
             else {
               _startRun(context);
