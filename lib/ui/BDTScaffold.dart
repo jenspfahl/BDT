@@ -818,12 +818,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     return;
                   }
 
-                  final muteVolumeIfDeviceIsMuted = PreferenceService().muteVolumeIfDeviceIsMuted;
-
                   final volume = await showVolumeSliderDialog(context,
                     initialSelection: _volume.toDouble(),
                     onChangedEnd: (value) {
-                      SignalService.setSignalVolume(value.round(), muteVolumeIfDeviceIsMuted);
+                      SignalService.setSignalVolume(value.round(), _isDeviceMuted());
                       SignalService.makeShortSignal();
                     }
                   );
@@ -834,7 +832,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                       setVolume(_preferenceService, _volume);
                     }); // update
                   }
-                  SignalService.setSignalVolume(_volume, muteVolumeIfDeviceIsMuted);
+                  SignalService.setSignalVolume(_volume, _isDeviceMuted());
                 },
                 icon: _isDeviceMuted() ? const Icon(Icons.volume_off) : createVolumeIcon(_volume)),
             IconButton(

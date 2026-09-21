@@ -188,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           audioSchemeId: selection,
                           noVibration: true
                       );
-                      await SignalService.setSignalVolume(origVol, _muteVolumeIfDeviceIsMuted);
+                      await SignalService.setSignalVolume(origVol, false);
                     }
                 );
               },
