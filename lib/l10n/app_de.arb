@@ -119,8 +119,11 @@
   "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",
   "xBreaksPlacedRepeatForever": "{breakCount} gesetzte Pausen, immer wiederholen",
   "xBreaksLeft": "{remainingBreaks} von {breakCount} verbleibenden Pausen",
-  "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen (Lauf {runCount} von 2)",
-  "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen (Lauf {runCount})",
+
+  "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen",
+  "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen",
+  "xBreaksLeftAndRunCountRepeatOnce": "Lauf {runCount} von 2",
+  "xBreaksLeftAndRunCountRepeatForever": "Lauf {runCount}",
 
   "splitBreaks": "Pausen aufteilen",
   "splitBreaksDescription": "Wählen Sie die Anzahl der benötigten Pausen für {duration} aus.",

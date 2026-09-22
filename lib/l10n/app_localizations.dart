@@ -728,14 +728,26 @@ abstract class AppLocalizations {
   /// No description provided for @xBreaksLeftRepeatOnce.
   ///
   /// In en, this message translates to:
-  /// **'{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)'**
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount);
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating once'**
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks);
 
   /// No description provided for @xBreaksLeftRepeatForever.
   ///
   /// In en, this message translates to:
-  /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})'**
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount);
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever'**
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks);
+
+  /// No description provided for @xBreaksLeftAndRunCountRepeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'run {runCount} of 2'**
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount);
+
+  /// No description provided for @xBreaksLeftAndRunCountRepeatForever.
+  ///
+  /// In en, this message translates to:
+  /// **'run {runCount}'**
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount);
 
   /// No description provided for @splitBreaks.
   ///

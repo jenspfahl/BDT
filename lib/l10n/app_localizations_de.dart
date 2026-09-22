@@ -355,13 +355,23 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks von $breakCount verbleibenden Pausen, einmal wiederholen (Lauf $runCount von 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, einmal wiederholen';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen (Lauf $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'Lauf $runCount von 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'Lauf $runCount';
   }
 
   @override

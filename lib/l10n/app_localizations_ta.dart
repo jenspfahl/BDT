@@ -355,13 +355,23 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$breakCount இல் $remainingBreaks இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை (ரன் $runCount இல் 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$breakCount இல் $remainingBreaks இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$breakCount இல் $remainingBreaks இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும் (ரன் $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$breakCount இல் $remainingBreaks இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும்';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'ரன் $runCount இல் 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'ரன் $runCount';
   }
 
   @override

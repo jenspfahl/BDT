@@ -355,13 +355,23 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，单次重复（运行 $runCount 次，共 2 次）';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，单次重复';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，无限重复（运行 $runCount 次）';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，无限重复';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return '运行 $runCount 次，共 2 次';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return '运行 $runCount 次';
   }
 
   @override

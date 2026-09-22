@@ -355,13 +355,23 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks of $breakCount breaks left, repeating once (run $runCount of 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks of $breakCount breaks left, repeating once';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks of $breakCount breaks left, repeating forever (run $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks of $breakCount breaks left, repeating forever';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'run $runCount of 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'run $runCount';
   }
 
   @override

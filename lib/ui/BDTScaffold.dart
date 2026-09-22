@@ -245,14 +245,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final runMode = await getRunMode(PreferenceService());
     var repetition = await getRunRepetition(PreferenceService());
 
-    var repeatNote = '';
-    /*if (runMode == RunMode.REPEAT_ONCE && repetition != null) {
-      repeatNote = '($repetition / 2)';
-    }
-    else if (runMode == RunMode.REPEAT_FOREVER && repetition != null) {
-      repeatNote = '($repetition)';
-    }*/
     _loadLocalizations().then((l10n) {
+
+      final repeatNote = _getRunNote(runMode, (repetition??0)+1, l10n);
+
       notify(100, SIG_END, l10n.timerFinishedButRepeating + repeatNote,
           fixed: true, showBreakInfo: false, showProgress: true, l10n: l10n);
     });
@@ -309,9 +305,24 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     final l10n = await _loadLocalizations();
 
-    await notify(100, SIG_END, l10n.timerFinished,
+    final runMode = await getRunMode(PreferenceService());
+    final repetition = await getRunRepetition(PreferenceService());
+    final repeatNote = _getRunNote(runMode, repetition??0, l10n);
+
+    await notify(100, SIG_END, l10n.timerFinished + repeatNote,
         showBreakInfo: true, showProgress: true, isFinished: true, l10n: l10n);
 
+  }
+
+  static String _getRunNote(RunMode? runMode, int repetition, AppLocalizations l10n) {
+    var repeatNote = '';
+    if (runMode == RunMode.REPEAT_ONCE) {
+      repeatNote = ' (${l10n.xBreaksLeftAndRunCountRepeatOnce(repetition+1)})';
+    }
+    else if (runMode == RunMode.REPEAT_FOREVER) {
+      repeatNote = ' (${l10n.xBreaksLeftAndRunCountRepeatForever(repetition+1)})';
+    }
+    return repeatNote;
   }
 
   static Function _signalFunction(int signal, int signalCount, Direction direction) {
@@ -1773,10 +1784,20 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           .toList()
           .length;
       if (_runMode == RunMode.REPEAT_ONCE) {
-        return Text(l10n.xBreaksLeftRepeatOnce(_selectedSlices.length, remainingBreaks, _repetition+1));
+        return Column(
+          children: [
+            Text(l10n.xBreaksLeftRepeatOnce(_selectedSlices.length, remainingBreaks)),
+            Text('(${l10n.xBreaksLeftAndRunCountRepeatOnce(_repetition+1)})'),
+          ],
+        );
       }
       else if (_runMode == RunMode.REPEAT_FOREVER) {
-        return Text(l10n.xBreaksLeftRepeatForever(_selectedSlices.length, remainingBreaks, _repetition+1));
+        return Column(
+          children: [
+            Text(l10n.xBreaksLeftRepeatForever(_selectedSlices.length, remainingBreaks)),
+            Text('(${l10n.xBreaksLeftAndRunCountRepeatForever(_repetition+1)})'),
+          ],
+        );
       }
       else {
         return Text(l10n.xBreaksLeft(_selectedSlices.length, remainingBreaks));
@@ -2170,7 +2191,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       signalAlthoughCancelled: true,
       preferenceService: _preferenceService,
     );
-    notify(0, null, l10n.timerStarted,
+
+    final repeatNote = _getRunNote(_runMode, _repetition, l10n);
+
+    notify(0, null, l10n.timerStarted + repeatNote,
         preferenceService: _preferenceService,
         notificationService: _notificationService,
         showProgress: true,
