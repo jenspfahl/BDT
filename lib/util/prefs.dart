@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import '../model/common.dart';
 import '../service/PreferenceService.dart';
 
+// These methods are mainly used by background tasks
+
 Future<bool> mayNotify(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_NOTIFY_AT_BREAKS) == true;
 }
@@ -79,6 +81,38 @@ setBreaksCount(PreferenceService preferenceService, int count) async {
   await preferenceService.setInt(PreferenceService.STATE_RUN_BREAKS_COUNT, count);
 }
 
+Future<RunMode?> getRunMode(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  final value = await preferenceService.getInt(PreferenceService.STATE_RUN_MODE);
+  if (value == null) {
+    return null;
+  }
+  return RunMode.values.firstWhere((v)=> v.index == value);
+}
+
+setRunMode(PreferenceService preferenceService, RunMode? runMode) async {
+  if (runMode != null) {
+    await preferenceService.setInt(PreferenceService.STATE_RUN_MODE, runMode.index);
+  }
+  else {
+    await preferenceService.remove(PreferenceService.STATE_RUN_MODE);
+  }
+}
+
+Future<int?> getRunRepetition(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  return preferenceService.getInt(PreferenceService.STATE_RUN_REPETITION);
+}
+
+setRunRepetition(PreferenceService preferenceService, int? repetition) async {
+  if (repetition != null) {
+    await preferenceService.setInt(PreferenceService.STATE_RUN_REPETITION, repetition);
+  }
+  else {
+    await preferenceService.remove(PreferenceService.STATE_RUN_REPETITION);
+  }
+}
+
 Future<Direction?> getRunDirection(PreferenceService preferenceService) async {
   await preferenceService.reload();
   final value = await preferenceService.getInt(PreferenceService.STATE_RUN_DIRECTION);
@@ -135,8 +169,22 @@ Future<int?> getProgress(PreferenceService preferenceService, int currentIndex, 
   }
 }
 
+Future<List<int>> getProgressPath(PreferenceService preferenceService) async {
+  final progressPath = await preferenceService.getString(PreferenceService.STATE_RUN_PROGRESS_PATH);
+
+  if (progressPath == null) {
+    return [];
+  }
+  final split = progressPath.split(',');
+  if (split.isEmpty) {
+    return [];
+  }
+
+  return split.map((e) => int.tryParse(e)).nonNulls.toList();
+
+}
+
 setProgressPath(PreferenceService preferenceService, String? path) async {
-  debugPrint('progress path: $path');
   if (path != null) {
     await preferenceService.setString(PreferenceService.STATE_RUN_PROGRESS_PATH, path);
   }
@@ -162,5 +210,25 @@ setStartedAt(PreferenceService preferenceService, DateTime? startedAt) async {
   }
   else {
     await preferenceService.remove(PreferenceService.STATE_RUN_STARTED_AT);
+  }
+}
+
+Future<Duration?> getDuration(PreferenceService preferenceService) async {
+  await preferenceService.reload();
+  final durationInSeconds = await preferenceService.getInt(PreferenceService.STATE_RUN_DURATION);
+  if (durationInSeconds != null) {
+    return Duration(seconds: durationInSeconds);
+  }
+  else {
+    return null;
+  }
+}
+
+setDuration(PreferenceService preferenceService, Duration? duration) async {
+  if (duration != null) {
+    await preferenceService.setInt(PreferenceService.STATE_RUN_DURATION, duration.inSeconds);
+  }
+  else {
+    await preferenceService.remove(PreferenceService.STATE_RUN_DURATION);
   }
 }

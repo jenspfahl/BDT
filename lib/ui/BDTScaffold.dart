@@ -241,9 +241,62 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   @pragma('vm:entry-point')
   static Future<void> signalEndWithRepetition() async {
     debugPrint('sig end and repeat');
-    final l10n = await _loadLocalizations();
-    await notify(100, SIG_END, l10n.timerFinishedButRepeating,
-        fixed: true, showBreakInfo: false, showProgress: true, l10n: l10n);
+
+    final runMode = await getRunMode(PreferenceService());
+    var repetition = await getRunRepetition(PreferenceService());
+
+    var repeatNote = '';
+    /*if (runMode == RunMode.REPEAT_ONCE && repetition != null) {
+      repeatNote = '($repetition / 2)';
+    }
+    else if (runMode == RunMode.REPEAT_FOREVER && repetition != null) {
+      repeatNote = '($repetition)';
+    }*/
+    _loadLocalizations().then((l10n) {
+      notify(100, SIG_END, l10n.timerFinishedButRepeating + repeatNote,
+          fixed: true, showBreakInfo: false, showProgress: true, l10n: l10n);
+    });
+
+
+    //read this from prefs
+    Set<int> selectedSlices = HashSet.from(await getProgressPath(PreferenceService()));
+    final duration = await getDuration(PreferenceService());
+    final latestStartedAt = await getStartedAt(PreferenceService());
+    final direction = await getRunDirection(PreferenceService());
+
+
+    debugPrint("reschedule: $selectedSlices");
+    debugPrint("reschedule: $duration");
+    debugPrint("reschedule: $latestStartedAt");
+    debugPrint("reschedule: $direction");
+    debugPrint("reschedule: $runMode");
+    debugPrint("reschedule: $repetition");
+
+    if (duration != null && latestStartedAt != null && direction != null && runMode != null && repetition != null
+          && isRepeating(runMode, repetition)) {
+      repetition++;
+
+      final nextStartedAt = latestStartedAt.add(duration);
+
+      final timeDrift = DateTime.now().difference(nextStartedAt);
+      final correctedDuration = duration - timeDrift;
+      debugPrint("reschedule: timeDrift=$timeDrift corrected=$correctedDuration");
+
+
+      setStartedAt(PreferenceService(), nextStartedAt);
+      setRunRepetition(PreferenceService(), repetition);
+
+      await AndroidAlarmManager.initialize();
+      scheduleSliceNotifications(
+        selectedSlices,
+        selectedSlices.length,
+        direction,
+        correctedDuration,
+        runMode,
+        repetition,
+      );
+
+    }
   }
 
   @pragma('vm:entry-point')
@@ -258,12 +311,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     await notify(100, SIG_END, l10n.timerFinished,
         showBreakInfo: true, showProgress: true, isFinished: true, l10n: l10n);
+
   }
 
-  Function _signalFunction(int signal) {
+  static Function _signalFunction(int signal, int signalCount, Direction direction) {
     int s = signal;
-    if (_direction == Direction.DESC) {
-      s = _selectedSlices.length + 1 - signal;
+    if (direction == Direction.DESC) {
+      s = signalCount + 1 - signal;
     }
     debugPrint('signal=$signal s=$s');
     switch (s) {
@@ -648,7 +702,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           _startedAt = DateTime.now();
           _time = _time.add(_duration);
           _persistState();
-          _scheduleSliceNotifications();
         }
         else {
           timer.cancel();
@@ -662,11 +715,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   void _updateRunning() {
-    final progressPath = _getProgressPath();
-    setProgressPath(_preferenceService, progressPath);
-    setStartedAt(_preferenceService, _startedAt);
-    setBreaksCount(_preferenceService, _selectedSlices.length);
-    setRunDirection(_preferenceService, _direction);
 
     final delta = _getDelta();
     if (delta != null) {
@@ -1931,7 +1979,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   List<int> _selectedSortedSlices() => _selectedSlices.toList()..sort();
 
-  Duration _getDelay(int slice) => Duration(seconds: (_duration.inSeconds * slice / MAX_SLICE).round());
+  Duration _getDelay(int slice) => getDelay(_duration, slice);
+  static Duration getDelay(Duration duration, int slice) => Duration(seconds: (duration.inSeconds * slice / MAX_SLICE).round());
 
   List<PieChartSectionData> _createSections(bool isLandscape, BoxConstraints constraints) {
     final slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
@@ -2080,6 +2129,17 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
 
     _startedAt = DateTime.now();
+
+    // store states for bg alarm tasks
+    final progressPath = _getProgressPath();
+    setProgressPath(_preferenceService, progressPath);
+    setStartedAt(_preferenceService, _startedAt);
+    setBreaksCount(_preferenceService, _selectedSlices.length);
+    setRunDirection(_preferenceService, _direction);
+    setRunMode(_preferenceService, _runMode);
+    setRunRepetition(_preferenceService, _repetition);
+    setDuration(_preferenceService, _duration);
+
     _startTimer();
     _updateRunning();
 
@@ -2119,8 +2179,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         l10n: l10n
     );
 
-    _scheduleSliceNotifications();
-
+    scheduleSliceNotifications(
+      _selectedSortedSlices().toList().toSet(),
+      _selectedSortedSlices().length,
+      _direction,
+      _duration,
+      _runMode,
+      _repetition,
+    );
   }
 
   void _startSpinner() {
@@ -2158,29 +2224,36 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     await setRunState(_preferenceService, stateAsJson);
   }
 
-  void _scheduleSliceNotifications() {
-    final list = _selectedSortedSlices();
-    debugPrint('$list');
+  static void scheduleSliceNotifications(
+      Set<int> selectedSlices,
+      int signalCount,
+      Direction direction,
+      Duration duration,
+      RunMode runMode,
+      int repetition,
+      ) {
+    final list = selectedSlices.toList()..sort();
+    debugPrint('schedule alarm for $list');
     for (int i = 0; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
-      Function f = _signalFunction(signal);
+      Function f = _signalFunction(signal, signalCount, direction);
     
       AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          _getDelay(slice), signal, f)
+          getDelay(duration, slice), signal, f)
           .then((value) => debugPrint('shot $signal on $slice: $value'));
     }
 
-    if (_isRepeating()) {
+    if (isRepeating(runMode, repetition)) {
       AndroidAlarmManager.oneShot(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          _duration, 1000, signalEndWithRepetition)
+          duration, 1000, signalEndWithRepetition)
           .then((value) => debugPrint('shot end with repeat: $value'));
     }
     else {
       AndroidAlarmManager.oneShot(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          _duration, 1000, signalEnd)
+          duration, 1000, signalEnd)
           .then((value) => debugPrint('shot end: $value'));
     }
   }
@@ -2230,7 +2303,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   String _selectedSortedSlicesToString() => _selectedSortedSlices().join(',');
 
-  void _setStateFromJson(Map<String, dynamic> jsonMap) {
+  Future<void> _setStateFromJson(Map<String, dynamic> jsonMap) async {
     _duration = Duration(seconds: jsonMap['duration']);
     _time = DateTime.fromMillisecondsSinceEpoch(jsonMap['time']);
 
@@ -2271,6 +2344,17 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     if (!_isRunning()) {
       _time = adjustToTodayIfInThePast(_time);
+    }
+    else if (_isRepeating()) {
+      // If isRepeating, the process is also updated in the background task, triggered by the alarm.
+      // In case the app went into background during the repeat-run, the only up-to-date state is this,
+      // so we use it to overwrite the JSON state.
+      final latestStartedAt = await getStartedAt(PreferenceService());
+      var repetition = await getRunRepetition(PreferenceService());
+      if (latestStartedAt != null && repetition != null) {
+        _time = latestStartedAt.add(_duration);
+        _repetition = repetition;
+      }
     }
   }
 
@@ -2330,7 +2414,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
 
-  bool _isRepeating() => _runMode == RunMode.REPEAT_FOREVER || (_runMode == RunMode.REPEAT_ONCE && _repetition == 0);
+  bool _isRepeating() => isRepeating(_runMode, _repetition);
+
+  static bool isRepeating(RunMode runMode, int repetition) => runMode == RunMode.REPEAT_FOREVER || (runMode == RunMode.REPEAT_ONCE && repetition == 0);
 
   Iterable<int> _calculateDistributedSlices(int value) {
     value++;
