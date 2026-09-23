@@ -578,25 +578,17 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
         Permission.scheduleExactAlarm.status.then((status) async {
           if (status.isGranted) {
-            if (exemptFromBatteryOptimization) {
-              _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
-                  .then((dismissed) {
-                    if (dismissed != true) {
-                      showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
-                    }
-                  });
+            if (!exemptFromBatteryOptimization) {
+              _requireBatteryOptimizationExempt();
             }
           }
           else {
             final status = await Permission.scheduleExactAlarm.request();
             if (status.isGranted) {
-              if (exemptFromBatteryOptimization) {
-                _preferenceService.getBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
-                    .then((dismissed) {
-                  if (dismissed != true) {
-                    showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
-                  }
-                });
+              if (!exemptFromBatteryOptimization) {
+                if (!exemptFromBatteryOptimization) {
+                  _requireBatteryOptimizationExempt();
+                }
               }
             }
           }
@@ -608,10 +600,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           if (dismissed != true) {
 
             if (!exemptFromBatteryOptimization) {
-              await BatteryOptimizationPermission.ensureBatteryWhitelist(
-                tryOemScreens: true,
-                openSettingsFallbacks: true,
-              );
+              if (!exemptFromBatteryOptimization) {
+                _requireBatteryOptimizationExempt();
+              }
             }
 
           }
@@ -632,6 +623,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         });
       });
 
+  }
+
+  void _requireBatteryOptimizationExempt() {
+    _preferenceService.getBool(PreferenceService.DATA_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED)
+        .then((dismissed) {
+      if (dismissed != true) {
+        BatteryOptimizationPermission.ensureBatteryWhitelist();
+      }
+    });
   }
 
   void _askForNotification() {
