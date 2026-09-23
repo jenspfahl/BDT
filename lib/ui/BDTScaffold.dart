@@ -269,15 +269,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     debugPrint("reschedule: $repetition");
 
     if (duration != null && latestStartedAt != null && direction != null && runMode != null && repetition != null
-          && isRepeating(runMode, repetition)) {
+          && willBeRepeating(runMode, repetition)) {
       repetition++;
 
       final nextStartedAt = latestStartedAt.add(duration);
-
-      final timeDrift = DateTime.now().difference(nextStartedAt);
-      final correctedDuration = duration - timeDrift;
-      debugPrint("reschedule: timeDrift=$timeDrift corrected=$correctedDuration");
-
 
       setStartedAt(PreferenceService(), nextStartedAt);
       setRunRepetition(PreferenceService(), repetition);
@@ -287,7 +282,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         selectedSlices,
         selectedSlices.length,
         direction,
-        correctedDuration,
+        nextStartedAt,
+        duration,
         runMode,
         repetition,
       );
@@ -513,11 +509,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     });
 
-    Timer.periodic(const Duration(seconds: 3), (_) {
+    Timer.periodic(const Duration(milliseconds: 2500), (_) {
       if (mounted) {
         setState(() {
           SoundMode.ringerModeStatus.then((value) => _ringerStatus = value);
-         // debugPrint('refresh ui values');
         });
       }
     });
@@ -708,9 +703,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
-        if (_isRepeating()) {
+        if (willBeRepeating(_runMode, _repetition)) {
           _repetition++;
-          _startedAt = DateTime.now();
+
+          _startedAt = _startedAt!.add(_duration);
           _time = _time.add(_duration);
           _persistState();
         }
@@ -739,7 +735,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   bool _isAllRunsOver() {
-    if (_isRunning() && _isRepeating()) {
+    if (_isRunning() && willBeRepeating(_runMode, _repetition)) {
       // in case of repeating and not stopped runs nothing is over
       return false;
     }
@@ -2001,7 +1997,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   List<int> _selectedSortedSlices() => _selectedSlices.toList()..sort();
 
   Duration _getDelay(int slice) => getDelay(_duration, slice);
-  static Duration getDelay(Duration duration, int slice) => Duration(seconds: (duration.inSeconds * slice / MAX_SLICE).round());
+  static Duration getDelay(Duration duration, int slice) => Duration(milliseconds: (duration.inMilliseconds * slice / MAX_SLICE).round());
 
   List<PieChartSectionData> _createSections(bool isLandscape, BoxConstraints constraints) {
     final slices = new List<int>.generate(MAX_SLICE, (i) => i + 1);
@@ -2207,6 +2203,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       _selectedSortedSlices().toList().toSet(),
       _selectedSortedSlices().length,
       _direction,
+      _startedAt!,
       _duration,
       _runMode,
       _repetition,
@@ -2252,6 +2249,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       Set<int> selectedSlices,
       int signalCount,
       Direction direction,
+      DateTime startedAt,
       Duration duration,
       RunMode runMode,
       int repetition,
@@ -2263,21 +2261,21 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final slice = list[i];
       Function f = _signalFunction(signal, signalCount, direction);
     
-      AndroidAlarmManager.oneShot(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          getDelay(duration, slice), signal, f)
+      AndroidAlarmManager.oneShotAt(alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+          startedAt.add(getDelay(duration, slice)), signal, f)
           .then((value) => debugPrint('shot $signal on $slice: $value'));
     }
 
-    if (isRepeating(runMode, repetition)) {
-      AndroidAlarmManager.oneShot(
+    if (willBeRepeating(runMode, repetition)) {
+      AndroidAlarmManager.oneShotAt(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          duration, 1000, signalEndWithRepetition)
+          startedAt.add(duration), 1000, signalEndWithRepetition)
           .then((value) => debugPrint('shot end with repeat: $value'));
     }
     else {
-      AndroidAlarmManager.oneShot(
+      AndroidAlarmManager.oneShotAt(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          duration, 1000, signalEnd)
+          startedAt.add(duration), 1000, signalEnd)
           .then((value) => debugPrint('shot end: $value'));
     }
   }
@@ -2376,6 +2374,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final latestStartedAt = await getStartedAt(PreferenceService());
       var repetition = await getRunRepetition(PreferenceService());
       if (latestStartedAt != null && repetition != null) {
+        _startedAt = latestStartedAt;
         _time = latestStartedAt.add(_duration);
         _repetition = repetition;
       }
@@ -2438,9 +2437,21 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   bool _isPinnedBreakDown() => _selectedBreakDown != null && _selectedBreakDown?.id == _pinnedBreakDownId;
 
-  bool _isRepeating() => isRepeating(_runMode, _repetition);
+  bool _isRepeating() {
+    if (_runMode == RunMode.REPEAT_FOREVER) {
+      return true;
+    }
+    return _runMode == RunMode.REPEAT_ONCE && _repetition <= 1;
 
-  static bool isRepeating(RunMode runMode, int repetition) => runMode == RunMode.REPEAT_FOREVER || (runMode == RunMode.REPEAT_ONCE && repetition == 0);
+  }
+
+  static bool willBeRepeating(RunMode runMode, int repetition) {
+    if (runMode == RunMode.REPEAT_FOREVER) {
+      return true;
+    }
+
+    return runMode == RunMode.REPEAT_ONCE && repetition == 0;
+  }
 
   Iterable<int> _calculateDistributedSlices(int value) {
     value++;
