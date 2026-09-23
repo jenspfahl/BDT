@@ -29,9 +29,6 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String get notExcludeFromBatterySavingsHint => 'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.';
-
-  @override
   String get openSettings => 'அமைப்புகளைத் திறக்கவும்';
 
   @override
@@ -57,6 +54,18 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get changeSeconds => 'வினாடிகளை மாற்றவும்';
+
+  @override
+  String get notificationChannelNameForBreaks => 'Breaks';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Notifies when breaks are reached';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Background activities';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Notifies when the app is running in background';
 
   @override
   String get settings => 'அமைப்புகள்';
@@ -343,13 +352,23 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$breakCount இல் $remainingBreaks இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை (ரன் $runCount இல் 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$breakCount இல் $remainingBreaks இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$breakCount இல் $remainingBreaks இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும் (ரன் $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$breakCount இல் $remainingBreaks இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும்';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'ரன் $runCount இல் 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'ரன் $runCount';
   }
 
   @override

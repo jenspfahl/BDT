@@ -5,6 +5,8 @@ import 'package:bdt/service/AudioService.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sound_bridge/flutter_sound_bridge.dart';
+import 'package:sound_mode_advanced/sound_mode.dart';
+import 'package:sound_mode_advanced/sound_mode_advanced.dart';
 import 'package:vibration/vibration.dart';
 
 import '../util/prefs.dart';
@@ -60,7 +62,9 @@ class SignalService {
     final vol = volume ?? await getVolume(prefService);
 
     final muteVolumeIfDeviceIsMuted = prefService.muteVolumeIfDeviceIsMuted;
-    SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted);
+    final ringerStatus = await SoundMode.ringerModeStatus;
+    final isSilent = ringerStatus == RingerModeStatus.silent || ringerStatus == RingerModeStatus.vibrate;
+    SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted && isSilent);
 
     await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
 
@@ -166,11 +170,8 @@ class SignalService {
 
   static pause(Duration duration) async => Future.delayed(duration);
 
-  static setSignalVolume(int volume, bool muteVolumeIfDeviceIsMuted) async {
-    final audioStream = muteVolumeIfDeviceIsMuted
-        ? AudioStreams.STREAM_SYSTEM
-        : AudioStreams.STREAM_ALARM;
-    await FlutterSoundBridge.setVolume(volume, audioStream);
+  static setSignalVolume(int volume, bool muteVolume) async {
+    await FlutterSoundBridge.setVolume(muteVolume ? 0 : volume, AudioStreams.STREAM_ALARM);
   }
 
   Future<void> stopAll() async {

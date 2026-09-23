@@ -414,39 +414,6 @@ showExcludeFromBatterySavingHint(BuildContext context, PreferenceService prefere
   );
 }
 
-showEnsureToNotExcludeFromBatterySavingHint(BuildContext context, PreferenceService preferenceService) {
-  final l10n = AppLocalizations.of(context)!;
-
-  AlertDialog alert = AlertDialog(
-    title: const Text(APP_NAME),
-    content: Text(l10n.notExcludeFromBatterySavingsHint),
-    actions: [
-      TextButton(
-        child: Text(l10n.openSettings),
-        onPressed:  () {
-          Navigator.pop(context);
-          BatteryOptimizationPermission.openBatteryOptimizationSettings();
-          preferenceService.setBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, false);
-        },
-      ),
-      TextButton(
-        child: Text(l10n.dontAskAgain),
-        onPressed:  () {
-          Navigator.pop(context);
-          preferenceService.setBool(PreferenceService.DATA_UNDO_BATTERY_SAVING_RESTRICTIONS_HINT_DISMISSED, true);
-        },
-      ),
-    ],
-  );  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
-
-
 Future<dynamic> showPopUpMenuAtTapDown(BuildContext context, TapDownDetails tapDown, List<PopupMenuEntry> items) {
   return showMenu(
     context: context,

@@ -188,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           audioSchemeId: selection,
                           noVibration: true
                       );
-                      await SignalService.setSignalVolume(origVol, _muteVolumeIfDeviceIsMuted);
+                      await SignalService.setSignalVolume(origVol, false);
                     }
                 );
               },
@@ -361,12 +361,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             SettingsTile(
                 title: Text(l10n.batteryOptimizations),
                 onPressed: (value) {
-                  if (_usesExactAlarmPermission) {
-                    showEnsureToNotExcludeFromBatterySavingHint(context, _preferenceService);
-                  }
-                  else {
-                    showExcludeFromBatterySavingHint(context, _preferenceService);
-                  }
+                  showExcludeFromBatterySavingHint(context, _preferenceService);
                 }
               ),
             SettingsTile(

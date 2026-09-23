@@ -36,6 +36,11 @@
            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
            android:permission="android.permission.BIND_JOB_SERVICE"
            android:exported="false"/>
+       <service
+           android:name="com.pravera.flutter_foreground_task.service.ForegroundService"
+           android:foregroundServiceType="mediaPlayback"
+           android:exported="false" />
+
        <receiver
            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
            android:exported="false"/>
@@ -62,6 +67,8 @@
     <uses-permission android:name="android.permission.INTERNET" tools:node="remove"/>
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" tools:node="remove"/>
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
 
     <queries>
         <intent>
@@ -69,4 +76,9 @@
             <data android:scheme="https" />
         </intent>
     </queries>
+
+
+    <meta-data
+        android:name="de.jepfa.bdt.LAUNCHER"
+        android:resource="@mipmap/launcher_bdt" />
 </manifest>

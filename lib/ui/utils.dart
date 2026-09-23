@@ -107,5 +107,15 @@ Future<bool> usesExactAlarmPermission() async {
   }
 
   return false;
-
 }
+
+Future<bool> usesHardenedAudio() async {
+  final versionString = await getAndroidVersion();
+  if (versionString != null) {
+    final version = int.tryParse(versionString);
+    return version != null && version >= 17;
+  }
+
+  return false;
+}
+

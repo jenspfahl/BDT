@@ -29,9 +29,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get notExcludeFromBatterySavingsHint => 'Mit Android 12+ gibt es eine neue Berechtigung, um exakte Alarme zu erlauben. Falls exakte Alarme dennoch nicht funktionieren, muss die Hintergrund-Akkunutzung wieder OPTIMIERT werden.';
-
-  @override
   String get openSettings => 'Einstellungen öffnen';
 
   @override
@@ -57,6 +54,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get changeSeconds => 'Sekunden anpassen';
+
+  @override
+  String get notificationChannelNameForBreaks => 'Pausen';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Benachrichtigt, wenn Pausen erreicht werden';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Hintergrundaktivitäten';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Benachrichtigt, wenn die App im Hintergrund läuft';
 
   @override
   String get settings => 'Einstellungen';
@@ -343,13 +352,23 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks von $breakCount verbleibenden Pausen, einmal wiederholen (Lauf $runCount von 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, einmal wiederholen';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen (Lauf $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks von $breakCount verbleibenden Pausen, immer wiederholen';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'Lauf $runCount von 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'Lauf $runCount';
   }
 
   @override
