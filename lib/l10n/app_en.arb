@@ -5,7 +5,6 @@
   "reset": "Reset",
   "breakName": "break",
   "batterySavingsHint": "To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn't working correctly, you should do just that. Open Settings and enable the exception ('Not Optimized') for '{appName}'.",
-  "notExcludeFromBatterySavingsHint": "Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.",
   "openSettings": "Open Settings",
   "dontAskAgain": "Don't ask again",
   "volume": "Volume",
@@ -15,6 +14,12 @@
   "minutes": "Minutes",
   "seconds": "Seconds",
   "changeSeconds": "Change seconds",
+
+  "notificationChannelNameForBreaks": "Breaks",
+  "notificationChannelDescriptionForBreaks": "Notifies when breaks are reached",
+  "notificationChannelNameForAppInBackground": "Background activities",
+  "notificationChannelDescriptionForAppInBackground": "Notifies when the app is running in background",
+
 
   "settings": "settings",
   "commonSettings": "Common Settings",
@@ -120,8 +125,10 @@
   "xBreaksPlacedRepeatForever": "{breakCount} breaks placed, repeat forever",
 
   "xBreaksLeft": "{remainingBreaks} of {breakCount} breaks left",
-  "xBreaksLeftRepeatOnce": "{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)",
-  "xBreaksLeftRepeatForever": "{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})",
+  "xBreaksLeftRepeatOnce": "{remainingBreaks} of {breakCount} breaks left, repeating once",
+  "xBreaksLeftRepeatForever": "{remainingBreaks} of {breakCount} breaks left, repeating forever",
+  "xBreaksLeftAndRunCountRepeatOnce": "run {runCount} of 2",
+  "xBreaksLeftAndRunCountRepeatForever": "run {runCount}",
 
   "splitBreaks": "Split breaks",
   "splitBreaksDescription": "Select the number of breaks needed for {duration}.",

@@ -26,7 +26,7 @@ if (flutterVersionName == null) {
 android {
     namespace 'de.jepfa.bdt'
 
-    compileSdkVersion 36
+    compileSdkVersion 37
     ndkVersion "29.0.14206865"
 
     compileOptions {
@@ -44,7 +44,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-build-configuration.
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 36
+        targetSdkVersion 37
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }

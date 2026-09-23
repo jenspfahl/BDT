@@ -5,7 +5,6 @@
   "reset": "Zurücksetzen",
   "breakName": "Pause",
   "batterySavingsHint": "Um präzise Alarme zu planen, sollte diese App von allen Akkuoptimierungen ausgenommen werden. Funktioniert die App nicht richtig, sollten Sie genau das tun. Öffnen Sie die Einstellungen und aktivieren Sie die Ausnahme ('Nicht optimiert') für '{appName}'.",
-  "notExcludeFromBatterySavingsHint": "Mit Android 12+ gibt es eine neue Berechtigung, um exakte Alarme zu erlauben. Falls exakte Alarme dennoch nicht funktionieren, muss die Hintergrund-Akkunutzung wieder OPTIMIERT werden.",
   "openSettings": "Einstellungen öffnen",
   "dontAskAgain": "Nicht mehr fragen",
   "volume": "Lautstärke",
@@ -16,6 +15,10 @@
   "seconds": "Sekunden",
   "changeSeconds": "Sekunden anpassen",
 
+  "notificationChannelNameForBreaks": "Pausen",
+  "notificationChannelDescriptionForBreaks": "Benachrichtigt, wenn Pausen erreicht werden",
+  "notificationChannelNameForAppInBackground": "Hintergrundaktivitäten",
+  "notificationChannelDescriptionForAppInBackground": "Benachrichtigt, wenn die App im Hintergrund läuft",
 
   "settings": "Einstellungen",
   "commonSettings": "Allgemeine Einstellungen",
@@ -115,8 +118,11 @@
   "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",
   "xBreaksPlacedRepeatForever": "{breakCount} gesetzte Pausen, immer wiederholen",
   "xBreaksLeft": "{remainingBreaks} von {breakCount} verbleibenden Pausen",
-  "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen (Lauf {runCount} von 2)",
-  "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen (Lauf {runCount})",
+
+  "xBreaksLeftRepeatOnce": "{remainingBreaks} von {breakCount} verbleibenden Pausen, einmal wiederholen",
+  "xBreaksLeftRepeatForever": "{remainingBreaks} von {breakCount} verbleibenden Pausen, immer wiederholen",
+  "xBreaksLeftAndRunCountRepeatOnce": "Lauf {runCount} von 2",
+  "xBreaksLeftAndRunCountRepeatForever": "Lauf {runCount}",
 
   "splitBreaks": "Pausen aufteilen",
   "splitBreaksDescription": "Wählen Sie die Anzahl der benötigten Pausen für {duration} aus.",

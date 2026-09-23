@@ -29,9 +29,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get notExcludeFromBatterySavingsHint => 'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.';
-
-  @override
   String get openSettings => '打开设置';
 
   @override
@@ -57,6 +54,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get changeSeconds => '更改秒数';
+
+  @override
+  String get notificationChannelNameForBreaks => 'Breaks';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Notifies when breaks are reached';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Background activities';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Notifies when the app is running in background';
 
   @override
   String get settings => '设置';
@@ -343,13 +352,23 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，单次重复（运行 $runCount 次，共 2 次）';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，单次重复';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，无限重复（运行 $runCount 次）';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '还剩 $remainingBreaks 个休息点，共 $breakCount 个，无限重复';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return '运行 $runCount 次，共 2 次';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return '运行 $runCount 次';
   }
 
   @override

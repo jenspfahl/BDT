@@ -191,10 +191,12 @@
   "@xBreaksPlacedRepeatForever": {},
   "xBreaksLeft": "还剩 {remainingBreaks} 个休息点，共 {breakCount} 个",
   "@xBreaksLeft": {},
-  "xBreaksLeftRepeatOnce": "还剩 {remainingBreaks} 个休息点，共 {breakCount} 个，单次重复（运行 {runCount} 次，共 2 次）",
-  "@xBreaksLeftRepeatOnce": {},
-  "xBreaksLeftRepeatForever": "还剩 {remainingBreaks} 个休息点，共 {breakCount} 个，无限重复（运行 {runCount} 次）",
-  "@xBreaksLeftRepeatForever": {},
+
+  "xBreaksLeftRepeatOnce": "还剩 {remainingBreaks} 个休息点，共 {breakCount} 个，单次重复",
+  "xBreaksLeftRepeatForever": "还剩 {remainingBreaks} 个休息点，共 {breakCount} 个，无限重复",
+  "xBreaksLeftAndRunCountRepeatOnce": "运行 {runCount} 次，共 2 次",
+  "xBreaksLeftAndRunCountRepeatForever": "运行 {runCount} 次",
+
   "splitBreaks": "拆分休息点",
   "@splitBreaks": {},
   "splitBreaksDescription": "选择 {duration} 所需的休息点数量。",

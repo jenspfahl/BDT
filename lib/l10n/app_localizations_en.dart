@@ -29,9 +29,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get notExcludeFromBatterySavingsHint => 'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.';
-
-  @override
   String get openSettings => 'Open Settings';
 
   @override
@@ -57,6 +54,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeSeconds => 'Change seconds';
+
+  @override
+  String get notificationChannelNameForBreaks => 'Breaks';
+
+  @override
+  String get notificationChannelDescriptionForBreaks => 'Notifies when breaks are reached';
+
+  @override
+  String get notificationChannelNameForAppInBackground => 'Background activities';
+
+  @override
+  String get notificationChannelDescriptionForAppInBackground => 'Notifies when the app is running in background';
 
   @override
   String get settings => 'settings';
@@ -343,13 +352,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks of $breakCount breaks left, repeating once (run $runCount of 2)';
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks of $breakCount breaks left, repeating once';
   }
 
   @override
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount) {
-    return '$remainingBreaks of $breakCount breaks left, repeating forever (run $runCount)';
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks) {
+    return '$remainingBreaks of $breakCount breaks left, repeating forever';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount) {
+    return 'run $runCount of 2';
+  }
+
+  @override
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount) {
+    return 'run $runCount';
   }
 
   @override

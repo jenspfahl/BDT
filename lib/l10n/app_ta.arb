@@ -94,8 +94,12 @@
   "xBreaksPlacedRepeatOnce": "{breakCount} இடைவெளிகள் வைக்கப்பட்டுள்ளன, ஒருமுறை மீண்டும் செய்யவும்",
   "xBreaksPlacedRepeatForever": "{breakCount} இடைவெளிகள் வைக்கப்பட்டுள்ளன, எப்போதும் மீண்டும் செய்யவும்",
   "xBreaksLeft": "{breakCount} இல் {remainingBreaks} இடைவெளிகள் மீதமுள்ளன",
-  "xBreaksLeftRepeatOnce": "{breakCount} இல் {remainingBreaks} இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை (ரன் {runCount} இல் 2)",
-  "xBreaksLeftRepeatForever": "{breakCount} இல் {remainingBreaks} இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும் (ரன் {runCount})",
+
+  "xBreaksLeftRepeatOnce": "{breakCount} இல் {remainingBreaks} இடைவெளிகள் மீதமுள்ளன, மீண்டும் ஒரு முறை",
+  "xBreaksLeftRepeatForever": "{breakCount} இல் {remainingBreaks} இடைவெளிகள் எஞ்சியிருக்கின்றன, நிரந்தரமாக மீண்டும் நிகழும்",
+  "xBreaksLeftAndRunCountRepeatOnce": "ரன் {runCount} இல் 2",
+  "xBreaksLeftAndRunCountRepeatForever": "ரன் {runCount}",
+
   "splitBreaks": "பிளவு முறிவுகள்",
   "splitBreaksDescription": "{duration}க்கு தேவையான இடைவெளிகளின் எண்ணிக்கையைத் தேர்ந்தெடுக்கவும்.",
   "durationBetweenBreaks": "{breakCount} இடைவெளிகளுக்கு இடையேயான கால அளவு: {duration}",

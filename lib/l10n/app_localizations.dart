@@ -137,12 +137,6 @@ abstract class AppLocalizations {
   /// **'To schedule accurate alarms, this app should be excluded from all battery optimizations. If the app isn\'t working correctly, you should do just that. Open Settings and enable the exception (\'Not Optimized\') for \'{appName}\'.'**
   String batterySavingsHint(Object appName);
 
-  /// No description provided for @notExcludeFromBatterySavingsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Android 12+ introduces a new permission for exact alarms. If exact alarms still do not work, background battery usage must be OPTIMISED again.'**
-  String get notExcludeFromBatterySavingsHint;
-
   /// No description provided for @openSettings.
   ///
   /// In en, this message translates to:
@@ -196,6 +190,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change seconds'**
   String get changeSeconds;
+
+  /// No description provided for @notificationChannelNameForBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Breaks'**
+  String get notificationChannelNameForBreaks;
+
+  /// No description provided for @notificationChannelDescriptionForBreaks.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies when breaks are reached'**
+  String get notificationChannelDescriptionForBreaks;
+
+  /// No description provided for @notificationChannelNameForAppInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Background activities'**
+  String get notificationChannelNameForAppInBackground;
+
+  /// No description provided for @notificationChannelDescriptionForAppInBackground.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies when the app is running in background'**
+  String get notificationChannelDescriptionForAppInBackground;
 
   /// No description provided for @settings.
   ///
@@ -704,14 +722,26 @@ abstract class AppLocalizations {
   /// No description provided for @xBreaksLeftRepeatOnce.
   ///
   /// In en, this message translates to:
-  /// **'{remainingBreaks} of {breakCount} breaks left, repeating once (run {runCount} of 2)'**
-  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks, Object runCount);
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating once'**
+  String xBreaksLeftRepeatOnce(Object breakCount, Object remainingBreaks);
 
   /// No description provided for @xBreaksLeftRepeatForever.
   ///
   /// In en, this message translates to:
-  /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever (run {runCount})'**
-  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks, Object runCount);
+  /// **'{remainingBreaks} of {breakCount} breaks left, repeating forever'**
+  String xBreaksLeftRepeatForever(Object breakCount, Object remainingBreaks);
+
+  /// No description provided for @xBreaksLeftAndRunCountRepeatOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'run {runCount} of 2'**
+  String xBreaksLeftAndRunCountRepeatOnce(Object runCount);
+
+  /// No description provided for @xBreaksLeftAndRunCountRepeatForever.
+  ///
+  /// In en, this message translates to:
+  /// **'run {runCount}'**
+  String xBreaksLeftAndRunCountRepeatForever(Object runCount);
 
   /// No description provided for @splitBreaks.
   ///
