@@ -67,6 +67,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   Duration _duration = kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60);
   Duration? _originDuration;
+  Duration? _pausedAfterStart = null;
   late DateTime _time;
   DateTime? _originTime;
 
@@ -714,6 +715,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           timer.cancel();
         }
       }
+      else if (_pausedAfterStart != null) {
+        // if started in timer mode, it should extend the _startedAt and _time, so _duration keeps the same
+        final breakDuration = DateTime.now().subtract(_pausedAfterStart!);
+        debugPrint('breakDuration=$breakDuration');
+        _startedAt = breakDuration;
+        _time = breakDuration.add(_duration);
+      }
       if (mounted) {
         _updateRunning();
         //debugPrint('.. timer refresh #${_runTimer?.tick} ..');
@@ -783,6 +791,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       _startedAt = null;
       _repetition = 0;
       _passedIndex = -1;
+      _pausedAfterStart = null;
     });
   }
 
@@ -1049,7 +1058,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   Widget _buildStartStopButton(BuildContext context) {
     return _isRunning() && !_isAllRunsOver()
-          ? _createSwipeToStopButton(context)
+          ? _createPauseAndSwipeToStopButton(context)
           : _createStartButton(context);
   }
 
@@ -1667,25 +1676,81 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     }
   }
 
-  Widget _createSwipeToStopButton(BuildContext context) {
+  Widget _createPauseAndSwipeToStopButton(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return SlideToActionButton(
-      initialSlidingActionLabel: '     \u27A0 ${l10n.swipeToStop}',
-      initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent),
-      thumbSize: 48,
-      height: 48,
-      width: 260,
-      thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
-      enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
-      animationDuration: const Duration(milliseconds: 400),
-      enableHapticFeedback: false,
-      leftEdgeSpacing: 0,
-      rightEdgeSpacing: 0,
-      completionThreshold: 0.99,
-      onSlideActionCompleted: () {
-        _stopRun(context);
-      },
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_pausedAfterStart == null)
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                fixedSize: const Size.square(48),
+                side: BorderSide(
+                  color: ColorService().getCurrentScheme().button,
+                  width: 1.5,
+                ),
+                shape: const CircleBorder(),
+              ),
+              onPressed: () {
+                setState(() {
+                  _pausedAfterStart = DateTime.now().difference(_startedAt!);
+                  _circleAnimationController.stop();
+                  _persistState();
+                  _cancelAllBreakNotifications();
+                });
+              },
+              child: Icon(Icons.pause, color: ColorService().getCurrentScheme().accent)),
+        if (_pausedAfterStart != null)
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                fixedSize: const Size.square(48),
+                side: BorderSide(
+                  color: ColorService().getCurrentScheme().button,
+                  width: 4.0,
+                ),
+                shape: const CircleBorder(),
+              ),
+              onPressed: () {
+                final alreadyFired = _selectedSortedSlices().takeWhile((e) => e <= _passedIndex);
+                debugPrint('_passedIndex=$_passedIndex alreadyFired=$alreadyFired ' + alreadyFired.length.toString());
+                scheduleSliceNotifications(
+                  _selectedSortedSlices().toList().toSet(),
+                  _selectedSortedSlices().length,
+                  _direction,
+                  _startedAt!,
+                  _duration,
+                  _runMode,
+                  _repetition,
+                  offset: alreadyFired.length
+                );
+                setState(() {
+                  if (_pausedAfterStart != null) {
+                    _pausedAfterStart = null;
+                    _persistState();
+                    _circleAnimationController.repeat();
+                  }
+                });
+              },
+              child: Icon(MdiIcons.play, color: ColorService().getCurrentScheme().accent)),
+        SlideToActionButton(
+          initialSlidingActionLabel: '      \u27A0 ${l10n.swipeToStop}',
+          initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent),
+          thumbSize: 48,
+          height: 48,
+          width: 260,
+          thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
+          enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
+          animationDuration: const Duration(milliseconds: 400),
+          enableHapticFeedback: false,
+          leftEdgeSpacing: 0,
+          rightEdgeSpacing: 0,
+          completionThreshold: 0.99,
+          onSlideActionCompleted: () {
+            _stopRun(context);
+          },
+        ),
+      ],
     );
 
   }
@@ -1733,7 +1798,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             }
           },
         ),
-        const SizedBox(width: 46),
+        const SizedBox(width: 2),
+        IconButton(
+            onPressed: () {},
+            icon: Icon(MdiIcons.timerPlayOutline, color: ColorService().getCurrentScheme().button)),
       ],
     );
   }
@@ -2253,10 +2321,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       Duration duration,
       RunMode runMode,
       int repetition,
+      {int offset = 0}
       ) {
     final list = selectedSlices.toList()..sort();
     debugPrint('schedule alarm for $list');
-    for (int i = 0; i < list.length; i++) {
+    for (int i = offset; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal, signalCount, direction);
@@ -2287,15 +2356,20 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     _stopTimer();
     _circleAnimationController.stop();
 
-    SignalService().stopAll();
-    _persistState();
-    _notificationService.cancelAllNotifications();
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume,
         neverSignalTwice: true,
         signalAlthoughCancelled: true,
         preferenceService: _preferenceService);
-    for (int slice = 1; slice <= MAX_SLICE; slice++) {
+    _persistState();
+
+    _cancelAllBreakNotifications();
+  }
+
+  void _cancelAllBreakNotifications() {
+    SignalService().stopAll();
+    _notificationService.cancelAllNotifications();
+        for (int slice = 1; slice <= MAX_SLICE; slice++) {
       AndroidAlarmManager.cancel(slice);
     }
     AndroidAlarmManager.cancel(1000);
@@ -2320,6 +2394,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     'pinnedBreakDownId': _pinnedBreakDownId,
     'runMode': _runMode.index,
     'repetition': _repetition,
+    'pausedAfterStart': _pausedAfterStart?.inSeconds,
   };
   }
 
@@ -2348,6 +2423,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (jsonMap['startedAt'] != null) {
       _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
     }
+    if (jsonMap['pausedAfterStart'] != null) {
+      _pausedAfterStart = Duration(seconds: jsonMap['pausedAfterStart']);
+    }
+
 
     _selectedSlices.clear();
     jsonMap['selectedSlices'].toString().split(',')
