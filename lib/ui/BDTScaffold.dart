@@ -1688,7 +1688,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 fixedSize: const Size.square(48),
                 side: BorderSide(
                   color: ColorService().getCurrentScheme().button,
-                  width: 1.5,
+                  width: 1.1,
                 ),
                 shape: const CircleBorder(),
               ),
@@ -1727,6 +1727,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 setState(() {
                   if (_pausedAfterStart != null) {
                     _pausedAfterStart = null;
+                    _clearSignalStates();
                     _persistState();
                     _circleAnimationController.repeat();
                   }
@@ -1735,11 +1736,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               child: Icon(MdiIcons.play, color: ColorService().getCurrentScheme().accent)),
         SlideToActionButton(
           initialSlidingActionLabel: '      \u27A0 ${l10n.swipeToStop}',
-          initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent),
+          initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getContrastColorForBrightScheme(context) ?? ColorService().getCurrentScheme().accent),
           thumbSize: 48,
           height: 48,
           width: 260,
           thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
+          thumbEnabledColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
           enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
           animationDuration: const Duration(milliseconds: 400),
           enableHapticFeedback: false,
@@ -1787,8 +1789,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           backgroundColor: ColorService().getCurrentScheme().button,
           splashColor: ColorService().getCurrentScheme().foreground,
           foregroundColor: ColorService().getCurrentScheme().accent,
-          icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-          label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer),
+          elevation: 1,
+          icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow,
+            color: ColorService().getContrastColorForBrightScheme(context)),
+          label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer,
+            style: TextStyle(color: ColorService().getContrastColorForBrightScheme(context))),
           onPressed: () {
             if (_isRunning()) {
               _stopRun(context);
@@ -2209,8 +2214,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       return;
     }
 
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
+    _clearSignalStates();
 
 
     _startedAt = DateTime.now();
@@ -2276,6 +2280,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       _runMode,
       _repetition,
     );
+  }
+
+  void _clearSignalStates() {
+    _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
+    _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
   }
 
   void _startSpinner() {

@@ -30,6 +30,15 @@ class ColorService {
     return getScheme(PreferenceService().colorSchema);
   }
 
+  bool isCurrentSchemeVeryBright() {
+    final current = getScheme(PreferenceService().colorSchema);
+    return current.id == 4 || current.id == 5;
+  }
+
+  Color? getContrastColorForBrightScheme(BuildContext context) {
+    return isDarkMode(context) && isCurrentSchemeVeryBright() ? lighter(getCurrentScheme().background, 60) : null;
+  }
+
   BdtColorScheme getScheme(int id) {
 
  
