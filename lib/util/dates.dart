@@ -13,6 +13,10 @@ DateTime truncToMinutes(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
 }
 
+DateTime truncToSeconds(DateTime dateTime) {
+  return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute, dateTime.second);
+}
+
 DateTime adjustToTodayIfInThePast(DateTime dateTime) {
   final now = DateTime.now();
   if (dateTime.isBefore(now)) {

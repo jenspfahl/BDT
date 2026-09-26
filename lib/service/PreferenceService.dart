@@ -47,6 +47,7 @@ class PreferenceService {
   static final STATE_RUN_DURATION = PrefDef('state/runDuration', null);
   static final STATE_SIGNAL_PROCESSING = PrefDef('state/signalProcessing', null);
   static final STATE_SIGNAL_CANCELLING = PrefDef('state/signalCancelling', null);
+  static final STATE_PASSED_BREAKS_PREFIX = PrefDef('state/passedBreaks_', null);
 
 
   static final PreferenceService _service = PreferenceService._internal();
@@ -131,11 +132,20 @@ class PreferenceService {
   }
 
 
+  Future<bool> removeAll(String prefix) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    final futures = prefs.getKeys().where((key) => key.startsWith(prefix)).map((key) => prefs.remove(key)).toList();
+    await Future.wait(futures);
+    return true;
+  }
+
   reload() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.reload();
     await refresh();
   }
+
 
 
 }
