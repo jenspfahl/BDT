@@ -553,7 +553,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
             if (_pausedAfterStart == null) {
-              _startTimer();
+              _startTimer(initAnimation: false); // animation was restored by state
+            }
+            else {
+              // if paused, we need to update the running once
+              _updateRunning(); //TODO ensure mounted
             }
             int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
             _loadBreakDowns(focusPinned: false, preSelectedBreakDownId: preSelectedBreakDownId);
@@ -710,8 +714,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   }
 
-  _startTimer() {
-    _startSpinner();
+  _startTimer({required bool initAnimation}) {
+    _startSpinner(initAnimation);
 
     _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
@@ -2260,7 +2264,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     setRunRepetition(_preferenceService, _repetition);
     setDuration(_preferenceService, _duration);
 
-    _startTimer();
+    _startTimer(initAnimation: true);
     _updateRunning();
 
     final startedAt = _startedAt;
@@ -2318,11 +2322,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
   }
 
-  void _startSpinner() {
-    _circleAnimationLastValue = 0;
-    _circleAnimationController.value = 0;
+  void _startSpinner(bool initAnimation) {
+    if (initAnimation) {
+      _circleAnimationLastValue = 0;
+      _circleAnimationController.value = 0;
+      _circleAnimationDirection = false;
+    }
     _circleAnimationController.repeat();
-    _circleAnimationDirection = false;
   }
 
   void _updateDuration(Duration duration, {required bool fromUser}) {
