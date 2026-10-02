@@ -80,3 +80,17 @@ String formatDuration(Duration duration, {bool withLineBreak = false, bool noSec
   }
   return '${duration.inSeconds} $ABBREV_SECONDS';
 }
+
+
+DateTime ensureDateTimeInTheFuture(DateTime now, TimeOfDay timeOfDay) {
+  final nowTime = TimeOfDay.fromDateTime(now);
+  final nowMinutes = nowTime.hour * 60 + nowTime.minute;
+  final selectedMinutes = timeOfDay.hour * 60 + timeOfDay.minute;
+  DateTime time = DateTime(now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+
+  if (selectedMinutes < nowMinutes) {
+    // next day
+    time = time.add(const Duration(days: 1));
+  }
+  return time;
+}

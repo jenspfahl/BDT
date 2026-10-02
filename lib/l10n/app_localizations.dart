@@ -701,6 +701,18 @@ abstract class AppLocalizations {
   /// **'Timer paused (total {duration})'**
   String timerPaused(Object duration);
 
+  /// No description provided for @preTimerSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-timer set for {when}'**
+  String preTimerSet(Object when);
+
+  /// No description provided for @preTimerStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer starts in {duration}'**
+  String preTimerStarted(Object duration);
+
   /// No description provided for @xBreaksPlaced.
   ///
   /// In en, this message translates to:

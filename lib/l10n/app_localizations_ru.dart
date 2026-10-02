@@ -337,6 +337,16 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String preTimerSet(Object when) {
+    return 'Pre-timer set for $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer starts in $duration';
+  }
+
+  @override
   String xBreaksPlaced(Object breakCount) {
     return '$breakCount breaks placed';
   }

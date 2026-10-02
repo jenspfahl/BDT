@@ -15,6 +15,7 @@ import 'PreferenceService.dart';
 
 final START = '||';
 final CANCEL = '|';
+final PRE_START = '-';
 final SIG_UNSPEC = '||';
 final SIG_UNSPEC_END = '|||';
 final SIG_1 = '|| -';

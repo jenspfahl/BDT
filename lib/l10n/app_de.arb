@@ -115,6 +115,8 @@
   "noRepeat": "Keine Wiederholung",
 
   "timerPaused": "Timer pausiert (insgesamt {duration})",
+  "preTimerSet": "Vor-Timer gesetzt auf {when}",
+  "preTimerStarted": "Timer startet in {duration}",
 
   "xBreaksPlaced": "{breakCount} gesetzte Pausen",
   "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",

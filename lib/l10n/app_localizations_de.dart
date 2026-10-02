@@ -337,6 +337,16 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String preTimerSet(Object when) {
+    return 'Vor-Timer gesetzt auf $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer startet in $duration';
+  }
+
+  @override
   String xBreaksPlaced(Object breakCount) {
     return '$breakCount gesetzte Pausen';
   }
