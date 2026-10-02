@@ -332,6 +332,11 @@ class AppLocalizationsTa extends AppLocalizations {
   String get noRepeat => 'மீண்டும் இல்லை';
 
   @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
   String xBreaksPlaced(Object breakCount) {
     return '$breakCount இடைவெளிகள் வைக்கப்பட்டுள்ளன';
   }

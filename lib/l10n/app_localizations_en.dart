@@ -332,6 +332,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noRepeat => 'No repeat';
 
   @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
   String xBreaksPlaced(Object breakCount) {
     return '$breakCount breaks placed';
   }

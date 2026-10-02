@@ -120,6 +120,8 @@
   "repeatForever": "Repeat forever",
   "noRepeat": "No repeat",
 
+  "timerPaused": "Timer paused (total {duration})",
+
   "xBreaksPlaced": "{breakCount} breaks placed",
   "xBreaksPlacedRepeatOnce": "{breakCount} breaks placed, repeat once",
   "xBreaksPlacedRepeatForever": "{breakCount} breaks placed, repeat forever",

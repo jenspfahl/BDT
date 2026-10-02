@@ -552,12 +552,23 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
-            if (_pausedAfterStart == null) {
+            if (!_isPaused()) {
               _startTimer(initAnimation: false); // animation was restored by state
             }
             else {
               // if paused, we need to update the running once
-              _updateRunning(); //TODO ensure mounted
+              Future.delayed(const Duration(milliseconds: 300), () {
+                if (mounted) {
+                  _updateRunning();
+                }
+                else {
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted) {
+                      _updateRunning();
+                    }
+                  });
+                }
+              });
             }
             int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
             _loadBreakDowns(focusPinned: false, preSelectedBreakDownId: preSelectedBreakDownId);
@@ -733,7 +744,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           timer.cancel();
         }
       }
-      else if (_pausedAfterStart != null) {
+      else if (_isPaused()) {
         // if started in timer mode, it should extend the _startedAt and _time, so _duration keeps the same
         final breakDuration = DateTime.now().subtract(_pausedAfterStart!);
         debugPrint('breakDuration=$breakDuration');
@@ -1711,7 +1722,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_pausedAfterStart == null)
+        if (!_isPaused())
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                 fixedSize: const Size.square(48),
@@ -1730,13 +1741,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 });
               },
               child: Icon(Icons.pause, color: ColorService().getCurrentScheme().accent)),
-        if (_pausedAfterStart != null)
+        if (_isPaused())
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                 fixedSize: const Size.square(48),
                 side: BorderSide(
                   color: ColorService().getCurrentScheme().button,
-                  width: 4.0,
+                  width: 5.0,
                 ),
                 shape: const CircleBorder(),
               ),
@@ -1754,7 +1765,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                   offset: alreadyFired.length
                 );
                 setState(() {
-                  if (_pausedAfterStart != null) {
+                  if (_isPaused()) {
                     _pausedAfterStart = null;
                     _clearSignalStates();
                     _persistState();
@@ -1875,6 +1886,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       else {
         return Text('${l10n.timerFinished} ${l10n.afterXRuns(_repetition+1)}');
       }
+    }
+    else if (_isPaused()) {
+      final totalPauseDuration = DateTime.now()
+          .add(const Duration(seconds: 1))
+          .difference(_originStartedAt!.add(_pausedAfterStart!));
+
+      return Text(' - ${l10n.timerPaused(formatDuration(totalPauseDuration))} - ',
+        style: const TextStyle(fontWeight: FontWeight.w400));
     }
     else if (_isRunning()) {
       final remainingBreaks = _selectedSlices
@@ -2229,6 +2248,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   bool _isRunning() => _startedAt != null;
+
+  bool _isPaused() => _pausedAfterStart != null;
 
   void _startRun(BuildContext context) {
 

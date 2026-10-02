@@ -114,6 +114,8 @@
   "repeatForever": "Immer wiederholen",
   "noRepeat": "Keine Wiederholung",
 
+  "timerPaused": "Timer pausiert (insgesamt {duration})",
+
   "xBreaksPlaced": "{breakCount} gesetzte Pausen",
   "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",
   "xBreaksPlacedRepeatForever": "{breakCount} gesetzte Pausen, immer wiederholen",

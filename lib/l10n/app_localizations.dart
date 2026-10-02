@@ -695,6 +695,12 @@ abstract class AppLocalizations {
   /// **'No repeat'**
   String get noRepeat;
 
+  /// No description provided for @timerPaused.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer paused (total {duration})'**
+  String timerPaused(Object duration);
+
   /// No description provided for @xBreaksPlaced.
   ///
   /// In en, this message translates to:

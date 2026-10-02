@@ -332,6 +332,11 @@ class AppLocalizationsZh extends AppLocalizations {
   String get noRepeat => '不重复';
 
   @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
   String xBreaksPlaced(Object breakCount) {
     return '已设置 $breakCount 个休息点';
   }
