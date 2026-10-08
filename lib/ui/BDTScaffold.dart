@@ -791,11 +791,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         }
       }
       else if (_isPaused()) {
-        // if started in timer mode, it should extend the _startedAt and _time, so _duration keeps the same
-        final breakDuration = DateTime.now().subtract(_pausedAfterStart!);
-        debugPrint('breakDuration=$breakDuration');
-        _startedAt = breakDuration;
-        _time = breakDuration.add(_duration);
+        // if paused, it should extend the _startedAt and _time, so _duration keeps the same
+        _adjustTimeAccordingToPaused();
       }
       if (mounted) {
         _updateRunning();
@@ -804,7 +801,22 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     });
   }
 
+  void _adjustTimeAccordingToPaused() {
+    final breakDuration = DateTime.now().subtract(_pausedAfterStart!);
+    debugPrint('breakDuration=$breakDuration');
+    _startedAt = breakDuration;
+    _time = breakDuration.add(_duration);
+  }
+
   void _updateRunning() {
+
+
+    // start wheel if pretimer is over
+    debugPrint('_preStartedAt =$_preStartedAt _startedAt=$_startedAt');
+    if (_preTimer != null && _preStartedAt != null && _startedAt == null && !_preTimer!.isAfter(DateTime.now())) {
+      _startedAt = DateTime.now();
+      _originStartedAt = _startedAt;
+    }
 
     final delta = _getDelta();
     if (delta != null) {
@@ -1277,11 +1289,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                               Center(
                                 child: SizedBox.expand(
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 1,
+                                      strokeWidth: _isPreRunning() ? 0.5 : 1,
                                       strokeCap: StrokeCap.round,
                                       color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
                                       backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
-                                      value: _circleAnimationController.value
+                                      value: _isPreRunning() ? 1 - _circleAnimationController.value : _circleAnimationController.value,
+
                                   ),
                                 ),
                               ),
@@ -1518,6 +1531,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       ),
     );
   }
+
 
   Widget _buildBreakDownDropdown(BuildContext context, {bool landscape = false}) {
     final scheme = ColorService().getCurrentScheme();
@@ -1770,7 +1784,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_preTimer == null && !_isPaused())
+        if (!_isBeforePreRunning() && !_isPaused())
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                 fixedSize: const Size.square(48),
@@ -1789,7 +1803,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 });
               },
               child: Icon(Icons.pause, color: ColorService().getCurrentScheme().accent)),
-        if (_preTimer == null && _isPaused())
+        if (!_isBeforePreRunning() && _isPaused())
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                 fixedSize: const Size.square(48),
@@ -1850,7 +1864,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     return Wrap(
       children: [
-        PopupMenuButton<RunMode>(
+        if (!_isAllRunsOver())
+          PopupMenuButton<RunMode>(
             constraints: const BoxConstraints(),
             icon: _getRunModeIcon(_runMode, null),
             enabled: !_isRunning(),
@@ -1898,7 +1913,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           },
         ),
         const SizedBox(width: 2),
-        IconButton(
+        if (!_isAllRunsOver())
+          IconButton(
             onPressed: () {
               showTimePicker(
                 initialTime: TimeOfDay.fromDateTime(_preTimer ?? roundToHour(DateTime.now())),
@@ -1982,7 +1998,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         style: const TextStyle(fontWeight: FontWeight.w400));
     }
     else if (_isRunning()) {
-      if (_preTimer != null) {
+      if (_preTimer != null && _isPreRunning()) {
         final now = DateTime.now();
         final durationToStart = _preTimer!.difference(now);
         return Column(
@@ -1999,7 +2015,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     }
     else {
-      if (_preTimer != null) {
+      if (_isBeforePreRunning()) {
         return Column(
           children: [
             _createStatsLineForStart(l10n),
@@ -2357,6 +2373,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     }
     return null;
   }
+
+  bool _isBeforePreRunning() => _preTimer != null && _startedAt == null;
+
+  bool _isPreRunning() => _preStartedAt != null && _startedAt == null;
 
   bool _isRunning() => _preStartedAt != null || _startedAt != null;
 
@@ -2716,6 +2736,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         _time = latestStartedAt.add(_duration);
         _repetition = repetition;
       }
+    }
+
+    if (_isPaused()) {
+      _adjustTimeAccordingToPaused();
     }
   }
 
