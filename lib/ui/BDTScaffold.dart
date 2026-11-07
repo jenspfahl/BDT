@@ -590,10 +590,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         debugPrint('!!!!!!FOUND persisted state: $stateAsJson');
         final lastBoot = DateTime.now().subtract(SystemClock.elapsedRealtime());
         var startedAtFromJson = stateAsJson['startedAt'];
+        var preStartedAtFromJson = stateAsJson['preStartedAt'];
 
-        if (startedAtFromJson != null) {  // timer is running
-          final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(
-              startedAtFromJson);
+        if (startedAtFromJson != null || preStartedAtFromJson != null) {  // timer is running
+          final persistedStateFrom = startedAtFromJson != null
+              ? DateTime.fromMillisecondsSinceEpoch(startedAtFromJson)
+              : DateTime.fromMillisecondsSinceEpoch(preStartedAtFromJson);
           debugPrint('last boot was $lastBoot, persisted state is from $persistedStateFrom');
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
@@ -2098,9 +2100,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      final value1 = formatDateTime(langCode, _originStartedAt ?? _preStartedAt ?? DateTime.now(), withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      var fromDateTime = _originStartedAt ?? _preStartedAt ?? DateTime.now();
+      var toDateTime = _time;
+      if (_isPreRunning() && _preTimer != null) {
+        fromDateTime = _preTimer!;
+        toDateTime = _preTimer!.add(_duration);
+      }
+      final value1 = formatDateTime(langCode, fromDateTime, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
       final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
-      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, toDateTime, withSeconds: true);
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
         return _createTwoRowsCircle(value1, value2, smallValue1: true);
