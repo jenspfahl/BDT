@@ -1275,11 +1275,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                               Center(
                                 child: SizedBox.expand(
                                   child: CircularProgressIndicator(
-                                      strokeWidth: _isPreRunning() ? 0.5 : 1,
+                                      strokeWidth: _isPreRunning()
+                                          ? (_circleAnimationDirection ? 0.75 : 1.5)
+                                          : 1,
                                       strokeCap: StrokeCap.round,
-                                      color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
-                                      backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
-                                      value: _isPreRunning() ? 1 - _circleAnimationController.value : _circleAnimationController.value,
+                                      color: _circleAnimationDirection && !_isPreRunning() ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
+                                      backgroundColor: _circleAnimationDirection && !_isPreRunning() ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
+                                      value: _isPreRunning()
+                                          ? 1 - _calcPreRunningRatio()
+                                          : _circleAnimationController.value,
 
                                   ),
                                 ),
@@ -1766,7 +1770,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   Widget _createPauseAndSwipeToStopButton(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
+    final deviceWidth = MediaQuery.of(context).size.width;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1835,7 +1839,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           enableHapticFeedback: false,
           leftEdgeSpacing: 0,
           rightEdgeSpacing: 0,
-          completionThreshold: 0.99,
+          completionThreshold: deviceWidth < 700 && isLandscape(context) ? 0.75 : 0.99, // the slide button would else move out to the right
           onSlideActionCompleted: () {
             _stopRun(context);
           },
@@ -2428,20 +2432,19 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _askForNotification();
 
-    if (_startedAt != null) {
-      //TODO this should also happen in signalPreTimerEnd
-      if (_timerMode == TimerMode.RELATIVE) {
-        setState(() {
-          final time = _startedAt!.add(_duration);
-          _updateTime(time, fromUser: false);
-        });
-      }
-      else if (_timerMode == TimerMode.ABSOLUTE) {
-        setState(() {
-          final duration = _startedAt!.difference(_time).abs();
-          _updateDuration(duration, fromUser: false);
-        });
-      }
+    //TODO this should also happen in signalPreTimerEnd!!
+    final startRef = _preTimer ?? _startedAt!;
+    if (_timerMode == TimerMode.RELATIVE) {
+      setState(() {
+        final time = startRef.add(_duration);
+        _updateTime(time, fromUser: false);
+      });
+    }
+    else if (_timerMode == TimerMode.ABSOLUTE) {
+      setState(() {
+        final duration = startRef.difference(_time).abs();
+        _updateDuration(duration, fromUser: false);
+      });
     }
 
     if (_preTimer != null) {
@@ -2848,6 +2851,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   bool _isTopOrBottomSlice(int slice) => slice >= 50 || slice <=10 || (slice >= 20 && slice <=40);
+
+  double _calcPreRunningRatio() {
+    final start = _preStartedAt!.millisecondsSinceEpoch;
+
+    final num = DateTime.now().millisecondsSinceEpoch - start;
+    final den = _preTimer!.millisecondsSinceEpoch - start;
+
+    return num / den;
+  }
 
 
 }
