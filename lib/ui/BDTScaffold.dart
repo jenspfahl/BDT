@@ -598,24 +598,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
-            if (!_isPaused()) {
-              _startTimer(initAnimation: false); // animation was restored by state
+            _startTimer(initAnimation: false); // animation was restored by state
+            if (_isPaused()) {
+              _circleAnimationController.stop();
             }
-            else {
-              // if paused, we need to update the running once
-              Future.delayed(const Duration(milliseconds: 300), () {
-                if (mounted) {
-                  _updateRunning();
-                }
-                else {
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) {
-                      _updateRunning();
-                    }
-                  });
-                }
-              });
-            }
+
             int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
             _loadBreakDowns(focusPinned: false, preSelectedBreakDownId: preSelectedBreakDownId);
           }
@@ -809,10 +796,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   void _updateRunning() {
-
-
     // start wheel if pretimer is over
-    debugPrint('_preStartedAt =$_preStartedAt _startedAt=$_startedAt');
     if (_preTimer != null && _preStartedAt != null && _startedAt == null && !_preTimer!.isAfter(DateTime.now())) {
       _startedAt = DateTime.now();
       _originStartedAt = _startedAt;
