@@ -10,10 +10,12 @@ import 'package:bdt/service/BreakDownService.dart';
 import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
+import 'package:bdt/ui/time_picker.dart';
 import 'package:bdt/ui/utils.dart';
 import 'package:battery_optimization_permission/battery_optimization_permission.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -1893,7 +1895,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             }
             else if (_checkStartConditions(context)) {
               if (_preFinishedAt != null && _preFinishedAt!.isBefore(DateTime.now())) {
-                toastError(context, "Pre timer exhausted, agjust or remove it");
+                toastError(context, l10n.preTimerSetFailure);
                 return;
               }
               else {
@@ -1906,12 +1908,26 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         if (!_isAllRunsOver())
           IconButton(
             onPressed: () {
-              showTimePicker(
+
+              final Widget dialog = TimePickerWithCancelHandlerDialog(
                 initialTime: TimeOfDay.fromDateTime(_preFinishedAt ?? roundToHour(DateTime.now())),
-                helpText: "Set a pre-timer when the timer should start running",
+                helpText: l10n.preTimerExplanation,
+                cancelText: l10n.unsetPreTimer,
+                cancelHandler: () {
+                  setState(() {
+                    if (_preFinishedAt != null) {
+                      _preFinishedAt = null;
+                      toastInfo(context, l10n.preTimerUnset);
+                      _persistState();
+                    }
+                  });
+                },
+              );
+              showDialog<TimeOfDay>(
                 context: context,
-                cancelText: "Remove pre-timer", //TODO support cancel without removing preFinishedAt
-                //confirmText: "O"
+                builder: (BuildContext context) {
+                  return dialog;
+                },
               ).then((selectedTime) {
 
                 setState(() {
@@ -1920,21 +1936,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     final newPreFinishedAt = ensureDateTimeInTheFuture(DateTime.now(), selectedTime);
 
                     if (_timerMode == TimerMode.ABSOLUTE && !newPreFinishedAt.isBefore(_time)) {
-                      toastError(context, "Pre-timer must be before timer end date!");
+                      toastError(context, l10n.preTimerSetFailure);
                       return;
                     }
 
                     _preFinishedAt = newPreFinishedAt;
-                    toastInfo(context, "Pre-timer set");
+                    toastInfo(context, l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!)));
+                    _persistState();
                   }
-                  else if (_preFinishedAt != null) {
-                    _preFinishedAt = null;
-                    toastInfo(context, "Pre-timer removed");
-                  }
-                  _persistState();
                 });
-
-
               });
             },
             icon: Icon(_preFinishedAt != null ? MdiIcons.timerPlay : MdiIcons.timerPlayOutline,
@@ -2457,7 +2467,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         preferenceService: _preferenceService,
       );
 
-      notify(-1, null, "Prestarted",
+      notify(-1, null, l10n.preTimerStartedNotification(formatDateTime(_getCurrentLangCode(), _preFinishedAt!)),
           preferenceService: _preferenceService,
           notificationService: _notificationService,
           showProgress: true,

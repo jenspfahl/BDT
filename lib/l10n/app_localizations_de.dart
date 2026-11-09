@@ -337,6 +337,12 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get preTimerExplanation => 'Legen Sie einen Vor-Timer fest, der bestimmt, wann der eigentliche Timer starten soll';
+
+  @override
+  String get preTimerSetFailure => 'Der Vor-Timer muss vor der Startzeit des Timers liegen!';
+
+  @override
   String preTimerSet(Object when) {
     return 'Vor-Timer gesetzt auf $when';
   }
@@ -345,6 +351,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String preTimerStarted(Object duration) {
     return 'Timer startet in $duration';
   }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Vor-Timer gestartet, der eigentliche Timer startet um $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Vor-Timer deaktivieren';
+
+  @override
+  String get preTimerUnset => 'Vor-Timer deaktiviert';
 
   @override
   String xBreaksPlaced(Object breakCount) {

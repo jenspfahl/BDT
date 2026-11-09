@@ -115,8 +115,14 @@
   "noRepeat": "Keine Wiederholung",
 
   "timerPaused": "Timer pausiert (insgesamt {duration})",
+
+  "preTimerExplanation": "Legen Sie einen Vor-Timer fest, der bestimmt, wann der eigentliche Timer starten soll",
+  "preTimerSetFailure": "Der Vor-Timer muss vor der Startzeit des Timers liegen!",
   "preTimerSet": "Vor-Timer gesetzt auf {when}",
   "preTimerStarted": "Timer startet in {duration}",
+  "preTimerStartedNotification": "Vor-Timer gestartet, der eigentliche Timer startet um {when}",
+  "unsetPreTimer": "Vor-Timer deaktivieren",
+  "preTimerUnset": "Vor-Timer deaktiviert",
 
   "xBreaksPlaced": "{breakCount} gesetzte Pausen",
   "xBreaksPlacedRepeatOnce": "{breakCount} gesetzte Pausen, einmal wiederholen",

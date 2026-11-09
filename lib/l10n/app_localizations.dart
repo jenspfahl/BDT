@@ -701,6 +701,18 @@ abstract class AppLocalizations {
   /// **'Timer paused (total {duration})'**
   String timerPaused(Object duration);
 
+  /// No description provided for @preTimerExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a pre-timer that determines when the actual timer should start'**
+  String get preTimerExplanation;
+
+  /// No description provided for @preTimerSetFailure.
+  ///
+  /// In en, this message translates to:
+  /// **'The pre-timer must be set to a time before the timer\'s start time!'**
+  String get preTimerSetFailure;
+
   /// No description provided for @preTimerSet.
   ///
   /// In en, this message translates to:
@@ -712,6 +724,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Timer starts in {duration}'**
   String preTimerStarted(Object duration);
+
+  /// No description provided for @preTimerStartedNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-timer started, actual timer will start at {when}'**
+  String preTimerStartedNotification(Object when);
+
+  /// No description provided for @unsetPreTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Unset pre-timer'**
+  String get unsetPreTimer;
+
+  /// No description provided for @preTimerUnset.
+  ///
+  /// In en, this message translates to:
+  /// **'Pre-timer unset'**
+  String get preTimerUnset;
 
   /// No description provided for @xBreaksPlaced.
   ///

@@ -337,6 +337,12 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get preTimerExplanation => 'Set a pre-timer that determines when the actual timer should start';
+
+  @override
+  String get preTimerSetFailure => 'The pre-timer must be set to a time before the timer\'s start time!';
+
+  @override
   String preTimerSet(Object when) {
     return 'Pre-timer set for $when';
   }
@@ -345,6 +351,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String preTimerStarted(Object duration) {
     return 'Timer starts in $duration';
   }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Pre-timer started, actual timer will start at $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Unset pre-timer';
+
+  @override
+  String get preTimerUnset => 'Pre-timer unset';
 
   @override
   String xBreaksPlaced(Object breakCount) {

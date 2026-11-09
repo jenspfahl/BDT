@@ -121,8 +121,14 @@
   "noRepeat": "No repeat",
 
   "timerPaused": "Timer paused (total {duration})",
+
+  "preTimerExplanation": "Set a pre-timer that determines when the actual timer should start",
+  "preTimerSetFailure": "The pre-timer must be set to a time before the timer's start time!",
   "preTimerSet": "Pre-timer set for {when}",
   "preTimerStarted": "Timer starts in {duration}",
+  "preTimerStartedNotification": "Pre-timer started, actual timer will start at {when}",
+  "unsetPreTimer": "Unset pre-timer",
+  "preTimerUnset": "Pre-timer unset",
 
   "xBreaksPlaced": "{breakCount} breaks placed",
   "xBreaksPlacedRepeatOnce": "{breakCount} breaks placed, repeat once",
