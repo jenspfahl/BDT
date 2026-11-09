@@ -66,6 +66,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
+  int _draggingStartIndex = -1;
+  int _draggingIndex = -1;
 
   Duration _duration = kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60);
   Duration? _originDuration;
@@ -1209,31 +1211,33 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                   PieChartData(
                       pieTouchData: PieTouchData(
                           touchCallback: (FlTouchEvent event, pieTouchResponse) {
+
                             if (_isRunning()) {
                               return;
                             }
                             if (event is FlTapUpEvent
                                 || event is FlPointerExitEvent
-                                || event is FlLongPressEnd
                                 || event is FlPanEndEvent
+                                || event is FlPanCancelEvent
+                                || event is FlTapCancelEvent
                             ) {
                               setState(() {
-                                _touchedIndex = 0;
+                                _touchedIndex = -1;
+                                _draggingIndex = -1;
+                                _draggingStartIndex = -1;
                               });
                             }
                             else if (event is FlTapDownEvent) {
                               setState(() {
-                                if (
-                                pieTouchResponse == null ||
+                                if (pieTouchResponse == null ||
                                     pieTouchResponse.touchedSection == null) {
                                   _touchedIndex = -1;
                                   return;
                                 }
                                 _touchedIndex =
-                                    (pieTouchResponse.touchedSection!
-                                        .touchedSectionIndex + 1) % MAX_SLICE;
+                                    getSliceIndexFromTouchResponse(pieTouchResponse);
                                 debugPrint('_touchedIndex=$_touchedIndex');
-                                if (_touchedIndex != 0) {
+                                if (_touchedIndex > 0) {
                                   if (_selectedSlices.contains(
                                       _touchedIndex)) {
                                     _selectedSlices.remove(_touchedIndex);
@@ -1252,6 +1256,56 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 }
                                 debugPrint('_selected=$_selectedSlices');
                               });
+                            }
+                            else if (event is FlLongPressStart) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag start ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                if (_selectedSlices.length >= MAX_BREAKS) {
+                                  toastError(context,
+                                      l10n.errorMaxBreaksReached(MAX_BREAKS));
+                                }
+
+                                var sliceIndex = getSliceIndexFromTouchResponse(pieTouchResponse);
+                                setState(() {
+                                  _draggingStartIndex = sliceIndex;
+                                  _draggingIndex = _draggingStartIndex;
+                                });
+                              }
+                            }
+                            else if (event is FlLongPressMoveUpdate) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag touch ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                if (_draggingStartIndex != -1) {
+                                  setState(() {
+                                    _draggingIndex =
+                                        getSliceIndexFromTouchResponse(
+                                            pieTouchResponse);
+                                  });
+                                }
+                              }
+                            }
+                            else if (event is FlLongPressEnd) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag end ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                setState(() {
+                                  if (_draggingStartIndex != -1) {
+                                    _selectedSlices.remove(_draggingStartIndex);
+                                    if (_draggingIndex > 0 && _selectedSlices.length < MAX_BREAKS) {
+                                      _selectedSlices.add(_draggingIndex);
+                                    }
+                                    _persistState();
+                                  }
+                                  _draggingIndex = -1;
+                                  _draggingStartIndex = -1;
+                                  _touchedIndex = -1;
+                                });
+                              }
                             }
                           }),
                       borderData: FlBorderData(
@@ -1522,6 +1576,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         ),
       ),
     );
+  }
+
+  int getSliceIndexFromTouchResponse(PieTouchResponse pieTouchResponse) {
+    return (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
   }
 
 
@@ -2265,10 +2323,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final index = indexed.$1;
       final slice = indexed.$2;
 
-      final isTouched = slice == _touchedIndex;
+      final isDragging = slice ==_draggingIndex;
+      final isTouched = slice == _touchedIndex || slice ==_draggingStartIndex || slice ==_draggingIndex;
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
-      final isSelected = _selectedSlices.contains(slice);
+      var isSelected = _selectedSlices.contains(slice) || slice == _draggingIndex;
+      if (slice == _draggingStartIndex && _draggingIndex != _draggingStartIndex) {
+        isSelected = false;
+      }
       final isLeftSelected = slice == 1 || _selectedSlices.contains(slice - 1);
       final isRightSelected = slice == MAX_SLICE - 1 || _selectedSlices.contains(slice + 1);
       final shouldAlternate = (isLeftSelected || isRightSelected) && index.isEven;
@@ -2314,7 +2376,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 ? const TextStyle(fontSize: 9)
                 : const TextStyle(fontSize: 11),
         titlePositionPercentageOffset: titlePositionPercentageOffset * (isLandscape ? 1.15 : 1),
-        badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
+        badgeWidget: isSelected && !isDragging ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
         badgePositionPercentageOffset: shouldAlternate ? 0.8 : null
       );
     }).toList();
