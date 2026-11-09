@@ -73,7 +73,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   DateTime? _startedAt;
   DateTime? _preStartedAt;
   DateTime? _originStartedAt;
-  DateTime? _preTimer;
+  DateTime? _preFinishedAt;
 
   int _breakDownCount = 3;
 
@@ -254,7 +254,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _loadLocalizations().then((l10n) {
 
-      final repeatNote = _getRunNote(runMode, (repetition??0)+1, l10n);
+      final repeatNote = _getRunNote(runMode, repetition??0, l10n);
 
       SignalService.makeSignalPattern(START,
         neverSignalTwice: true,
@@ -799,7 +799,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   void _updateRunning() {
     // start wheel if pretimer is over
-    if (_preTimer != null && _preStartedAt != null && _startedAt == null && !_preTimer!.isAfter(DateTime.now())) {
+    if (_preFinishedAt != null && _preStartedAt != null && _startedAt == null && !_preFinishedAt!.isAfter(DateTime.now())) {
       _startedAt = DateTime.now();
       _originStartedAt = _startedAt;
     }
@@ -877,7 +877,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       _repetition = 0;
       _passedIndex = -1;
       _pausedAfterStart = null;
-      _preTimer = null;
+      _preFinishedAt = null;
     });
   }
 
@@ -1892,7 +1892,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
               _stopRun(context);
             }
             else if (_checkStartConditions(context)) {
-              if (_preTimer != null && _preTimer!.isBefore(DateTime.now())) {
+              if (_preFinishedAt != null && _preFinishedAt!.isBefore(DateTime.now())) {
                 toastError(context, "Pre timer exhausted, agjust or remove it");
                 return;
               }
@@ -1907,28 +1907,28 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           IconButton(
             onPressed: () {
               showTimePicker(
-                initialTime: TimeOfDay.fromDateTime(_preTimer ?? roundToHour(DateTime.now())),
+                initialTime: TimeOfDay.fromDateTime(_preFinishedAt ?? roundToHour(DateTime.now())),
                 helpText: "Set a pre-timer when the timer should start running",
                 context: context,
-                cancelText: "Remove pre-timer", //TODO support cancel without removing pretimer
+                cancelText: "Remove pre-timer", //TODO support cancel without removing preFinishedAt
                 //confirmText: "O"
               ).then((selectedTime) {
 
                 setState(() {
                   if (selectedTime != null) {
 
-                    final newPreTimer = ensureDateTimeInTheFuture(DateTime.now(), selectedTime);
+                    final newPreFinishedAt = ensureDateTimeInTheFuture(DateTime.now(), selectedTime);
 
-                    if (_timerMode == TimerMode.ABSOLUTE && !newPreTimer.isBefore(_time)) {
+                    if (_timerMode == TimerMode.ABSOLUTE && !newPreFinishedAt.isBefore(_time)) {
                       toastError(context, "Pre-timer must be before timer end date!");
                       return;
                     }
 
-                    _preTimer = newPreTimer;
+                    _preFinishedAt = newPreFinishedAt;
                     toastInfo(context, "Pre-timer set");
                   }
-                  else if (_preTimer != null) {
-                    _preTimer = null;
+                  else if (_preFinishedAt != null) {
+                    _preFinishedAt = null;
                     toastInfo(context, "Pre-timer removed");
                   }
                   _persistState();
@@ -1937,7 +1937,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
               });
             },
-            icon: Icon(_preTimer != null ? MdiIcons.timerPlay : MdiIcons.timerPlayOutline,
+            icon: Icon(_preFinishedAt != null ? MdiIcons.timerPlay : MdiIcons.timerPlayOutline,
                 color: ColorService().getCurrentScheme().button)),
       ],
     );
@@ -1988,9 +1988,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         style: const TextStyle(fontWeight: FontWeight.w400));
     }
     else if (_isRunning()) {
-      if (_preTimer != null && _isPreRunning()) {
+      if (_preFinishedAt != null && _isPreRunning()) {
         final now = DateTime.now();
-        final durationToStart = _preTimer!.difference(now);
+        final durationToStart = _preFinishedAt!.difference(now);
         return Column(
           children: [
             _createStatsLineForRunning(l10n),
@@ -2010,7 +2010,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           children: [
             _createStatsLineForStart(l10n),
             const Text(''),
-            Text(l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preTimer!))),
+            Text(l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!))),
           ],
         );
       }
@@ -2106,9 +2106,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       var fromDateTime = _originStartedAt ?? _preStartedAt ?? DateTime.now();
       var toDateTime = _time;
-      if (_isPreRunning() && _preTimer != null) {
-        fromDateTime = _preTimer!;
-        toDateTime = _preTimer!.add(_duration);
+      if (_isPreRunning() && _preFinishedAt != null) {
+        fromDateTime = _preFinishedAt!;
+        toDateTime = _preFinishedAt!.add(_duration);
       }
       final value1 = formatDateTime(langCode, fromDateTime, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
       final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
@@ -2284,6 +2284,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           : !isInTransition && shouldAlternate && _isTopOrBottomSlice(slice) // if nearby slice has also a title, try to use a different offset to not collide
           ? 1.55
           : 1.25;
+
       return PieChartSectionData(
         color: isFinalSlice
             ? ColorService().getCurrentScheme().accent
@@ -2370,7 +2371,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return null;
   }
 
-  bool _isBeforePreRunning() => _preTimer != null && _startedAt == null;
+  bool _isBeforePreRunning() => _preFinishedAt != null && _startedAt == null;
 
   bool _isPreRunning() => _preStartedAt != null && _startedAt == null;
 
@@ -2404,7 +2405,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _clearSignalStates();
 
-    if (_preTimer != null) {
+    if (_preFinishedAt != null) {
       _preStartedAt = DateTime.now();
     }
     else {
@@ -2432,8 +2433,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _askForNotification();
 
-    //TODO this should also happen in signalPreTimerEnd!!
-    final startRef = _preTimer ?? _startedAt!;
+    //TODO this should also happen in signalPreTimerEnd !! Why?
+    final startRef = _preFinishedAt ?? _startedAt!;
     if (_timerMode == TimerMode.RELATIVE) {
       setState(() {
         final time = startRef.add(_duration);
@@ -2447,7 +2448,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       });
     }
 
-    if (_preTimer != null) {
+    if (_preFinishedAt != null) {
 
       SignalService.makeSignalPattern(PRE_START,
         volume: _volume,
@@ -2467,7 +2468,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       AndroidAlarmManager.oneShotAt(
           alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
-          _preTimer!, 1000, signalPreTimerEnd)
+          _preFinishedAt!, 1000, signalPreTimerEnd)
           .then((value) => debugPrint('shot pre end: $value'));
     }
     else {
@@ -2621,7 +2622,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     'startedAt': _startedAt?.millisecondsSinceEpoch,
     'preStartedAt': _preStartedAt?.millisecondsSinceEpoch,
     'originStartedAt': _originStartedAt?.millisecondsSinceEpoch,
-    'preTimer': _preTimer?.millisecondsSinceEpoch,
+    'preFinishedAt': _preFinishedAt?.millisecondsSinceEpoch,
     'selectedSlices': _selectedSortedSlicesToString(),
     'selectedBreakDown': _selectedBreakDown?.id,
     'pinnedBreakDownId': _pinnedBreakDownId,
@@ -2667,8 +2668,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (jsonMap['originStartedAt'] != null) {
       _originStartedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['originStartedAt']);
     }
-    if (jsonMap['preTimer'] != null) {
-      _preTimer = DateTime.fromMillisecondsSinceEpoch(jsonMap['preTimer']);
+    if (jsonMap['preFinishedAt'] != null) {
+      _preFinishedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['preFinishedAt']);
     }
     if (jsonMap['pausedAfterStart'] != null) {
       _pausedAfterStart = Duration(seconds: jsonMap['pausedAfterStart']);
@@ -2856,7 +2857,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     final start = _preStartedAt!.millisecondsSinceEpoch;
 
     final num = DateTime.now().millisecondsSinceEpoch - start;
-    final den = _preTimer!.millisecondsSinceEpoch - start;
+    final den = _preFinishedAt!.millisecondsSinceEpoch - start;
 
     return num / den;
   }
