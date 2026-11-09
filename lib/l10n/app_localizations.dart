@@ -185,6 +185,12 @@ abstract class AppLocalizations {
   /// **'Seconds'**
   String get seconds;
 
+  /// No description provided for @tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow'**
+  String get tomorrow;
+
   /// No description provided for @changeSeconds.
   ///
   /// In en, this message translates to:
@@ -728,7 +734,7 @@ abstract class AppLocalizations {
   /// No description provided for @preTimerStartedNotification.
   ///
   /// In en, this message translates to:
-  /// **'Pre-timer started, actual timer will start at {when}'**
+  /// **'Pre-timer started, actual timer will start {when}'**
   String preTimerStartedNotification(Object when);
 
   /// No description provided for @unsetPreTimer.

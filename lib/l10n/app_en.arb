@@ -13,6 +13,7 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "seconds": "Seconds",
+  "tomorrow": "tomorrow",
   "changeSeconds": "Change seconds",
 
   "notificationChannelNameForBreaks": "Breaks",
@@ -126,7 +127,7 @@
   "preTimerSetFailure": "The pre-timer must be set to a time before the timer's start time!",
   "preTimerSet": "Pre-timer set for {when}",
   "preTimerStarted": "Timer starts in {duration}",
-  "preTimerStartedNotification": "Pre-timer started, actual timer will start at {when}",
+  "preTimerStartedNotification": "Pre-timer started, actual timer will start {when}",
   "unsetPreTimer": "Unset pre-timer",
   "preTimerUnset": "Pre-timer unset",
 

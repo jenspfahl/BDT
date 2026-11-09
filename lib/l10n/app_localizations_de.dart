@@ -53,6 +53,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get seconds => 'Sekunden';
 
   @override
+  String get tomorrow => 'morgen';
+
+  @override
   String get changeSeconds => 'Sekunden anpassen';
 
   @override
@@ -354,7 +357,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String preTimerStartedNotification(Object when) {
-    return 'Vor-Timer gestartet, der eigentliche Timer startet um $when';
+    return 'Vor-Timer gestartet, der eigentliche Timer startet $when';
   }
 
   @override

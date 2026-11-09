@@ -1999,7 +1999,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                     }
 
                     _preFinishedAt = newPreFinishedAt;
-                    toastInfo(context, l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!)));
+                    toastInfo(context, l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow)));
                     _persistState();
                   }
                 });
@@ -2078,7 +2078,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           children: [
             _createStatsLineForStart(l10n),
             const Text(''),
-            Text(l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!))),
+            Text(l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow))),
           ],
         );
       }
@@ -2529,7 +2529,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         preferenceService: _preferenceService,
       );
 
-      notify(-1, null, l10n.preTimerStartedNotification(formatDateTime(_getCurrentLangCode(), _preFinishedAt!)),
+      notify(-1, null, l10n.preTimerStartedNotification(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow)),
           preferenceService: _preferenceService,
           notificationService: _notificationService,
           showProgress: true,

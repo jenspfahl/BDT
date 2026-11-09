@@ -53,6 +53,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get seconds => 'நொடிகள்';
 
   @override
+  String get tomorrow => 'tomorrow';
+
+  @override
   String get changeSeconds => 'வினாடிகளை மாற்றவும்';
 
   @override
@@ -354,7 +357,7 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String preTimerStartedNotification(Object when) {
-    return 'Pre-timer started, actual timer will start at $when';
+    return 'Pre-timer started, actual timer will start $when';
   }
 
   @override

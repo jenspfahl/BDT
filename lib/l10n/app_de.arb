@@ -13,6 +13,7 @@
   "hours": "Stunden",
   "minutes": "Minuten",
   "seconds": "Sekunden",
+  "tomorrow": "morgen",
   "changeSeconds": "Sekunden anpassen",
 
   "notificationChannelNameForBreaks": "Pausen",
@@ -120,7 +121,7 @@
   "preTimerSetFailure": "Der Vor-Timer muss vor der Startzeit des Timers liegen!",
   "preTimerSet": "Vor-Timer gesetzt auf {when}",
   "preTimerStarted": "Timer startet in {duration}",
-  "preTimerStartedNotification": "Vor-Timer gestartet, der eigentliche Timer startet um {when}",
+  "preTimerStartedNotification": "Vor-Timer gestartet, der eigentliche Timer startet {when}",
   "unsetPreTimer": "Vor-Timer deaktivieren",
   "preTimerUnset": "Vor-Timer deaktiviert",
 

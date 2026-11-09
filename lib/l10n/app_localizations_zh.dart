@@ -53,6 +53,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seconds => '秒';
 
   @override
+  String get tomorrow => 'tomorrow';
+
+  @override
   String get changeSeconds => '更改秒数';
 
   @override
@@ -354,7 +357,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String preTimerStartedNotification(Object when) {
-    return 'Pre-timer started, actual timer will start at $when';
+    return 'Pre-timer started, actual timer will start $when';
   }
 
   @override
