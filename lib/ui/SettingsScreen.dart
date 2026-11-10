@@ -186,7 +186,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await SignalService.setSignalVolume(newVol, false);
                       await SignalService.makeSignal(const Duration(milliseconds: 400),
                           audioSchemeId: selection,
-                          noVibration: true
                       );
                       await SignalService.setSignalVolume(origVol, false);
                     }

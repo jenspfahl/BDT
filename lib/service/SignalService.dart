@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'dart:math';
 
 import 'package:bdt/service/AudioService.dart';
@@ -9,6 +10,7 @@ import 'package:sound_mode_advanced/sound_mode.dart';
 import 'package:sound_mode_advanced/sound_mode_advanced.dart';
 import 'package:vibration/vibration.dart';
 
+import '../model/AudioScheme.dart';
 import '../util/prefs.dart';
 import 'PreferenceService.dart';
 
@@ -65,7 +67,7 @@ class SignalService {
     final muteVolumeIfDeviceIsMuted = prefService.muteVolumeIfDeviceIsMuted;
     final ringerStatus = await SoundMode.ringerModeStatus;
     final isSilent = ringerStatus == RingerModeStatus.silent || ringerStatus == RingerModeStatus.vibrate;
-    SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted && isSilent);
+    await SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted && isSilent);
 
     await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
 
@@ -98,7 +100,6 @@ class SignalService {
 
   static _makeSignalPattern(String pattern, PreferenceService preferenceService,
       int id, bool signalAlthoughCancelled, bool signalWithoutNumber) async {
-    await FlutterSoundBridge.stopSysSound();
 
     if (signalWithoutNumber) {
       if (pattern != START && pattern != CANCEL && pattern != SIG_END) {
@@ -109,19 +110,26 @@ class SignalService {
       }
     }
 
+    final audioScheme = AudioService().getScheme(PreferenceService().audioSchema);
+
+    FlutterSoundBridge.playPattern(audioScheme.soundId, pattern);
+
     for (int i = 0; i < pattern.length; i++) {
       if (!signalAlthoughCancelled && await _cancelSignalling(preferenceService, id)) {
+        await FlutterSoundBridge.stopSysSound();
         return;
       }
 
       var character = String.fromCharCode(pattern.codeUnitAt(i));
       switch (character) {
-        case '|' : await makeShortSignal(); break;
-        case '-' : await makeNormalSignal(); break;
-        case '_' : await makeLongSignal(); break;
+        case '|' : await vibrateShort(); break;
+        case '-' : await vibrateNormal(); break;
+        case '_' : await vibrateLong(); break;
         case ' ' : await pause(const Duration(milliseconds: 1000)); break;
       }
     }
+
+
   }
 
   static String signalPatternToString(String pattern) {
@@ -135,38 +143,40 @@ class SignalService {
     }).join();
   }
 
-  static makeShortSignal() async {
-    await makeSignal(const Duration(milliseconds: 50));
-    await pause(const Duration(milliseconds: 300));
+  static vibrateShort() async {
+    await vibrate(const Duration(milliseconds: 50));
+    await pause(const Duration(milliseconds: 50 + 300));
   }
 
-  static makeNormalSignal() async {
-    await makeSignal(const Duration(milliseconds: 400));
-    await pause(const Duration(milliseconds: 400));
+  static vibrateNormal() async {
+    await vibrate(const Duration(milliseconds: 400));
+    await pause(const Duration(milliseconds: 400 + 400));
   }
 
-  static makeLongSignal() async {
-    await makeSignal(const Duration(milliseconds: 1000));
-    await pause(const Duration(milliseconds: 400));
+  static vibrateLong() async {
+    await vibrate(const Duration(milliseconds: 1000));
+    await pause(const Duration(milliseconds: 1000 + 400));
   }
 
-  static makeSignal(Duration duration, {int? audioSchemeId, bool noVibration = false}) async {
-    debugPrint('signal $duration');
+  static vibrate(Duration duration) async {
     final vibrateAllowed = await mayVibrate(PreferenceService());
-    debugPrint('vibrate $vibrateAllowed');
 
-    if (!noVibration && vibrateAllowed) {
-      final hasVibration = await Vibration.hasVibrator() ?? false;
+    if (vibrateAllowed) {
+      final hasVibration = await Vibration.hasVibrator();
       if (hasVibration) {
-        Vibration.vibrate(duration: duration.inMilliseconds);
+        await Vibration.vibrate(duration: duration.inMilliseconds);
       }
     }
 
+  }
+
+  static makeSignal(Duration duration, {int? audioSchemeId}) async {
+    debugPrint('signal $duration');
     final audioScheme = AudioService().getScheme(audioSchemeId ?? PreferenceService().audioSchema);
 
     await FlutterSoundBridge.playSysSound(
         audioScheme.soundId, duration);
-    await pause(duration);
+
   }
 
   static pause(Duration duration) async => Future.delayed(duration);

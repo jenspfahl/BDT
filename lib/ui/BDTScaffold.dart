@@ -914,7 +914,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                       builder: (BuildContext context) {
                         List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
                         .map((i) => GestureDetector(
-                          onTapUp: (_) {
+                          onTap: () {
                             SignalService.makeSignalPattern(_getSignalForNumber(i),
                                 volume: _volume,
                                 neverSignalTwice: true,
@@ -936,7 +936,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                               .toList();
 
                           rows.add(GestureDetector(
-                            onTapUp: (_) {
+                            onTap: () {
                               SignalService.makeSignalPattern(_getSignalForNumber(100),
                                   volume: _volume,
                                   neverSignalTwice: true,
@@ -1036,9 +1036,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
                   final volume = await showVolumeSliderDialog(context,
                     initialSelection: _volume.toDouble(),
-                    onChangedEnd: (value) {
-                      SignalService.setSignalVolume(value.round(), _isDeviceMuted());
-                      SignalService.makeShortSignal();
+                    onChangedEnd: (value) async {
+                      await SignalService.setSignalVolume(value.round(), _isDeviceMuted());
+                      await SignalService.makeSignal(const Duration(milliseconds: 50));
                     }
                   );
                   if (volume != null) {
