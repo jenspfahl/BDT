@@ -347,6 +347,18 @@ abstract class AppLocalizations {
   /// **'Don\'t encode the counter in the audio and vibration signal.'**
   String get signalWithoutCounterDescription;
 
+  /// No description provided for @signalWithoutPreSignal.
+  ///
+  /// In en, this message translates to:
+  /// **'Signal without pre-signal'**
+  String get signalWithoutPreSignal;
+
+  /// No description provided for @signalWithoutPreSignalDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.'**
+  String get signalWithoutPreSignalDescription;
+
   /// No description provided for @defaultBreakOrder.
   ///
   /// In en, this message translates to:

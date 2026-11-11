@@ -42,6 +42,8 @@
   "signalTwiceUponReachedBreaksDescription": "Um keine Pause zu verpassen, wird jede Pause zweimal signalisiert.",
   "signalWithoutCounter": "Signal ohne Zählerinformation",
   "signalWithoutCounterDescription": "Der Pausenzähler wird nicht im Audio- und Vibrationssignal kodiert.",
+  "signalWithoutPreSignal": "Signal ohne Vorsignal",
+  "signalWithoutPreSignalDescription": "Es wird kein Vorsignal (bep bep) ausgegeben, nur der reine Pausenzähler kodiert mit dem Audio- und Vibrationssignal.",
   "defaultBreakOrder": "Die Pausenreihenfolge ist standardmäßig absteigend",
   "defaultBreakOrderDescription": "Anstatt 1, 2, 3, … wird die Reihenfolge …, 3, 2, 1 verwendet.",
   "showRunSpinner": "Lauf-Indikator anzeigen",

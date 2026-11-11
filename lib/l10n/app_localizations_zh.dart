@@ -134,6 +134,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signalWithoutCounterDescription => '音频和振动信号中不包含计数器信息。';
 
   @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
+
+  @override
   String get defaultBreakOrder => '休息点顺序默认为递减';
 
   @override

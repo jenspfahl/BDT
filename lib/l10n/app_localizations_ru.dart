@@ -134,6 +134,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get signalWithoutCounterDescription => 'Don\'t encode the counter in the audio and vibration signal.';
 
   @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
+
+  @override
   String get defaultBreakOrder => 'The break order descending by default';
 
   @override

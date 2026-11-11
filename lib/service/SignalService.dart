@@ -20,6 +20,7 @@ final CANCEL = '|';
 final PRE_START = '-';
 final SIG_UNSPEC = '||';
 final SIG_UNSPEC_END = '|||';
+final SIG_PRE_A = '|| ';
 final SIG_1 = '|| -';
 final SIG_2 = '|| --';
 final SIG_3 = '|| ---';
@@ -30,6 +31,7 @@ final SIG_7 = '|| _--';
 final SIG_8 = '|| _---';
 final SIG_9 = '|| _----';
 final SIG_10 = '|| __';
+final SIG_PRE_B = '||| ';
 final SIG_11 = '||| -';
 final SIG_12 = '||| --';
 final SIG_13 = '||| ---';
@@ -52,15 +54,8 @@ class SignalService {
     int? volume,
     PreferenceService? preferenceService,
     bool neverSignalTwice = false,
-    bool signalAlthoughCancelled = false,
   }) async {
     final prefService = preferenceService ?? PreferenceService();
-    final id = Random().nextInt(10000000);
-
-    await initCurrentSignalling(prefService, id);
-
-    final signalTwice = await shouldSignalTwice(PreferenceService());
-    final signalWithoutNumber = await shouldSignalWithoutEncodedNumber(PreferenceService());
 
     final vol = volume ?? await getVolume(prefService);
 
@@ -69,38 +64,30 @@ class SignalService {
     final isSilent = ringerStatus == RingerModeStatus.silent || ringerStatus == RingerModeStatus.vibrate;
     await SignalService.setSignalVolume(vol, muteVolumeIfDeviceIsMuted && isSilent);
 
-    await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
+    final signalTwice = await shouldSignalTwice(prefService);
+    final signalWithoutNumber = await shouldSignalWithoutEncodedNumber(prefService);
+    final signalWithoutPreSignal = await shouldSignalWithoutPreSignal(prefService);
 
-    if (!signalAlthoughCancelled && await _cancelSignalling(prefService, id)) {
-      return;
-    }
+    pattern = adaptPattern(pattern, signalWithoutNumber, signalWithoutPreSignal);
 
     if (signalTwice && !neverSignalTwice) {
-      await pause(const Duration(seconds: 2));
-      await _makeSignalPattern(pattern, prefService, id, signalAlthoughCancelled, signalWithoutNumber);
+      pattern = pattern + ' ' + ' ' + pattern; // add two breaks aka 2 seconds in between
     }
+
+    await _startMakeSignalPattern(pattern, prefService);
+
   }
 
-  static Future<bool> _cancelSignalling(PreferenceService preferenceService, id) async {
-    final otherId = await getCurrentSignalling(preferenceService);
-    if (otherId != null && otherId != id) {
-      FlutterSoundBridge.stopSysSound(); // async
-      debugPrint('cancel due to other signal id $otherId than $id');
-      return true;
-    }
+  static _startMakeSignalPattern(String pattern, PreferenceService preferenceService) async {
 
-    bool cancelRequested = await shouldCancelSignalling(preferenceService);
-    debugPrint('cancelRequested=$cancelRequested');
-    if (cancelRequested) {
-      FlutterSoundBridge.stopSysSound(); // async
-      debugPrint('cancel due to cancelRequested');
-    }
-    return cancelRequested;
+    final audioScheme = AudioService().getScheme(preferenceService.audioSchema);
+    final vibrate = await mayVibrate(PreferenceService());
+
+    await FlutterSoundBridge.playPattern(audioScheme.soundId, pattern, vibrate);
+
   }
 
-  static _makeSignalPattern(String pattern, PreferenceService preferenceService,
-      int id, bool signalAlthoughCancelled, bool signalWithoutNumber) async {
-
+  static String adaptPattern(String pattern, bool signalWithoutNumber, bool signalWithoutPreSignal) {
     if (signalWithoutNumber) {
       if (pattern != START && pattern != CANCEL && pattern != SIG_END) {
         pattern = SIG_UNSPEC;
@@ -109,30 +96,22 @@ class SignalService {
         pattern = SIG_UNSPEC_END;
       }
     }
-
-    final audioScheme = AudioService().getScheme(PreferenceService().audioSchema);
-
-    FlutterSoundBridge.playPattern(audioScheme.soundId, pattern);
-
-    for (int i = 0; i < pattern.length; i++) {
-      if (!signalAlthoughCancelled && await _cancelSignalling(preferenceService, id)) {
-        await FlutterSoundBridge.stopSysSound();
-        return;
+    else if (signalWithoutPreSignal ) {
+      if (pattern.startsWith(SIG_PRE_A)) {
+        pattern = pattern.replaceFirst(SIG_PRE_A, '');
       }
-
-      var character = String.fromCharCode(pattern.codeUnitAt(i));
-      switch (character) {
-        case '|' : await vibrateShort(); break;
-        case '-' : await vibrateNormal(); break;
-        case '_' : await vibrateLong(); break;
-        case ' ' : await pause(const Duration(milliseconds: 1000)); break;
+      else if (pattern.startsWith(SIG_PRE_B)) {
+        pattern = pattern.replaceFirst(SIG_PRE_B, '');
       }
     }
-
-
+    return pattern;
   }
 
-  static String signalPatternToString(String pattern) {
+  static Future<String> signalPatternToString(String pattern) async {
+    final signalWithoutNumber = await shouldSignalWithoutEncodedNumber(PreferenceService());
+    final signalWithoutPreSignal = await shouldSignalWithoutPreSignal(PreferenceService());
+
+    pattern = adaptPattern(pattern, signalWithoutNumber, signalWithoutPreSignal);
     return pattern.characters.map((character) {
       switch (character) {
         case '|' : return 'bep ';
@@ -143,51 +122,21 @@ class SignalService {
     }).join();
   }
 
-  static vibrateShort() async {
-    await vibrate(const Duration(milliseconds: 50));
-    await pause(const Duration(milliseconds: 50 + 300));
-  }
-
-  static vibrateNormal() async {
-    await vibrate(const Duration(milliseconds: 400));
-    await pause(const Duration(milliseconds: 400 + 400));
-  }
-
-  static vibrateLong() async {
-    await vibrate(const Duration(milliseconds: 1000));
-    await pause(const Duration(milliseconds: 1000 + 400));
-  }
-
-  static vibrate(Duration duration) async {
-    final vibrateAllowed = await mayVibrate(PreferenceService());
-
-    if (vibrateAllowed) {
-      final hasVibration = await Vibration.hasVibrator();
-      if (hasVibration) {
-        await Vibration.vibrate(duration: duration.inMilliseconds);
-      }
-    }
-
-  }
-
   static makeSignal(Duration duration, {int? audioSchemeId}) async {
     debugPrint('signal $duration');
     final audioScheme = AudioService().getScheme(audioSchemeId ?? PreferenceService().audioSchema);
 
-    await FlutterSoundBridge.playSysSound(
+    await FlutterSoundBridge.playSound(
         audioScheme.soundId, duration);
 
   }
-
-  static pause(Duration duration) async => Future.delayed(duration);
 
   static setSignalVolume(int volume, bool muteVolume) async {
     await FlutterSoundBridge.setVolume(muteVolume ? 0 : volume, AudioStreams.STREAM_ALARM);
   }
 
   Future<void> stopAll() async {
-    PreferenceService().setBool(PreferenceService.STATE_SIGNAL_CANCELLING, true);
-    await FlutterSoundBridge.stopSysSound();
+    await FlutterSoundBridge.stopSoundOrPattern();
   }
 
 }

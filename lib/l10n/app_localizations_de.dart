@@ -134,6 +134,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get signalWithoutCounterDescription => 'Der Pausenzähler wird nicht im Audio- und Vibrationssignal kodiert.';
 
   @override
+  String get signalWithoutPreSignal => 'Signal ohne Vorsignal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'Es wird kein Vorsignal (bep bep) ausgegeben, nur der reine Pausenzähler kodiert mit dem Audio- und Vibrationssignal.';
+
+  @override
   String get defaultBreakOrder => 'Die Pausenreihenfolge ist standardmäßig absteigend';
 
   @override

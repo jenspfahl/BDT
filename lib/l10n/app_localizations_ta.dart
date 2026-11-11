@@ -134,6 +134,12 @@ class AppLocalizationsTa extends AppLocalizations {
   String get signalWithoutCounterDescription => 'ஆடியோ மற்றும் அதிர்வு சமிக்ஞையில் கவுண்டரை குறியாக்கம் செய்ய வேண்டாம்.';
 
   @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
+
+  @override
   String get defaultBreakOrder => 'இடைவேளை வரிசை இயல்பாக இறங்குகிறது';
 
   @override

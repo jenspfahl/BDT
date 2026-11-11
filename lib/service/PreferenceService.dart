@@ -21,6 +21,7 @@ class PreferenceService {
   static final PREF_MUTE_IF_DEVICE_MUTED = PrefDef('pref/run/muteIfDeviceMuted', false);
   static final PREF_SIGNAL_TWICE = PrefDef('pref/run/signalTwice', false);
   static final PREF_SIGNAL_WITHOUT_NUMBER = PrefDef('pref/run/signalWithoutNumber', false);
+  static final PREF_SIGNAL_WITHOUT_PRE_SIGNAL = PrefDef('pref/run/signalWithoutPreSignal', false);
   static final PREF_BREAK_ORDER_DESCENDING = PrefDef('pref/run/breakOrderDescending', false);
   static final PREF_SIGNAL_VOLUME = PrefDef('pref/run/signalVolume', MAX_VOLUME);
   static final PREF_HIDE_PREDEFINED_PRESETS = PrefDef('pref/presets/hidePredefinedPresets', false);
@@ -45,8 +46,6 @@ class PreferenceService {
   static final STATE_RUN_PROGRESS_PATH = PrefDef('state/runProgressPath', null);
   static final STATE_RUN_STARTED_AT = PrefDef('state/runStartedAt', null);
   static final STATE_RUN_DURATION = PrefDef('state/runDuration', null);
-  static final STATE_SIGNAL_PROCESSING = PrefDef('state/signalProcessing', null);
-  static final STATE_SIGNAL_CANCELLING = PrefDef('state/signalCancelling', null);
   static final STATE_PASSED_BREAKS_PREFIX = PrefDef('state/passedBreaks_', null);
 
 

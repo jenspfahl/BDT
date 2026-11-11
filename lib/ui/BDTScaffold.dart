@@ -262,7 +262,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       SignalService.makeSignalPattern(START,
         neverSignalTwice: true,
-        signalAlthoughCancelled: true,
       );
 
       notify(0, null, l10n.timerStarted + repeatNote,
@@ -909,30 +908,36 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           actions: [
             IconButton(
                 onPressed: () async {
+                  final signalTexts = await Future.wait(
+                      new List<int>.generate(MAX_BREAKS, (i) => i + 1).map((i) => _getSignalStringForNumber(i)));
+                  final finalSignalText = await _getSignalStringForNumber(100);
+
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
-                        .map((i) => GestureDetector(
-                          onTap: () {
-                            SignalService.makeSignalPattern(_getSignalForNumber(i),
-                                volume: _volume,
-                                neverSignalTwice: true,
-                                signalAlthoughCancelled: true,
-                                preferenceService: _preferenceService);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
-                                child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
-                              ),
-                              Text('${l10n.breakName} ${_breakNumberToString(i)}: ',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text(_getSignalStringForNumber(i), style: const TextStyle(fontSize: 10),),
-                            ]),
-                        ))
+                        .map((i) {
+
+                          return GestureDetector(
+                              onTap: () {
+                                SignalService.makeSignalPattern(_getSignalForNumber(i),
+                                    volume: _volume,
+                                    neverSignalTwice: true,
+                                    preferenceService: _preferenceService);
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                                    child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
+                                  ),
+                                  Text('${l10n.breakName} ${_breakNumberToString(i)}: ',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text(signalTexts.elementAt(i-1), style: const TextStyle(fontSize: 10),),
+                                ]),
+                            );
+                            })
                               .toList();
 
                           rows.add(GestureDetector(
@@ -940,7 +945,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                               SignalService.makeSignalPattern(_getSignalForNumber(100),
                                   volume: _volume,
                                   neverSignalTwice: true,
-                                  signalAlthoughCancelled: true,
                                   preferenceService: _preferenceService);
                             },
                             child: Row(
@@ -952,7 +956,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 ),
                                 Text('${l10n.timerFinished}: ',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                Text(_getSignalStringForNumber(100), style: const TextStyle(fontSize: 10),),
+                                Text(finalSignalText, style: const TextStyle(fontSize: 10),),
                               ]),
                           )
                         );
@@ -1762,8 +1766,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       if (currIndex != -1) {
         currIndex = max(currIndex - 1, 0);
+        _updateSelectedSlices(_loadedBreakDowns[currIndex]);
       }
-      _updateSelectedSlices(_loadedBreakDowns[currIndex]);
     }
   }
 
@@ -1879,7 +1883,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 setState(() {
                   if (_isPaused()) {
                     _pausedAfterStart = null;
-                    _clearSignalStates();
                     _persistState();
                     _circleAnimationController.repeat();
                   }
@@ -2475,8 +2478,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     final l10n = AppLocalizations.of(context)!;
 
-    _clearSignalStates();
-
     if (_preFinishedAt != null) {
       _preStartedAt = DateTime.now();
     }
@@ -2525,7 +2526,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       SignalService.makeSignalPattern(PRE_START,
         volume: _volume,
         neverSignalTwice: true,
-        signalAlthoughCancelled: true,
         preferenceService: _preferenceService,
       );
 
@@ -2547,7 +2547,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       SignalService.makeSignalPattern(START,
         volume: _volume,
         neverSignalTwice: true,
-        signalAlthoughCancelled: true,
         preferenceService: _preferenceService,
       );
 
@@ -2572,11 +2571,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         _repetition,
       );
     }
-  }
-
-  void _clearSignalStates() {
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
   }
 
   void _startSpinner(bool initAnimation) {
@@ -2662,7 +2656,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume,
         neverSignalTwice: true,
-        signalAlthoughCancelled: true,
         preferenceService: _preferenceService);
     _persistState();
 
@@ -2811,7 +2804,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     }
   }
 
-  String _getSignalStringForNumber(int signal) {
+  Future<String> _getSignalStringForNumber(int signal) {
     switch (signal) {
       case 1: return SignalService.signalPatternToString(SIG_1);
       case 2: return SignalService.signalPatternToString(SIG_2);
