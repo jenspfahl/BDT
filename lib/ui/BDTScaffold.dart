@@ -466,9 +466,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         isFinished: isFinished,
         l10n: l10n);
 
-    PreferenceService().setInt(
-        PrefDef(PreferenceService.STATE_PASSED_BREAKS_PREFIX.key + id.toString(), null), DateTime.now().millisecondsSinceEpoch);
-
+    if (id > 0 && id < 100) { // only real notifications, not start or end ones
+      PreferenceService().setInt(
+          PrefDef(
+              PreferenceService.STATE_PASSED_BREAKS_PREFIX.key + (id-1).toString(), // -1 because selectedSlices is indexed by 0
+              null), DateTime.now().millisecondsSinceEpoch);
+    }
 
     if (signalPattern != null) await SignalService.makeSignalPattern(signalPattern);
 
@@ -2399,6 +2402,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       final timeOfBreak = _pastBreaks[slice];
 
+      // debugPrint('XXX $slice $timeOfBreak');
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
@@ -2697,6 +2701,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     'circleAnimationValue': _circleAnimationController.value,
     'circleAnimationLastValue': _circleAnimationLastValue,
     'circleAnimationDirection': _circleAnimationDirection,
+    'passedIndex': _passedIndex,
   };
 
   }
@@ -2767,19 +2772,31 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (jsonMap['circleAnimationDirection'] != null) {
       _circleAnimationDirection = jsonMap['circleAnimationDirection'];
     }
+    if (jsonMap['passedIndex'] != null) {
+      _passedIndex = jsonMap['passedIndex'];
+    }
 
     final keys = await PreferenceService().getKeys(PreferenceService.STATE_PASSED_BREAKS_PREFIX.key);
     keys.sort();
     debugPrint('passed breaks keys: $keys');
+    final sortedSlices =  _selectedSortedSlices();
     for (var key in keys) {
       final millisSinceEpoch = await PreferenceService().getInt(PrefDef(key, null));
-      final sliceParsed = key.split('_').lastOrNull;
-      final slice = sliceParsed != null ? int.tryParse(sliceParsed) : null;
-      if (millisSinceEpoch != null && slice != null) {
+
+      final breakParsed = key.split('_').lastOrNull;
+      final breakId = breakParsed != null ? int.tryParse(breakParsed) : null;
+      debugPrint('passed break key: $key=$millisSinceEpoch breakId=$breakId');
+
+      if (millisSinceEpoch != null && breakId != null) {
         final pastBreak = DateTime.fromMillisecondsSinceEpoch(millisSinceEpoch);
-        _pastBreaks[slice] = pastBreak;
+        if (sortedSlices.length > breakId) {
+          final slice = sortedSlices[breakId];
+          _pastBreaks[slice] = pastBreak;
+        }
       }
     }
+    debugPrint('restored passed breaks: $_pastBreaks');
+
 
 
     if (!_isRunning()) {
