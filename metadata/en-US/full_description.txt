@@ -24,7 +24,9 @@ This is especially convenient during workouts or other outdoor activities.
  - Various predefined "break" presets
  - Save your own presets
  - Various color and audio schemes
-
+ - Pre-timer to get the actual timer started at a precise moment
+ - Pausing and resuming a running timer
+ - Single or infinite repetitions of the timer run
 
 
 For more information see <a href="https://bdt.jepfa.de">bdt.jepfa.de</a>
