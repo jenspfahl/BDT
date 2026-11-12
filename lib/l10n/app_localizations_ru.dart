@@ -53,6 +53,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get seconds => 'Секунды';
 
   @override
+  String get tomorrow => 'Завтра';
+
+  @override
   String get changeSeconds => 'Изменить секунды';
 
   @override
@@ -129,6 +132,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get signalWithoutCounterDescription => 'Don\'t encode the counter in the audio and vibration signal.';
+
+  @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
 
   @override
   String get defaultBreakOrder => 'The break order descending by default';
@@ -330,6 +339,38 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get noRepeat => 'No repeat';
+
+  @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
+  String get preTimerExplanation => 'Set a pre-timer that determines when the actual timer should start';
+
+  @override
+  String get preTimerSetFailure => 'The pre-timer must be set to a time before the timer\'s start time!';
+
+  @override
+  String preTimerSet(Object when) {
+    return 'Pre-timer set for $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer starts in $duration';
+  }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Pre-timer started, actual timer will start $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Unset pre-timer';
+
+  @override
+  String get preTimerUnset => 'Pre-timer unset';
 
   @override
   String xBreaksPlaced(Object breakCount) {

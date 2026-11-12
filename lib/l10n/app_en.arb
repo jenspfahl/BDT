@@ -13,6 +13,7 @@
   "hours": "Hours",
   "minutes": "Minutes",
   "seconds": "Seconds",
+  "tomorrow": "tomorrow",
   "changeSeconds": "Change seconds",
 
   "notificationChannelNameForBreaks": "Breaks",
@@ -45,6 +46,9 @@
   "signalTwiceUponReachedBreaksDescription": "To ensure no break is missed, each break is signaled twice.",
   "signalWithoutCounter": "Signal without counter information",
   "signalWithoutCounterDescription": "Don't encode the counter in the audio and vibration signal.",
+
+  "signalWithoutPreSignal": "Signal without pre-signal",
+  "signalWithoutPreSignalDescription": "No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.",
 
   "defaultBreakOrder": "The break order descending by default",
   "defaultBreakOrderDescription": "Instead of 1, 2, 3, … the order …, 3, 2, 1 is used.",
@@ -119,6 +123,16 @@
   "repeatOnce": "Repeat once",
   "repeatForever": "Repeat forever",
   "noRepeat": "No repeat",
+
+  "timerPaused": "Timer paused (total {duration})",
+
+  "preTimerExplanation": "Set a pre-timer that determines when the actual timer should start",
+  "preTimerSetFailure": "The pre-timer must be set to a time before the timer's start time!",
+  "preTimerSet": "Pre-timer set for {when}",
+  "preTimerStarted": "Timer starts in {duration}",
+  "preTimerStartedNotification": "Pre-timer started, actual timer will start {when}",
+  "unsetPreTimer": "Unset pre-timer",
+  "preTimerUnset": "Pre-timer unset",
 
   "xBreaksPlaced": "{breakCount} breaks placed",
   "xBreaksPlacedRepeatOnce": "{breakCount} breaks placed, repeat once",

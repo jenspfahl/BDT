@@ -17,22 +17,13 @@ Future<bool> mayVibrate(PreferenceService preferenceService) async {
 Future<bool> shouldSignalTwice(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_TWICE) == true;
 }
+
 Future<bool> shouldSignalWithoutEncodedNumber(PreferenceService preferenceService) async {
   return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER) == true;
 }
 
-Future<bool> shouldCancelSignalling(PreferenceService preferenceService) async {
-  await preferenceService.reload();
-  return await preferenceService.getBool(PreferenceService.STATE_SIGNAL_CANCELLING) == true;
-}
-
-Future<int?> getCurrentSignalling(PreferenceService preferenceService) async {
-  await preferenceService.reload();
-  return await preferenceService.getInt(PreferenceService.STATE_SIGNAL_PROCESSING);
-}
-
-initCurrentSignalling(PreferenceService preferenceService, int id) async {
-  await preferenceService.setInt(PreferenceService.STATE_SIGNAL_PROCESSING, id);
+Future<bool> shouldSignalWithoutPreSignal(PreferenceService preferenceService) async {
+  return await preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_PRE_SIGNAL) == true;
 }
 
 Future<int> getVolume(PreferenceService preferenceService) async {

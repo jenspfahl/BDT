@@ -53,6 +53,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get seconds => 'Sekunden';
 
   @override
+  String get tomorrow => 'morgen';
+
+  @override
   String get changeSeconds => 'Sekunden anpassen';
 
   @override
@@ -129,6 +132,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get signalWithoutCounterDescription => 'Der Pausenzähler wird nicht im Audio- und Vibrationssignal kodiert.';
+
+  @override
+  String get signalWithoutPreSignal => 'Signal ohne Vorsignal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'Es wird kein Vorsignal (bep bep) ausgegeben, nur der reine Pausenzähler kodiert mit dem Audio- und Vibrationssignal.';
 
   @override
   String get defaultBreakOrder => 'Die Pausenreihenfolge ist standardmäßig absteigend';
@@ -330,6 +339,38 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noRepeat => 'Keine Wiederholung';
+
+  @override
+  String timerPaused(Object duration) {
+    return 'Timer pausiert (insgesamt $duration)';
+  }
+
+  @override
+  String get preTimerExplanation => 'Legen Sie einen Vor-Timer fest, der bestimmt, wann der eigentliche Timer starten soll';
+
+  @override
+  String get preTimerSetFailure => 'Der Vor-Timer muss vor der Startzeit des Timers liegen!';
+
+  @override
+  String preTimerSet(Object when) {
+    return 'Vor-Timer gesetzt auf $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer startet in $duration';
+  }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Vor-Timer gestartet, der eigentliche Timer startet $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Vor-Timer deaktivieren';
+
+  @override
+  String get preTimerUnset => 'Vor-Timer deaktiviert';
 
   @override
   String xBreaksPlaced(Object breakCount) {

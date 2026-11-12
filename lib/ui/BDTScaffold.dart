@@ -10,10 +10,12 @@ import 'package:bdt/service/BreakDownService.dart';
 import 'package:bdt/service/LocalNotificationService.dart';
 import 'package:bdt/service/PreferenceService.dart';
 import 'package:bdt/service/SignalService.dart';
+import 'package:bdt/ui/time_picker.dart';
 import 'package:bdt/ui/utils.dart';
 import 'package:battery_optimization_permission/battery_optimization_permission.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fgbg/flutter_fgbg.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
@@ -64,11 +66,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   int _touchedIndex = -1;
   int _passedIndex = -1;
+  int _draggingStartIndex = -1;
+  int _draggingIndex = -1;
 
   Duration _duration = kReleaseMode ? const Duration(minutes: 60): const Duration(seconds: 60);
   Duration? _originDuration;
+  Duration? _pausedAfterStart = null;
   late DateTime _time;
   DateTime? _originTime;
+  DateTime? _startedAt;
+  DateTime? _preStartedAt;
+  DateTime? _originStartedAt;
+  DateTime? _preFinishedAt;
 
   int _breakDownCount = 3;
 
@@ -90,13 +99,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   final _notificationService = LocalNotificationService();
   final _preferenceService = PreferenceService();
   Timer? _runTimer;
-  DateTime? _startedAt;
   int _volume = DEFAULT_VOLUME;
   RingerModeStatus _ringerStatus = RingerModeStatus.unknown;
 
   late AnimationController _circleAnimationController;
   bool _circleAnimationDirection = false;
   double _circleAnimationLastValue = 0;
+
+  Map<int, DateTime> _pastBreaks = HashMap();
 
   @pragma('vm:entry-point')
   static Future<void> signal1() async {
@@ -238,6 +248,48 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     await notifySignal(20, SIG_20);
   }
 
+
+  @pragma('vm:entry-point')
+  static Future<void> signalPreTimerEnd() async {
+    debugPrint('sig pre-timer end');
+
+    final runMode = await getRunMode(PreferenceService());
+    var repetition = await getRunRepetition(PreferenceService());
+
+    _loadLocalizations().then((l10n) {
+
+      final repeatNote = _getRunNote(runMode, repetition??0, l10n);
+
+      SignalService.makeSignalPattern(START,
+        neverSignalTwice: true,
+      );
+
+      notify(0, null, l10n.timerStarted + repeatNote,
+          fixed: true, showBreakInfo: false, showProgress: true, l10n: l10n);
+    });
+
+
+    //read this from prefs
+    Set<int> selectedSlices = HashSet.from(await getProgressPath(PreferenceService()));
+    final duration = await getDuration(PreferenceService());
+    final startedAt = DateTime.now();
+    final direction = await getRunDirection(PreferenceService());
+
+    setStartedAt(PreferenceService(), startedAt);
+
+    await AndroidAlarmManager.initialize();
+    scheduleSliceNotifications(
+      selectedSlices,
+      selectedSlices.length,
+      direction!,
+      startedAt,
+      duration!,
+      runMode!,
+      repetition!,
+    );
+  }
+
+
   @pragma('vm:entry-point')
   static Future<void> signalEndWithRepetition() async {
     debugPrint('sig end and repeat');
@@ -290,6 +342,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     }
   }
+
 
   @pragma('vm:entry-point')
   static Future<void> signalEnd() async {
@@ -413,6 +466,13 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         isFinished: isFinished,
         l10n: l10n);
 
+    if (id > 0 && id < 100) { // only real notifications, not start or end ones
+      PreferenceService().setInt(
+          PrefDef(
+              PreferenceService.STATE_PASSED_BREAKS_PREFIX.key + (id-1).toString(), // -1 because selectedSlices is indexed by 0
+              null), DateTime.now().millisecondsSinceEpoch);
+    }
+
     if (signalPattern != null) await SignalService.makeSignalPattern(signalPattern);
 
   }
@@ -445,7 +505,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       progress = await getProgress(prefService, id - 1, isFinished);
       final startedAt = await getStartedAt(prefService);
       if (startedAt != null) {
-        final duration = startedAt.difference(now).abs();
+        final duration = startedAt.difference(now).abs(); //TODO add up all runs
         message = '$msg ' + l10n.afterDuration(formatDuration(duration));
       }
     }
@@ -517,20 +577,40 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     });
 
+    _circleAnimationController =
+        AnimationController(duration: const Duration(seconds: 1), vsync: this);
+    Tween<double>(begin: 0, end: 1).animate(_circleAnimationController)
+      ..addListener(() {
+        setState(() {
+          final circleAnimationCurrentValue = _circleAnimationController.value;
+          if (_circleAnimationLastValue > circleAnimationCurrentValue) {
+            _circleAnimationDirection = !_circleAnimationDirection;
+          }
+          _circleAnimationLastValue = circleAnimationCurrentValue;
+        });
+      });
+
     getRunState(_preferenceService).then((persistedState) {
       if (persistedState != null) {
         Map<String, dynamic> stateAsJson = jsonDecode(persistedState);
         debugPrint('!!!!!!FOUND persisted state: $stateAsJson');
         final lastBoot = DateTime.now().subtract(SystemClock.elapsedRealtime());
         var startedAtFromJson = stateAsJson['startedAt'];
-        if (startedAtFromJson != null) {
-          final persistedStateFrom = DateTime.fromMillisecondsSinceEpoch(
-              startedAtFromJson);
+        var preStartedAtFromJson = stateAsJson['preStartedAt'];
+
+        if (startedAtFromJson != null || preStartedAtFromJson != null) {  // timer is running
+          final persistedStateFrom = startedAtFromJson != null
+              ? DateTime.fromMillisecondsSinceEpoch(startedAtFromJson)
+              : DateTime.fromMillisecondsSinceEpoch(preStartedAtFromJson);
           debugPrint('last boot was $lastBoot, persisted state is from $persistedStateFrom');
           if (lastBoot.isBefore(persistedStateFrom)) {
             debugPrint('State is from this session, using it');
             _setStateFromJson(stateAsJson);
-            _startTimer();
+            _startTimer(initAnimation: false); // animation was restored by state
+            if (_isPaused()) {
+              _circleAnimationController.stop();
+            }
+
             int? preSelectedBreakDownId = stateAsJson['selectedBreakDown'];
             _loadBreakDowns(focusPinned: false, preSelectedBreakDownId: preSelectedBreakDownId);
           }
@@ -541,7 +621,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
             _loadBreakDowns(focusPinned: true, preSelectedBreakDownId: preSelectedBreakDownId);
           }
         }
-        else {
+        else {  // no timer running
           _preferenceService.getBool(PreferenceService.PREF_CLEAR_STATE_ON_STARTUP).then((startWithoutStateRecovery) async {
             if (startWithoutStateRecovery == true) {
               final useClockMode = await _preferenceService.getBool(PreferenceService.PREF_CLOCK_MODE_AS_DEFAULT);
@@ -605,18 +685,6 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       }
     });
 
-    _circleAnimationController =
-        AnimationController(duration: const Duration(seconds: 1), vsync: this);
-    Tween<double>(begin: 0, end: 1).animate(_circleAnimationController)
-      ..addListener(() {
-        setState(() {
-          final circleAnimationCurrentValue = _circleAnimationController.value;
-          if (_circleAnimationLastValue > circleAnimationCurrentValue) {
-            _circleAnimationDirection = !_circleAnimationDirection;
-          }
-          _circleAnimationLastValue = circleAnimationCurrentValue;
-        });
-      });
 
   }
 
@@ -698,8 +766,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   }
 
-  _startTimer() {
-    _startSpinner();
+  _startTimer({required bool initAnimation}) {
+    _startSpinner(initAnimation);
 
     _runTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (_isCurrentRunOver()) {
@@ -707,12 +775,19 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           _repetition++;
 
           _startedAt = _startedAt!.add(_duration);
+          _originStartedAt = _startedAt;
           _time = _time.add(_duration);
+          _pastBreaks.clear();
+          PreferenceService().removeAll(PreferenceService.STATE_PASSED_BREAKS_PREFIX.key);
           _persistState();
         }
         else {
           timer.cancel();
         }
+      }
+      else if (_isPaused()) {
+        // if paused, it should extend the _startedAt and _time, so _duration keeps the same
+        _adjustTimeAccordingToPaused();
       }
       if (mounted) {
         _updateRunning();
@@ -721,7 +796,19 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     });
   }
 
+  void _adjustTimeAccordingToPaused() {
+    final breakDuration = DateTime.now().subtract(_pausedAfterStart!);
+    debugPrint('breakDuration=$breakDuration');
+    _startedAt = breakDuration;
+    _time = breakDuration.add(_duration);
+  }
+
   void _updateRunning() {
+    // start wheel if pretimer is over
+    if (_preFinishedAt != null && _preStartedAt != null && _startedAt == null && !_preFinishedAt!.isAfter(DateTime.now())) {
+      _startedAt = DateTime.now();
+      _originStartedAt = _startedAt;
+    }
 
     final delta = _getDelta();
     if (delta != null) {
@@ -729,8 +816,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       //debugPrint('delta=$delta, ratio = $ratio');
       setState(() {
         _passedIndex = (MAX_SLICE * ratio).floor() + 1;
+
+        if (_selectedSlices.contains(_passedIndex)) {
+          if (_pastBreaks[_passedIndex] == null) {
+            // set current break when it happens
+            _pastBreaks[_passedIndex] = DateTime.now();
+          }
+        }
+
         // update all
       });
+
+
     }
   }
 
@@ -781,8 +878,12 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     setState(() {
       _startedAt = null;
+      _preStartedAt = null;
+      _originStartedAt = null;
       _repetition = 0;
       _passedIndex = -1;
+      _pausedAfterStart = null;
+      _preFinishedAt = null;
     });
   }
 
@@ -810,38 +911,43 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           actions: [
             IconButton(
                 onPressed: () async {
+                  final signalTexts = await Future.wait(
+                      new List<int>.generate(MAX_BREAKS, (i) => i + 1).map((i) => _getSignalStringForNumber(i)));
+                  final finalSignalText = await _getSignalStringForNumber(100);
+
                   showDialog(
                       context: context,
                       builder: (BuildContext context) {
                         List<Widget> rows = new List<int>.generate(MAX_BREAKS, (i) => i + 1)
-                        .map((i) => GestureDetector(
-                          onTapUp: (_) {
-                            SignalService.makeSignalPattern(_getSignalForNumber(i),
-                                volume: _volume,
-                                neverSignalTwice: true,
-                                signalAlthoughCancelled: true,
-                                preferenceService: _preferenceService);
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
-                                child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
-                              ),
-                              Text('${l10n.breakName} ${_breakNumberToString(i)}: ',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                              Text(_getSignalStringForNumber(i), style: const TextStyle(fontSize: 10),),
-                            ]),
-                        ))
+                        .map((i) {
+
+                          return GestureDetector(
+                              onTap: () {
+                                SignalService.makeSignalPattern(_getSignalForNumber(i),
+                                    volume: _volume,
+                                    neverSignalTwice: true,
+                                    preferenceService: _preferenceService);
+                              },
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(0, 4, 8, 4),
+                                    child: _getIconForNumber(i, MAX_BREAKS, forceAsc: true)!,
+                                  ),
+                                  Text('${l10n.breakName} ${_breakNumberToString(i)}: ',
+                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text(signalTexts.elementAt(i-1), style: const TextStyle(fontSize: 10),),
+                                ]),
+                            );
+                            })
                               .toList();
 
                           rows.add(GestureDetector(
-                            onTapUp: (_) {
+                            onTap: () {
                               SignalService.makeSignalPattern(_getSignalForNumber(100),
                                   volume: _volume,
                                   neverSignalTwice: true,
-                                  signalAlthoughCancelled: true,
                                   preferenceService: _preferenceService);
                             },
                             child: Row(
@@ -853,7 +959,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 ),
                                 Text('${l10n.timerFinished}: ',
                                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                Text(_getSignalStringForNumber(100), style: const TextStyle(fontSize: 10),),
+                                Text(finalSignalText, style: const TextStyle(fontSize: 10),),
                               ]),
                           )
                         );
@@ -937,9 +1043,9 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
                   final volume = await showVolumeSliderDialog(context,
                     initialSelection: _volume.toDouble(),
-                    onChangedEnd: (value) {
-                      SignalService.setSignalVolume(value.round(), _isDeviceMuted());
-                      SignalService.makeShortSignal();
+                    onChangedEnd: (value) async {
+                      await SignalService.setSignalVolume(value.round(), _isDeviceMuted());
+                      await SignalService.makeSignal(const Duration(milliseconds: 50));
                     }
                   );
                   if (volume != null) {
@@ -1049,7 +1155,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   Widget _buildStartStopButton(BuildContext context) {
     return _isRunning() && !_isAllRunsOver()
-          ? _createSwipeToStopButton(context)
+          ? _createPauseAndSwipeToStopButton(context)
           : _createStartButton(context);
   }
 
@@ -1112,31 +1218,33 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                   PieChartData(
                       pieTouchData: PieTouchData(
                           touchCallback: (FlTouchEvent event, pieTouchResponse) {
+
                             if (_isRunning()) {
                               return;
                             }
                             if (event is FlTapUpEvent
                                 || event is FlPointerExitEvent
-                                || event is FlLongPressEnd
                                 || event is FlPanEndEvent
+                                || event is FlPanCancelEvent
+                                || event is FlTapCancelEvent
                             ) {
                               setState(() {
-                                _touchedIndex = 0;
+                                _touchedIndex = -1;
+                                _draggingIndex = -1;
+                                _draggingStartIndex = -1;
                               });
                             }
                             else if (event is FlTapDownEvent) {
                               setState(() {
-                                if (
-                                pieTouchResponse == null ||
+                                if (pieTouchResponse == null ||
                                     pieTouchResponse.touchedSection == null) {
                                   _touchedIndex = -1;
                                   return;
                                 }
                                 _touchedIndex =
-                                    (pieTouchResponse.touchedSection!
-                                        .touchedSectionIndex + 1) % MAX_SLICE;
+                                    getSliceIndexFromTouchResponse(pieTouchResponse);
                                 debugPrint('_touchedIndex=$_touchedIndex');
-                                if (_touchedIndex != 0) {
+                                if (_touchedIndex > 0) {
                                   if (_selectedSlices.contains(
                                       _touchedIndex)) {
                                     _selectedSlices.remove(_touchedIndex);
@@ -1155,6 +1263,56 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                                 }
                                 debugPrint('_selected=$_selectedSlices');
                               });
+                            }
+                            else if (event is FlLongPressStart) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag start ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                if (_selectedSlices.length >= MAX_BREAKS) {
+                                  toastError(context,
+                                      l10n.errorMaxBreaksReached(MAX_BREAKS));
+                                }
+
+                                var sliceIndex = getSliceIndexFromTouchResponse(pieTouchResponse);
+                                setState(() {
+                                  _draggingStartIndex = sliceIndex;
+                                  _draggingIndex = _draggingStartIndex;
+                                });
+                              }
+                            }
+                            else if (event is FlLongPressMoveUpdate) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag touch ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                if (_draggingStartIndex != -1) {
+                                  setState(() {
+                                    _draggingIndex =
+                                        getSliceIndexFromTouchResponse(
+                                            pieTouchResponse);
+                                  });
+                                }
+                              }
+                            }
+                            else if (event is FlLongPressEnd) {
+                              if (pieTouchResponse != null &&
+                                  pieTouchResponse.touchedSection != null) {
+                                debugPrint("drag end ${pieTouchResponse.touchedSection?.touchedSectionIndex}");
+
+                                setState(() {
+                                  if (_draggingStartIndex != -1) {
+                                    _selectedSlices.remove(_draggingStartIndex);
+                                    if (_draggingIndex > 0 && _selectedSlices.length < MAX_BREAKS) {
+                                      _selectedSlices.add(_draggingIndex);
+                                    }
+                                    _persistState();
+                                  }
+                                  _draggingIndex = -1;
+                                  _draggingStartIndex = -1;
+                                  _touchedIndex = -1;
+                                });
+                              }
                             }
                           }),
                       borderData: FlBorderData(
@@ -1180,11 +1338,16 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                               Center(
                                 child: SizedBox.expand(
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 1,
+                                      strokeWidth: _isPreRunning()
+                                          ? (_circleAnimationDirection ? 0.75 : 1.5)
+                                          : 1,
                                       strokeCap: StrokeCap.round,
-                                      color: _circleAnimationDirection ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
-                                      backgroundColor: _circleAnimationDirection ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
-                                      value: _circleAnimationController.value
+                                      color: _circleAnimationDirection && !_isPreRunning() ? ColorService().getCurrentScheme().background : ColorService().getCurrentScheme().button,
+                                      backgroundColor: _circleAnimationDirection && !_isPreRunning() ? ColorService().getCurrentScheme().button : ColorService().getCurrentScheme().background,
+                                      value: _isPreRunning()
+                                          ? 1 - _calcPreRunningRatio()
+                                          : _circleAnimationController.value,
+
                                   ),
                                 ),
                               ),
@@ -1422,6 +1585,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     );
   }
 
+  int getSliceIndexFromTouchResponse(PieTouchResponse pieTouchResponse) {
+    return (pieTouchResponse.touchedSection!.touchedSectionIndex + 1) % MAX_SLICE;
+  }
+
+
   Widget _buildBreakDownDropdown(BuildContext context, {bool landscape = false}) {
     final scheme = ColorService().getCurrentScheme();
     final canEdit = !_isRunning();
@@ -1601,8 +1769,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
       if (currIndex != -1) {
         currIndex = max(currIndex - 1, 0);
+        _updateSelectedSlices(_loadedBreakDowns[currIndex]);
       }
-      _updateSelectedSlices(_loadedBreakDowns[currIndex]);
     }
   }
 
@@ -1667,25 +1835,82 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     }
   }
 
-  Widget _createSwipeToStopButton(BuildContext context) {
+  Widget _createPauseAndSwipeToStopButton(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
-    return SlideToActionButton(
-      initialSlidingActionLabel: '     \u27A0 ${l10n.swipeToStop}',
-      initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getCurrentScheme().accent),
-      thumbSize: 48,
-      height: 48,
-      width: 260,
-      thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
-      enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
-      animationDuration: const Duration(milliseconds: 400),
-      enableHapticFeedback: false,
-      leftEdgeSpacing: 0,
-      rightEdgeSpacing: 0,
-      completionThreshold: 0.99,
-      onSlideActionCompleted: () {
-        _stopRun(context);
-      },
+    final deviceWidth = MediaQuery.of(context).size.width;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (!_isBeforePreRunning() && !_isPaused())
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                fixedSize: const Size.square(48),
+                side: BorderSide(
+                  color: ColorService().getCurrentScheme().button,
+                  width: 1.1,
+                ),
+                shape: const CircleBorder(),
+              ),
+              onPressed: () {
+                setState(() {
+                  _pausedAfterStart = DateTime.now().difference(_startedAt!);
+                  _circleAnimationController.stop();
+                  _persistState();
+                  _cancelAllBreakNotifications();
+                });
+              },
+              child: Icon(Icons.pause, color: ColorService().getCurrentScheme().accent)),
+        if (!_isBeforePreRunning() && _isPaused())
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                fixedSize: const Size.square(48),
+                side: BorderSide(
+                  color: ColorService().getCurrentScheme().button,
+                  width: 5.0,
+                ),
+                shape: const CircleBorder(),
+              ),
+              onPressed: () {
+                final alreadyFired = _selectedSortedSlices().takeWhile((e) => e <= _passedIndex);
+                debugPrint('_passedIndex=$_passedIndex alreadyFired=$alreadyFired ' + alreadyFired.length.toString());
+                scheduleSliceNotifications(
+                  _selectedSortedSlices().toList().toSet(),
+                  _selectedSortedSlices().length,
+                  _direction,
+                  _startedAt!,
+                  _duration,
+                  _runMode,
+                  _repetition,
+                  offset: alreadyFired.length
+                );
+                setState(() {
+                  if (_isPaused()) {
+                    _pausedAfterStart = null;
+                    _persistState();
+                    _circleAnimationController.repeat();
+                  }
+                });
+              },
+              child: Icon(MdiIcons.play, color: ColorService().getCurrentScheme().accent)),
+        SlideToActionButton(
+          initialSlidingActionLabel: '      \u27A0 ${l10n.swipeToStop}',
+          initialSlidingActionLabelTextStyle: TextStyle(letterSpacing: 0.7, fontWeight: FontWeight.w500, color: ColorService().getContrastColorForBrightScheme(context) ?? ColorService().getCurrentScheme().accent),
+          thumbSize: 48,
+          height: 48,
+          width: 260,
+          thumbIcon: Icon(Icons.stop, color: ColorService().getCurrentScheme().button),
+          thumbEnabledColor: PreferenceService().darkTheme ? Colors.white : darker(ColorService().getCurrentScheme().foreground, 32),
+          enabledTrackDecoration: SlideTrackDecoration.fromColor(ColorService().getCurrentScheme().button),
+          animationDuration: const Duration(milliseconds: 400),
+          enableHapticFeedback: false,
+          leftEdgeSpacing: 0,
+          rightEdgeSpacing: 0,
+          completionThreshold: deviceWidth < 700 && isLandscape(context) ? 0.75 : 0.99, // the slide button would else move out to the right
+          onSlideActionCompleted: () {
+            _stopRun(context);
+          },
+        ),
+      ],
     );
 
   }
@@ -1695,7 +1920,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     return Wrap(
       children: [
-        PopupMenuButton<RunMode>(
+        if (!_isAllRunsOver())
+          PopupMenuButton<RunMode>(
             constraints: const BoxConstraints(),
             icon: _getRunModeIcon(_runMode, null),
             enabled: !_isRunning(),
@@ -1722,18 +1948,71 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           backgroundColor: ColorService().getCurrentScheme().button,
           splashColor: ColorService().getCurrentScheme().foreground,
           foregroundColor: ColorService().getCurrentScheme().accent,
-          icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow),
-          label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer),
+          elevation: 1,
+          icon: Icon(_isAllRunsOver() ? MdiIcons.restart : _isRunning() ? Icons.stop : Icons.play_arrow,
+            color: ColorService().getContrastColorForBrightScheme(context)),
+          label: Text(_isAllRunsOver() ? l10n.reset : _isRunning() ? l10n.stopTimer : l10n.startTimer,
+            style: TextStyle(color: ColorService().getContrastColorForBrightScheme(context))),
           onPressed: () {
             if (_isRunning()) {
               _stopRun(context);
             }
-            else {
-              _startRun(context);
+            else if (_checkStartConditions(context)) {
+              if (_preFinishedAt != null && _preFinishedAt!.isBefore(DateTime.now())) {
+                toastError(context, l10n.preTimerSetFailure);
+                return;
+              }
+              else {
+                _startRun(context);
+              }
             }
           },
         ),
-        const SizedBox(width: 46),
+        const SizedBox(width: 2),
+        if (!_isAllRunsOver())
+          IconButton(
+            onPressed: () {
+
+              final Widget dialog = TimePickerWithCancelHandlerDialog(
+                initialTime: TimeOfDay.fromDateTime(_preFinishedAt ?? roundToHour(DateTime.now())),
+                helpText: l10n.preTimerExplanation,
+                cancelText: l10n.unsetPreTimer,
+                cancelHandler: () {
+                  setState(() {
+                    if (_preFinishedAt != null) {
+                      _preFinishedAt = null;
+                      toastInfo(context, l10n.preTimerUnset);
+                      _persistState();
+                    }
+                  });
+                },
+              );
+              showDialog<TimeOfDay>(
+                context: context,
+                builder: (BuildContext context) {
+                  return dialog;
+                },
+              ).then((selectedTime) {
+
+                setState(() {
+                  if (selectedTime != null) {
+
+                    final newPreFinishedAt = ensureDateTimeInTheFuture(DateTime.now(), selectedTime);
+
+                    if (_timerMode == TimerMode.ABSOLUTE && !newPreFinishedAt.isBefore(_time)) {
+                      toastError(context, l10n.preTimerSetFailure);
+                      return;
+                    }
+
+                    _preFinishedAt = newPreFinishedAt;
+                    toastInfo(context, l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow)));
+                    _persistState();
+                  }
+                });
+              });
+            },
+            icon: Icon(_preFinishedAt != null ? MdiIcons.timerPlay : MdiIcons.timerPlayOutline,
+                color: ColorService().getCurrentScheme().button)),
       ],
     );
   }
@@ -1774,41 +2053,82 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
         return Text('${l10n.timerFinished} ${l10n.afterXRuns(_repetition+1)}');
       }
     }
+    else if (_isPaused()) {
+      final totalPauseDuration = DateTime.now()
+          .add(const Duration(seconds: 1))
+          .difference(_originStartedAt!.add(_pausedAfterStart!));
+
+      return Text(' - ${l10n.timerPaused(formatDuration(totalPauseDuration))} - ',
+        style: const TextStyle(fontWeight: FontWeight.w400));
+    }
     else if (_isRunning()) {
-      final remainingBreaks = _selectedSlices
-          .where((index) => index >= _passedIndex)
-          .toList()
-          .length;
-      if (_runMode == RunMode.REPEAT_ONCE) {
+      if (_preFinishedAt != null && _isPreRunning()) {
+        final now = DateTime.now();
+        final durationToStart = _preFinishedAt!.difference(now);
         return Column(
           children: [
-            Text(l10n.xBreaksLeftRepeatOnce(_selectedSlices.length, remainingBreaks)),
-            Text('(${l10n.xBreaksLeftAndRunCountRepeatOnce(_repetition+1)})'),
+            _createStatsLineForRunning(l10n),
+            const Text(''),
+            Text(l10n.preTimerStarted(formatDuration(durationToStart))),
           ],
         );
-      }
-      else if (_runMode == RunMode.REPEAT_FOREVER) {
-        return Column(
-          children: [
-            Text(l10n.xBreaksLeftRepeatForever(_selectedSlices.length, remainingBreaks)),
-            Text('(${l10n.xBreaksLeftAndRunCountRepeatForever(_repetition+1)})'),
-          ],
-        );
+
       }
       else {
-        return Text(l10n.xBreaksLeft(_selectedSlices.length, remainingBreaks));
+        return _createStatsLineForRunning(l10n);
       }
     }
     else {
-      if (_runMode == RunMode.REPEAT_FOREVER) {
-        return Text(l10n.xBreaksPlacedRepeatForever(_selectedSlices.length));
-      }
-      else if (_runMode == RunMode.REPEAT_ONCE) {
-        return Text(l10n.xBreaksPlacedRepeatOnce(_selectedSlices.length));
+      if (_isBeforePreRunning()) {
+        return Column(
+          children: [
+            _createStatsLineForStart(l10n),
+            const Text(''),
+            Text(l10n.preTimerSet(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow))),
+          ],
+        );
       }
       else {
-        return Text(l10n.xBreaksPlaced(_selectedSlices.length));
+        return _createStatsLineForStart(l10n);
       }
+    }
+  }
+
+  Widget _createStatsLineForRunning(AppLocalizations l10n) {
+    final remainingBreaks = _selectedSlices
+        .where((index) => index >= _passedIndex)
+        .toList()
+        .length;
+    if (_runMode == RunMode.REPEAT_ONCE) {
+      return Column(
+        children: [
+          Text(l10n.xBreaksLeftRepeatOnce(_selectedSlices.length, remainingBreaks)),
+          Text('(${l10n.xBreaksLeftAndRunCountRepeatOnce(_repetition+1)})'),
+        ],
+      );
+    }
+    else if (_runMode == RunMode.REPEAT_FOREVER) {
+      return Column(
+        children: [
+          Text(l10n.xBreaksLeftRepeatForever(_selectedSlices.length, remainingBreaks)),
+          Text('(${l10n.xBreaksLeftAndRunCountRepeatForever(_repetition+1)})'),
+        ],
+      );
+    }
+    else {
+      return Text(l10n.xBreaksLeft(_selectedSlices.length, remainingBreaks));
+    }
+  }
+
+  Text _createStatsLineForStart(AppLocalizations l10n) {
+    if (_runMode == RunMode.REPEAT_FOREVER) {
+      return Text(l10n.xBreaksPlacedRepeatForever(_selectedSlices.length));
+    }
+    else if (_runMode == RunMode.REPEAT_ONCE) {
+      return Text(l10n.xBreaksPlacedRepeatOnce(_selectedSlices.length));
+    }
+    else {
+      return Text(l10n.xBreaksPlaced(_selectedSlices.length));
     }
   }
 
@@ -1829,8 +2149,8 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      final value1 = formatDuration(_isAllRunsOver() ? _duration : _getDelta()!) + (showArrows ? ' $downArrow' : '');
-      final value2 = formatDuration(_isAllRunsOver() ? Duration.zero : _getRemaining()!) + (showArrows ? ' $upArrow' : '');
+      final value1 = formatDuration(_isAllRunsOver() ? _duration : _getDelta() ?? Duration.zero) + (showArrows ? ' $downArrow' : '');
+      final value2 = formatDuration(_isAllRunsOver() ? Duration.zero : _getRemaining() ?? Duration.zero) + (showArrows ? ' $upArrow' : '');
       final value3 = (showArrows ? '$rightArrow ' : '') + formatDuration(_duration);
 
       if (presentation == RelativeProgressPresentation.REMAINING) {
@@ -1858,9 +2178,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     if (_isRunning() || _isAllRunsOver()) {
       final showArrows = PreferenceService().showArrows;
 
-      final value1 = formatDateTime(langCode, _startedAt!, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
+      var fromDateTime = _originStartedAt ?? _preStartedAt ?? DateTime.now();
+      var toDateTime = _time;
+      if (_isPreRunning() && _preFinishedAt != null) {
+        fromDateTime = _preFinishedAt!;
+        toDateTime = _preFinishedAt!.add(_duration);
+      }
+      final value1 = formatDateTime(langCode, fromDateTime, withSeconds: true) + (showArrows ? ' $rightArrow' : '');
       final value2 = formatDateTime(langCode, _isAllRunsOver() ? _time : DateTime.now(), withSeconds: true) + (showArrows ? ' $downArrow' : '');
-      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, _time, withSeconds: true);
+      final value3 = (showArrows ? '$rightArrow ' : '') + formatDateTime(langCode, toDateTime, withSeconds: true);
 
       if (presentation == AbsoluteProgressPresentation.START_CURRENT) {
         return _createTwoRowsCircle(value1, value2, smallValue1: true);
@@ -1968,15 +2294,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
   bool _updateAndAdjustTime(TimeOfDay timeOfDay, {required bool fromUser}) {
     final now = DateTime.now();
-    final nowTime = TimeOfDay.now();
-    final nowMinutes = nowTime.hour * 60 + nowTime.minute;
-    final selectedMinutes = timeOfDay.hour * 60 + timeOfDay.minute;
-    DateTime time = DateTime(now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
-
-    if (selectedMinutes < nowMinutes) {
-      // next day
-      time = time.add(const Duration(days: 1));
-    }
+    final time = ensureDateTimeInTheFuture(now, timeOfDay);
     _updateTime(time, fromUser: fromUser);
 
     Duration duration = now.difference(_time).abs();
@@ -2011,10 +2329,14 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final index = indexed.$1;
       final slice = indexed.$2;
 
-      final isTouched = slice == _touchedIndex;
+      final isDragging = slice ==_draggingIndex;
+      final isTouched = slice == _touchedIndex || slice ==_draggingStartIndex || slice ==_draggingIndex;
       final isPassed = slice < _passedIndex;
       final isInTransition = slice == _passedIndex;
-      final isSelected = _selectedSlices.contains(slice);
+      var isSelected = _selectedSlices.contains(slice) || slice == _draggingIndex;
+      if (slice == _draggingStartIndex && _draggingIndex != _draggingStartIndex) {
+        isSelected = false;
+      }
       final isLeftSelected = slice == 1 || _selectedSlices.contains(slice - 1);
       final isRightSelected = slice == MAX_SLICE - 1 || _selectedSlices.contains(slice + 1);
       final shouldAlternate = (isLeftSelected || isRightSelected) && index.isEven;
@@ -2040,6 +2362,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           : !isInTransition && shouldAlternate && _isTopOrBottomSlice(slice) // if nearby slice has also a title, try to use a different offset to not collide
           ? 1.55
           : 1.25;
+
       return PieChartSectionData(
         color: isFinalSlice
             ? ColorService().getCurrentScheme().accent
@@ -2059,7 +2382,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
                 ? const TextStyle(fontSize: 9)
                 : const TextStyle(fontSize: 11),
         titlePositionPercentageOffset: titlePositionPercentageOffset * (isLandscape ? 1.15 : 1),
-        badgeWidget: isSelected ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
+        badgeWidget: isSelected && !isDragging ? _getIconForNumber(indexOfSelected, _selectedSlices.length) : null,
         badgePositionPercentageOffset: shouldAlternate ? 0.8 : null
       );
     }).toList();
@@ -2068,7 +2391,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   String _showSliceTitle(int slice, bool showCurrent, bool isFinalSlice) {
     final langCode = _getCurrentLangCode();
 
-    if (_timerMode == TimerMode.RELATIVE) {
+        if (_timerMode == TimerMode.RELATIVE) {
       final sliceDuration = isFinalSlice ? _duration : _getDelay(slice);
       return formatDuration(
           showCurrent ? _getDelta()??sliceDuration : sliceDuration,
@@ -2076,6 +2399,10 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
           noSeconds: _duration.inMinutes >= 60);
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
+
+      final timeOfBreak = _pastBreaks[slice];
+
+      // debugPrint('XXX $slice $timeOfBreak');
       final nowOrStartedAt = _startedAt ?? DateTime.now();
       final delta = nowOrStartedAt.difference(_time).abs();
       final sliceDuration = Duration(seconds: delta.inSeconds * slice ~/ MAX_SLICE);
@@ -2083,7 +2410,7 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       final sliceTime = isFinalSlice ? _time : nowOrStartedAt.add(sliceDuration);
       return formatDateTime(
           langCode,
-          showCurrent ? DateTime.now() : sliceTime,
+          showCurrent ? DateTime.now() : slice < _passedIndex && timeOfBreak != null ? truncToSeconds(timeOfBreak) : sliceTime,
           withLineBreak: true,
           withSeconds: delta.inMinutes < 10);
     }
@@ -2123,29 +2450,48 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     return null;
   }
 
-  bool _isRunning() => _startedAt != null;
+  bool _isBeforePreRunning() => _preFinishedAt != null && _startedAt == null;
 
-  void _startRun(BuildContext context) {
+  bool _isPreRunning() => _preStartedAt != null && _startedAt == null;
+
+  bool _isRunning() => _preStartedAt != null || _startedAt != null;
+
+  bool _isPaused() => _pausedAfterStart != null;
+
+  bool _checkStartConditions(BuildContext context) {
 
     final l10n = AppLocalizations.of(context)!;
 
     if (_duration.inSeconds == 0) {
       toastError(context, l10n.errorDurationIsZero);
-      return;
+      return false;
     }
     if (_isRunning()) {
-      return;
+      return false;
     }
     if (_timerMode == TimerMode.ABSOLUTE && _isTimeElapsed()) {
       toastError(context, l10n.errorTimeAlreadyElapsed);
-      return;
+      return false;
     }
 
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_CANCELLING);
-    _preferenceService.remove(PreferenceService.STATE_SIGNAL_PROCESSING);
+    return true;
+  }
 
 
-    _startedAt = DateTime.now();
+  void _startRun(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
+    if (_preFinishedAt != null) {
+      _preStartedAt = DateTime.now();
+    }
+    else {
+      _startedAt = DateTime.now();
+      _originStartedAt = _startedAt;
+    }
+
+    _pastBreaks.clear();
+    PreferenceService().removeAll(PreferenceService.STATE_PASSED_BREAKS_PREFIX.key);
 
     // store states for bg alarm tasks
     final progressPath = _getProgressPath();
@@ -2157,64 +2503,87 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     setRunRepetition(_preferenceService, _repetition);
     setDuration(_preferenceService, _duration);
 
-    _startTimer();
+    _startTimer(initAnimation: true);
     _updateRunning();
-
-    final startedAt = _startedAt;
-    if (startedAt == null) { // should not happen
-      throw Exception('_startedAt should not be null here');
-    }
 
     _persistState();
 
     _askForNotification();
 
+    //TODO this should also happen in signalPreTimerEnd !! Why?
+    final startRef = _preFinishedAt ?? _startedAt!;
     if (_timerMode == TimerMode.RELATIVE) {
       setState(() {
-        final time = startedAt.add(_duration);
+        final time = startRef.add(_duration);
         _updateTime(time, fromUser: false);
       });
     }
     else if (_timerMode == TimerMode.ABSOLUTE) {
       setState(() {
-        final duration = startedAt.difference(_time).abs();
+        final duration = startRef.difference(_time).abs();
         _updateDuration(duration, fromUser: false);
       });
     }
-    SignalService.makeSignalPattern(START,
-      volume: _volume,
-      neverSignalTwice: true,
-      signalAlthoughCancelled: true,
-      preferenceService: _preferenceService,
-    );
 
-    final repeatNote = _getRunNote(_runMode, _repetition, l10n);
+    if (_preFinishedAt != null) {
 
-    notify(0, null, l10n.timerStarted + repeatNote,
+      SignalService.makeSignalPattern(PRE_START,
+        volume: _volume,
+        neverSignalTwice: true,
         preferenceService: _preferenceService,
-        notificationService: _notificationService,
-        showProgress: true,
-        showStartInfo: true,
-        fixed: true,
-        l10n: l10n
-    );
+      );
 
-    scheduleSliceNotifications(
-      _selectedSortedSlices().toList().toSet(),
-      _selectedSortedSlices().length,
-      _direction,
-      _startedAt!,
-      _duration,
-      _runMode,
-      _repetition,
-    );
+      notify(-1, null, l10n.preTimerStartedNotification(formatDateTime(_getCurrentLangCode(), _preFinishedAt!, useTomorrowString: l10n.tomorrow)),
+          preferenceService: _preferenceService,
+          notificationService: _notificationService,
+          showProgress: true,
+          showStartInfo: true,
+          fixed: true,
+          l10n: l10n
+      );
+
+      AndroidAlarmManager.oneShotAt(
+          alarmClock: true, wakeup: true, allowWhileIdle: true, exact: true,
+          _preFinishedAt!, 1000, signalPreTimerEnd)
+          .then((value) => debugPrint('shot pre end: $value'));
+    }
+    else {
+      SignalService.makeSignalPattern(START,
+        volume: _volume,
+        neverSignalTwice: true,
+        preferenceService: _preferenceService,
+      );
+
+      final repeatNote = _getRunNote(_runMode, _repetition, l10n);
+
+      notify(0, null, l10n.timerStarted + repeatNote,
+          preferenceService: _preferenceService,
+          notificationService: _notificationService,
+          showProgress: true,
+          showStartInfo: true,
+          fixed: true,
+          l10n: l10n
+      );
+
+      scheduleSliceNotifications(
+        _selectedSortedSlices().toList().toSet(),
+        _selectedSortedSlices().length,
+        _direction,
+        _startedAt!,
+        _duration,
+        _runMode,
+        _repetition,
+      );
+    }
   }
 
-  void _startSpinner() {
-    _circleAnimationLastValue = 0;
-    _circleAnimationController.value = 0;
+  void _startSpinner(bool initAnimation) {
+    if (initAnimation) {
+      _circleAnimationLastValue = 0;
+      _circleAnimationController.value = 0;
+      _circleAnimationDirection = false;
+    }
     _circleAnimationController.repeat();
-    _circleAnimationDirection = false;
   }
 
   void _updateDuration(Duration duration, {required bool fromUser}) {
@@ -2253,10 +2622,11 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       Duration duration,
       RunMode runMode,
       int repetition,
+      {int offset = 0}
       ) {
     final list = selectedSlices.toList()..sort();
     debugPrint('schedule alarm for $list');
-    for (int i = 0; i < list.length; i++) {
+    for (int i = offset; i < list.length; i++) {
       final signal = i + 1;
       final slice = list[i];
       Function f = _signalFunction(signal, signalCount, direction);
@@ -2287,15 +2657,19 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     _stopTimer();
     _circleAnimationController.stop();
 
-    SignalService().stopAll();
-    _persistState();
-    _notificationService.cancelAllNotifications();
     SignalService.makeSignalPattern(CANCEL,
         volume: _volume,
         neverSignalTwice: true,
-        signalAlthoughCancelled: true,
         preferenceService: _preferenceService);
-    for (int slice = 1; slice <= MAX_SLICE; slice++) {
+    _persistState();
+
+    _cancelAllBreakNotifications();
+  }
+
+  void _cancelAllBreakNotifications() {
+    SignalService().stopAll();
+    _notificationService.cancelAllNotifications();
+        for (int slice = 1; slice <= MAX_SLICE; slice++) {
       AndroidAlarmManager.cancel(slice);
     }
     AndroidAlarmManager.cancel(1000);
@@ -2315,12 +2689,21 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
     'timerMode': _timerMode.index,
     'direction': _direction.index,
     'startedAt': _startedAt?.millisecondsSinceEpoch,
+    'preStartedAt': _preStartedAt?.millisecondsSinceEpoch,
+    'originStartedAt': _originStartedAt?.millisecondsSinceEpoch,
+    'preFinishedAt': _preFinishedAt?.millisecondsSinceEpoch,
     'selectedSlices': _selectedSortedSlicesToString(),
     'selectedBreakDown': _selectedBreakDown?.id,
     'pinnedBreakDownId': _pinnedBreakDownId,
     'runMode': _runMode.index,
     'repetition': _repetition,
+    'pausedAfterStart': _pausedAfterStart?.inSeconds,
+    'circleAnimationValue': _circleAnimationController.value,
+    'circleAnimationLastValue': _circleAnimationLastValue,
+    'circleAnimationDirection': _circleAnimationDirection,
+    'passedIndex': _passedIndex,
   };
+
   }
 
   String _selectedSortedSlicesToString() => _selectedSortedSlices().join(',');
@@ -2345,9 +2728,23 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
 
     _timerMode = TimerMode.values.elementAt(jsonMap['timerMode']);
     _direction = Direction.values.elementAt(jsonMap['direction']);
+
     if (jsonMap['startedAt'] != null) {
       _startedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['startedAt']);
     }
+    if (jsonMap['preStartedAt'] != null) {
+      _preStartedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['preStartedAt']);
+    }
+    if (jsonMap['originStartedAt'] != null) {
+      _originStartedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['originStartedAt']);
+    }
+    if (jsonMap['preFinishedAt'] != null) {
+      _preFinishedAt = DateTime.fromMillisecondsSinceEpoch(jsonMap['preFinishedAt']);
+    }
+    if (jsonMap['pausedAfterStart'] != null) {
+      _pausedAfterStart = Duration(seconds: jsonMap['pausedAfterStart']);
+    }
+
 
     _selectedSlices.clear();
     jsonMap['selectedSlices'].toString().split(',')
@@ -2364,6 +2761,44 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       _repetition = jsonMap['repetition'];
     }
 
+    if (jsonMap['circleAnimationValue'] != null) {
+      _circleAnimationController.value = jsonMap['circleAnimationValue'];
+    }
+
+    if (jsonMap['circleAnimationLastValue'] != null) {
+      _circleAnimationLastValue = jsonMap['circleAnimationLastValue'];
+    }
+
+    if (jsonMap['circleAnimationDirection'] != null) {
+      _circleAnimationDirection = jsonMap['circleAnimationDirection'];
+    }
+    if (jsonMap['passedIndex'] != null) {
+      _passedIndex = jsonMap['passedIndex'];
+    }
+
+    final keys = await PreferenceService().getKeys(PreferenceService.STATE_PASSED_BREAKS_PREFIX.key);
+    keys.sort();
+    debugPrint('passed breaks keys: $keys');
+    final sortedSlices =  _selectedSortedSlices();
+    for (var key in keys) {
+      final millisSinceEpoch = await PreferenceService().getInt(PrefDef(key, null));
+
+      final breakParsed = key.split('_').lastOrNull;
+      final breakId = breakParsed != null ? int.tryParse(breakParsed) : null;
+      debugPrint('passed break key: $key=$millisSinceEpoch breakId=$breakId');
+
+      if (millisSinceEpoch != null && breakId != null) {
+        final pastBreak = DateTime.fromMillisecondsSinceEpoch(millisSinceEpoch);
+        if (sortedSlices.length > breakId) {
+          final slice = sortedSlices[breakId];
+          _pastBreaks[slice] = pastBreak;
+        }
+      }
+    }
+    debugPrint('restored passed breaks: $_pastBreaks');
+
+
+
     if (!_isRunning()) {
       _time = adjustToTodayIfInThePast(_time);
     }
@@ -2375,13 +2810,18 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
       var repetition = await getRunRepetition(PreferenceService());
       if (latestStartedAt != null && repetition != null) {
         _startedAt = latestStartedAt;
+        _originStartedAt = _startedAt;
         _time = latestStartedAt.add(_duration);
         _repetition = repetition;
       }
     }
+
+    if (_isPaused()) {
+      _adjustTimeAccordingToPaused();
+    }
   }
 
-  String _getSignalStringForNumber(int signal) {
+  Future<String> _getSignalStringForNumber(int signal) {
     switch (signal) {
       case 1: return SignalService.signalPatternToString(SIG_1);
       case 2: return SignalService.signalPatternToString(SIG_2);
@@ -2494,6 +2934,15 @@ class BDTScaffoldState extends State<BDTScaffold> with SingleTickerProviderState
   }
 
   bool _isTopOrBottomSlice(int slice) => slice >= 50 || slice <=10 || (slice >= 20 && slice <=40);
+
+  double _calcPreRunningRatio() {
+    final start = _preStartedAt!.millisecondsSinceEpoch;
+
+    final num = DateTime.now().millisecondsSinceEpoch - start;
+    final den = _preFinishedAt!.millisecondsSinceEpoch - start;
+
+    return num / den;
+  }
 
 
 }
