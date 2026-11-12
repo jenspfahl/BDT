@@ -53,6 +53,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get seconds => 'நொடிகள்';
 
   @override
+  String get tomorrow => 'tomorrow';
+
+  @override
   String get changeSeconds => 'வினாடிகளை மாற்றவும்';
 
   @override
@@ -129,6 +132,12 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get signalWithoutCounterDescription => 'ஆடியோ மற்றும் அதிர்வு சமிக்ஞையில் கவுண்டரை குறியாக்கம் செய்ய வேண்டாம்.';
+
+  @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
 
   @override
   String get defaultBreakOrder => 'இடைவேளை வரிசை இயல்பாக இறங்குகிறது';
@@ -330,6 +339,38 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get noRepeat => 'மீண்டும் இல்லை';
+
+  @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
+  String get preTimerExplanation => 'Set a pre-timer that determines when the actual timer should start';
+
+  @override
+  String get preTimerSetFailure => 'The pre-timer must be set to a time before the timer\'s start time!';
+
+  @override
+  String preTimerSet(Object when) {
+    return 'Pre-timer set for $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer starts in $duration';
+  }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Pre-timer started, actual timer will start $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Unset pre-timer';
+
+  @override
+  String get preTimerUnset => 'Pre-timer unset';
 
   @override
   String xBreaksPlaced(Object breakCount) {

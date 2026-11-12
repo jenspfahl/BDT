@@ -40,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _muteVolumeIfDeviceIsMuted = PreferenceService.PREF_MUTE_IF_DEVICE_MUTED.defaultValue;
   bool _signalTwice = PreferenceService.PREF_SIGNAL_TWICE.defaultValue;
   bool _signalWithoutCounter = PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER.defaultValue;
+  bool _signalWithoutPreSignal = PreferenceService.PREF_SIGNAL_WITHOUT_PRE_SIGNAL.defaultValue;
   bool _breakOrderDescending = PreferenceService.PREF_BREAK_ORDER_DESCENDING.defaultValue;
   int _colorScheme = PreferenceService.PREF_COLOR_SCHEME.defaultValue;
   bool _darkMode = PreferenceService.PREF_DARK_MODE.defaultValue;
@@ -186,7 +187,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       await SignalService.setSignalVolume(newVol, false);
                       await SignalService.makeSignal(const Duration(milliseconds: 400),
                           audioSchemeId: selection,
-                          noVibration: true
                       );
                       await SignalService.setSignalVolume(origVol, false);
                     }
@@ -247,6 +247,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onToggle: (bool value) {
                 _preferenceService.setBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER, value);
                 setState(() => _signalWithoutCounter = value);
+                if (value && _signalWithoutPreSignal) {
+                  _preferenceService.setBool(PreferenceService.PREF_SIGNAL_WITHOUT_PRE_SIGNAL, false);
+                  setState(() => _signalWithoutPreSignal = false);
+                }
+              },
+            ),
+            SettingsTile.switchTile(
+              title: Text(l10n.signalWithoutPreSignal),
+              description: Text(l10n.signalWithoutPreSignalDescription),
+              initialValue: _signalWithoutPreSignal,
+              activeSwitchColor: ColorService().getCurrentScheme().button,
+              onToggle: (bool value) {
+                _preferenceService.setBool(PreferenceService.PREF_SIGNAL_WITHOUT_PRE_SIGNAL, value);
+                setState(() => _signalWithoutPreSignal = value);
+                if (value && _signalWithoutCounter) {
+                  _preferenceService.setBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER, false);
+                  setState(() => _signalWithoutCounter = false);
+                }
               },
             ),
            // const CustomSettingsTile(child: Divider()),
@@ -431,6 +449,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final signalWithoutCounter = await _preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_NUMBER);
     if (signalWithoutCounter != null) {
       _signalWithoutCounter = signalWithoutCounter;
+    }
+    final signalWithoutPreSignal = await _preferenceService.getBool(PreferenceService.PREF_SIGNAL_WITHOUT_PRE_SIGNAL);
+    if (signalWithoutPreSignal != null) {
+      _signalWithoutPreSignal = signalWithoutPreSignal;
     }
     final breakOrderDescending = await _preferenceService.getBool(PreferenceService.PREF_BREAK_ORDER_DESCENDING);
     if (breakOrderDescending != null) {

@@ -23,6 +23,10 @@ Das ist besonders praktisch beim Training oder anderen Outdoor-Aktivitäten.
 - Verschiedene Pausen-Voreinstellungen
 - Speichern eigener Voreinstellungen
 - Verschiedene Farb- und Audio-Schemata
+- Vor-Timer, um den eigentlichen Timer zu einem exakten Zeitpunkt zu starten
+- Einen laufenden Timer pausieren und fortsetzen
+- Einmalige oder unendliche Wiederholungen des Timer-Laufs
+
 
 Weitere Informationen finden Sie unter <a href="https://bdt.jepfa.de">bdt.jepfa.de</a>
 

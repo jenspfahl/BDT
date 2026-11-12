@@ -1,0 +1,6 @@
+* add pause/resume button
+* add pre-timer
+* support break-slice drag'n'drop
+* improve signaling from background (#31)
+* UI improvements
+* bugfixes

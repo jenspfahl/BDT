@@ -13,6 +13,10 @@ DateTime truncToMinutes(DateTime dateTime) {
   return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute);
 }
 
+DateTime truncToSeconds(DateTime dateTime) {
+  return DateTime(dateTime.year, dateTime.month, dateTime.day, dateTime.hour, dateTime.minute, dateTime.second);
+}
+
 DateTime adjustToTodayIfInThePast(DateTime dateTime) {
   final now = DateTime.now();
   if (dateTime.isBefore(now)) {
@@ -36,12 +40,25 @@ bool isToday(DateTime? dateTime) {
   return truncToDate(dateTime) == truncToDate(DateTime.now());
 }
 
-String formatDateTime(String languageCode, DateTime dateTime, {bool withLineBreak = false, bool withSeconds = false}) {
+bool isTomorrow(DateTime? dateTime) {
+  if (dateTime == null) return false;
+  return truncToDate(dateTime) == truncToDate(DateTime.now().add(Duration(days: 1)));
+}
+
+String formatDateTime(String languageCode, DateTime dateTime, {
+  bool withLineBreak = false,
+  bool withSeconds = false,
+  String? useTomorrowString = null,
+}) {
   final betweenChar = withLineBreak ? '\n' : ' ';
   final DateFormat dateFormatter = DateFormat.Md(languageCode);
   final DateFormat timeFormatter = withSeconds ? DateFormat.Hms(languageCode) : DateFormat.Hm(languageCode);
   if (isToday(dateTime)) {
     return timeFormatter.format(dateTime);
+  }
+  else if (useTomorrowString != null && isTomorrow(dateTime)) {
+    return useTomorrowString + betweenChar +
+        timeFormatter.format(dateTime);
   }
   else {
     return dateFormatter.format(dateTime) + betweenChar +
@@ -75,4 +92,18 @@ String formatDuration(Duration duration, {bool withLineBreak = false, bool noSec
     }
   }
   return '${duration.inSeconds} $ABBREV_SECONDS';
+}
+
+
+DateTime ensureDateTimeInTheFuture(DateTime now, TimeOfDay timeOfDay) {
+  final nowTime = TimeOfDay.fromDateTime(now);
+  final nowMinutes = nowTime.hour * 60 + nowTime.minute;
+  final selectedMinutes = timeOfDay.hour * 60 + timeOfDay.minute;
+  DateTime time = DateTime(now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+
+  if (selectedMinutes < nowMinutes) {
+    // next day
+    time = time.add(const Duration(days: 1));
+  }
+  return time;
 }

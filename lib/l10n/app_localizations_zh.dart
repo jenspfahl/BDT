@@ -53,6 +53,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seconds => '秒';
 
   @override
+  String get tomorrow => 'tomorrow';
+
+  @override
   String get changeSeconds => '更改秒数';
 
   @override
@@ -129,6 +132,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get signalWithoutCounterDescription => '音频和振动信号中不包含计数器信息。';
+
+  @override
+  String get signalWithoutPreSignal => 'Signal without pre-signal';
+
+  @override
+  String get signalWithoutPreSignalDescription => 'No pre-signal (beep-beep) is emitted; only the interval counter itself is encoded via the audio and vibration signal.';
 
   @override
   String get defaultBreakOrder => '休息点顺序默认为递减';
@@ -330,6 +339,38 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noRepeat => '不重复';
+
+  @override
+  String timerPaused(Object duration) {
+    return 'Timer paused (total $duration)';
+  }
+
+  @override
+  String get preTimerExplanation => 'Set a pre-timer that determines when the actual timer should start';
+
+  @override
+  String get preTimerSetFailure => 'The pre-timer must be set to a time before the timer\'s start time!';
+
+  @override
+  String preTimerSet(Object when) {
+    return 'Pre-timer set for $when';
+  }
+
+  @override
+  String preTimerStarted(Object duration) {
+    return 'Timer starts in $duration';
+  }
+
+  @override
+  String preTimerStartedNotification(Object when) {
+    return 'Pre-timer started, actual timer will start $when';
+  }
+
+  @override
+  String get unsetPreTimer => 'Unset pre-timer';
+
+  @override
+  String get preTimerUnset => 'Pre-timer unset';
 
   @override
   String xBreaksPlaced(Object breakCount) {
